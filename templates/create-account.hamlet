@@ -1,3 +1,2 @@
 <form method=post action=@{CreateAccountR} enctype=#{formEnctype}>
     ^{formWidget}
-    <button type="submit">Submit
