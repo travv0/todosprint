@@ -10,6 +10,7 @@
 / HomeR GET
 
 /user/#UserId UserR GET
+/new-task NewTaskR GET POST
 
 
 /profile ProfileR GET
