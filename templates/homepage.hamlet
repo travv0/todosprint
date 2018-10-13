@@ -1,4 +1,9 @@
 <div .container>
+    <!-- $case maid -->
+    <!--     $of Just id -->
+    <!--         <div>#{show id} -->
+    <!--     $of Nothing -->
+    <!--         <div> -->
     <!-- Tasks -->
     <div .bs-docs-section>
         <div .row>
