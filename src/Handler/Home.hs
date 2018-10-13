@@ -1,17 +1,17 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE QuasiQuotes           #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE QuasiQuotes           #-}
 
 module Handler.Home where
 
+import           Database.Persist.Sql
 import           Import
-import           Text.Julius                    ( RawJS(..) )
-import           Yesod.Form.Bootstrap3          ( BootstrapFormLayout(..)
-                                                , renderBootstrap3
-                                                )
+import           Text.Julius           (RawJS (..))
+import           Yesod.Form.Bootstrap3 (BootstrapFormLayout (..),
+                                        renderBootstrap3)
 
 -- Define our data that will be used for creating the form.
 data FileForm = FileForm
@@ -29,7 +29,7 @@ data FileForm = FileForm
 getHomeR :: Handler Html
 getHomeR = do
   (formWidget, formEnctype) <- generateFormPost sampleForm
-  let submission  = Nothing :: Maybe FileForm
+  let submission = Nothing :: Maybe FileForm
       handlerName = "getHomeR" :: Text
   defaultLayout $ do
     aDomId <- newIdent
@@ -38,12 +38,11 @@ getHomeR = do
 
 userAForm :: Maybe User -> AForm Handler User
 userAForm muser =
-  User
-    <$> areq textField  "User Name" (userLoginName <$> muser)
-    <*> areq emailField "Email"     (userEmail <$> muser)
-    <*> aopt textField "First Name" (userFirstName <$> muser)
-    <*> aopt textField "Last Name"  (userLastName <$> muser)
-    <*> areq passwordField "Password" (userPassword <$> muser)
+  User <$> areq textField "User Name" (userLoginName <$> muser) <*>
+  areq emailField "Email" (userEmail <$> muser) <*>
+  aopt textField "First Name" (userFirstName <$> muser) <*>
+  aopt textField "Last Name" (userLastName <$> muser) <*>
+  areq passwordField "Password" (userPassword <$> muser)
 
 getCreateAccountR :: Handler Html
 getCreateAccountR = do
@@ -60,22 +59,26 @@ postCreateAccountR = do
     runFormPost $ renderBootstrap3 BootstrapBasicForm $ userAForm Nothing
   case result of
     FormSuccess user -> do
-      u <- runDB $ insert $ user
+      u <- runDB $ insert user
       redirect (UserR u)
     _ -> defaultLayout $(widgetFile "create-account")
 
-getUserR :: UserId -> Handler String
+getUserR :: UserId -> Handler Html
 getUserR userId = do
   user <- runDB $ get404 userId
-  return $ show user
+  tasks <- runDB $ selectList [TaskUserId ==. userId] []
+  defaultLayout $ do
+    setTitle $ toHtml $ userLoginName user ++ "'s tasks"
+    $(widgetFile "user")
 
 postHomeR :: Handler Html
 postHomeR = do
   ((result, formWidget), formEnctype) <- runFormPost sampleForm
   let handlerName = "postHomeR" :: Text
-      submission  = case result of
-        FormSuccess res -> Just res
-        _               -> Nothing
+      submission =
+        case result of
+          FormSuccess res -> Just res
+          _               -> Nothing
   defaultLayout $ do
     aDomId <- newIdent
     setTitle "Welcome To Yesod!"
@@ -83,23 +86,17 @@ postHomeR = do
 
 sampleForm :: Form FileForm
 sampleForm =
-  renderBootstrap3 BootstrapBasicForm
-    $   FileForm
-    <$> fileAFormReq "Choose a file"
-    <*> areq textField textSettings Nothing
+  renderBootstrap3 BootstrapBasicForm $
+  FileForm <$> fileAFormReq "Choose a file" <*>
+  areq textField textSettings Nothing
     -- Add attributes like the placeholder and CSS classes.
- where
-  textSettings = FieldSettings
-    { fsLabel   = "What's on the aaaaaaaa?"
-    , fsTooltip = Nothing
-    , fsId      = Nothing
-    , fsName    = Nothing
-    , fsAttrs = [("class", "form-control"), ("placeholder", "File description")]
-    }
-
-getTasksByUser user = selectList [TaskUserId ==. user] []
-
-getUser loginName = getBy $ LoginName loginName
-
-addUser userLoginName userFirstName userLastName userEmail userPassword =
-  insert $ User userLoginName userEmail userFirstName userLastName userPassword
+  where
+    textSettings =
+      FieldSettings
+        { fsLabel = "What's on the aaaaaaaa?"
+        , fsTooltip = Nothing
+        , fsId = Nothing
+        , fsName = Nothing
+        , fsAttrs =
+            [("class", "form-control"), ("placeholder", "File description")]
+        }

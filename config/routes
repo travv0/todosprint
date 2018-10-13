@@ -10,7 +10,7 @@
 / HomeR GET POST
 
 /user/#UserId UserR GET
-/createaccount CreateAccountR GET POST
+/create-account CreateAccountR GET POST
 
 
 /profile ProfileR GET
