@@ -19,4 +19,5 @@ Task
     repeat RepeatInterval Maybe
     dependencies Text
     done Bool
-    userId Int
+    userId UserId
+    deriving Show
