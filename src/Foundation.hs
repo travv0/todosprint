@@ -10,21 +10,25 @@
 
 module Foundation where
 
-import           Control.Monad.Logger (LogSource)
-import           Database.Persist.Sql (ConnectionPool, runSqlPool)
+import           Control.Monad.Logger           ( LogSource )
+import           Database.Persist.Sql           ( ConnectionPool
+                                                , runSqlPool
+                                                )
 import           Import.NoFoundation
-import           Text.Hamlet          (hamletFile)
-import           Text.Jasmine         (minifym)
+import           Text.Hamlet                    ( hamletFile )
+import           Text.Jasmine                   ( minifym )
 
 -- Used only when in "auth-dummy-login" setting is enabled.
 import           Yesod.Auth.Dummy
 
-import qualified Data.CaseInsensitive as CI
-import qualified Data.Text.Encoding   as TE
-import           Yesod.Auth.OpenId    (IdentifierType (Claimed), authOpenId)
-import           Yesod.Core.Types     (Logger)
-import qualified Yesod.Core.Unsafe    as Unsafe
-import           Yesod.Default.Util   (addStaticContentExternal)
+import qualified Data.CaseInsensitive          as CI
+import qualified Data.Text.Encoding            as TE
+import           Yesod.Auth.OpenId              ( IdentifierType(Claimed)
+                                                , authOpenId
+                                                )
+import           Yesod.Core.Types               ( Logger )
+import qualified Yesod.Core.Unsafe             as Unsafe
+import           Yesod.Default.Util             ( addStaticContentExternal )
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -120,6 +124,12 @@ instance Yesod App
               { menuItemLabel = "Profile"
               , menuItemRoute = ProfileR
               , menuItemAccessCallback = isJust muser
+              }
+          , NavbarRight $
+            MenuItem
+              { menuItemLabel = "Create Account"
+              , menuItemRoute = CreateAccountR
+              , menuItemAccessCallback = isNothing muser
               }
           , NavbarRight $
             MenuItem
@@ -269,10 +279,9 @@ instance YesodAuth App where
 isAuthenticated :: Handler AuthResult
 isAuthenticated = do
   muid <- maybeAuthId
-  return $
-    case muid of
-      Nothing -> Unauthorized "You must login to access this page"
-      Just _  -> Authorized
+  return $ case muid of
+    Nothing -> Unauthorized "You must login to access this page"
+    Just _  -> Authorized
 
 instance YesodAuthPersist App
 
