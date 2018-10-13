@@ -1,0 +1,6 @@
+$if null tasks
+    <div>no tasks
+$else
+    <ul>
+        $forall task <- tasks
+            <li>#{show task}

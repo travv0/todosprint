@@ -10,25 +10,21 @@
 
 module Foundation where
 
-import           Control.Monad.Logger           ( LogSource )
-import           Database.Persist.Sql           ( ConnectionPool
-                                                , runSqlPool
-                                                )
+import           Control.Monad.Logger (LogSource)
+import           Database.Persist.Sql (ConnectionPool, runSqlPool)
 import           Import.NoFoundation
-import           Text.Hamlet                    ( hamletFile )
-import           Text.Jasmine                   ( minifym )
+import           Text.Hamlet          (hamletFile)
+import           Text.Jasmine         (minifym)
 
 -- Used only when in "auth-dummy-login" setting is enabled.
 import           Yesod.Auth.Dummy
 
-import qualified Data.CaseInsensitive          as CI
-import qualified Data.Text.Encoding            as TE
-import           Yesod.Auth.OpenId              ( IdentifierType(Claimed)
-                                                , authOpenId
-                                                )
-import           Yesod.Core.Types               ( Logger )
-import qualified Yesod.Core.Unsafe             as Unsafe
-import           Yesod.Default.Util             ( addStaticContentExternal )
+import qualified Data.CaseInsensitive as CI
+import qualified Data.Text.Encoding   as TE
+import           Yesod.Auth.OpenId    (IdentifierType (Claimed), authOpenId)
+import           Yesod.Core.Types     (Logger)
+import qualified Yesod.Core.Unsafe    as Unsafe
+import           Yesod.Default.Util   (addStaticContentExternal)
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -162,16 +158,16 @@ instance Yesod App
     -> Bool -- ^ Whether or not this is a "write" request.
     -> Handler AuthResult
     -- Routes not requiring authentication.
-  isAuthorized (AuthR _) _   = return Authorized
-  isAuthorized HomeR _       = return Authorized
-  isAuthorized FaviconR _    = return Authorized
-  isAuthorized RobotsR _     = return Authorized
-  isAuthorized (StaticR _) _ = return Authorized
+  isAuthorized (AuthR _) _      = return Authorized
+  isAuthorized HomeR _          = return Authorized
+  isAuthorized FaviconR _       = return Authorized
+  isAuthorized RobotsR _        = return Authorized
+  isAuthorized (StaticR _) _    = return Authorized
     -- the profile route requires that the user is authenticated, so we
     -- delegate to that function
-  isAuthorized ProfileR _    = isAuthenticated
-  isAuthorized (UserR _) _    = return Authorized
-  isAuthorized CreateAccountR _    = return Authorized
+  isAuthorized ProfileR _       = isAuthenticated
+  isAuthorized (UserR _) _      = return Authorized
+  isAuthorized CreateAccountR _ = return Authorized
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
@@ -273,9 +269,10 @@ instance YesodAuth App where
 isAuthenticated :: Handler AuthResult
 isAuthenticated = do
   muid <- maybeAuthId
-  return $ case muid of
-    Nothing -> Unauthorized "You must login to access this page"
-    Just _  -> Authorized
+  return $
+    case muid of
+      Nothing -> Unauthorized "You must login to access this page"
+      Just _  -> Authorized
 
 instance YesodAuthPersist App
 
