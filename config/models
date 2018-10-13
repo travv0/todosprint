@@ -2,22 +2,24 @@
 -- Syntax for this file here: https://github.com/yesodweb/persistent/blob/master/docs/Persistent-entity-syntax.md
 
 User
-    loginName Text
     email Text
     firstName Text Maybe
     lastName Text Maybe
-    password Text
-    LoginName loginName
+    UniqueEmail email
     deriving Show
 
 Task
-    ident Int
     name Text
     duration Int
     priority Priority
     dueDate Day Maybe
     repeat RepeatInterval Maybe
-    dependencies Text
     done Bool
     userId UserId
+    deriving Show
+
+TaskDependencies
+    taskId TaskId
+    dependsOnTaskId TaskId
+    TaskDependency taskId dependsOnTaskId
     deriving Show

@@ -3,4 +3,4 @@ $if null tasks
 $else
     <ul>
         $forall task <- tasks
-            <li>#{show task}
+            <li>#{taskName $ entityVal task}

@@ -26,6 +26,7 @@ import qualified Data.Text.Encoding            as TE
 import           Yesod.Auth.OpenId              ( IdentifierType(Claimed)
                                                 , authOpenId
                                                 )
+import           Yesod.Auth.GoogleEmail2
 import           Yesod.Core.Types               ( Logger )
 import qualified Yesod.Core.Unsafe             as Unsafe
 import           Yesod.Default.Util             ( addStaticContentExternal )
@@ -51,6 +52,13 @@ data MenuItem = MenuItem
 data MenuTypes
   = NavbarLeft MenuItem
   | NavbarRight MenuItem
+
+clientId :: Text
+clientId =
+  "1003459615329-f1o9glc5detcestdr298rqg5ggnfs40v.apps.googleusercontent.com"
+
+clientSecret :: Text
+clientSecret = "LwgujWvjSsRQjsqcFa8TABP4"
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
@@ -108,9 +116,8 @@ instance Yesod App
     master <- getYesod
     mmsg <- getMessage
     muser <- maybeAuthPair
+    session <- getSession
     mcurrentRoute <- getCurrentRoute
-        -- Get the breadcrumbs, as defined in the YesodBreadcrumbs instance.
-    (title, parents) <- breadcrumbs
         -- Define the menu items of the header.
     let menuItems =
           [ NavbarLeft $
@@ -125,12 +132,12 @@ instance Yesod App
               , menuItemRoute = ProfileR
               , menuItemAccessCallback = isJust muser
               }
-          , NavbarRight $
-            MenuItem
-              { menuItemLabel = "Create Account"
-              , menuItemRoute = CreateAccountR
-              , menuItemAccessCallback = isNothing muser
-              }
+          -- , NavbarRight $
+          --   MenuItem
+          --     { menuItemLabel = "Create Account"
+          --     , menuItemRoute = CreateAccountR
+          --     , menuItemAccessCallback = isNothing muser
+          --     }
           , NavbarRight $
             MenuItem
               { menuItemLabel = "Login"
@@ -169,15 +176,15 @@ instance Yesod App
     -> Handler AuthResult
     -- Routes not requiring authentication.
   isAuthorized (AuthR _) _      = return Authorized
-  isAuthorized HomeR _          = return Authorized
   isAuthorized FaviconR _       = return Authorized
   isAuthorized RobotsR _        = return Authorized
   isAuthorized (StaticR _) _    = return Authorized
+  isAuthorized (UserR _) _      = return Authorized
+  -- isAuthorized CreateAccountR _ = return Authorized
     -- the profile route requires that the user is authenticated, so we
     -- delegate to that function
   isAuthorized ProfileR _       = isAuthenticated
-  isAuthorized (UserR _) _      = return Authorized
-  isAuthorized CreateAccountR _ = return Authorized
+  isAuthorized HomeR _          = isAuthenticated
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
@@ -211,20 +218,6 @@ instance Yesod App
   makeLogger :: App -> IO Logger
   makeLogger = return . appLogger
 
--- Define breadcrumbs.
-instance YesodBreadcrumbs App
-    -- Takes the route that the user is currently on, and returns a tuple
-    -- of the 'Text' that you want the label to display, and a previous
-    -- breadcrumb route.
-                         where
-  breadcrumb ::
-       Route App -- ^ The route the user is visiting currently.
-    -> Handler (Text, Maybe (Route App))
-  breadcrumb HomeR     = return ("Home", Nothing)
-  breadcrumb (AuthR _) = return ("Login", Just HomeR)
-  breadcrumb ProfileR  = return ("Profile", Just HomeR)
-  breadcrumb _         = return ("home", Nothing)
-
 -- How to run database actions.
 instance YesodPersist App where
   type YesodPersistBackend App = SqlBackend
@@ -255,25 +248,20 @@ instance YesodAuth App where
   authenticate creds =
     liftHandler $
     runDB $ do
-      x <- getBy $ LoginName $ credsIdent creds
+      x <- getBy $ UniqueEmail $ credsIdent creds
       case x of
         Just (Entity uid _) -> return $ Authenticated uid
         Nothing ->
           Authenticated <$>
           insert
             User
-              { userLoginName = credsIdent creds
-              , userPassword = "password"
+              { userEmail = credsIdent creds
               , userFirstName = Nothing
               , userLastName = Nothing
-              , userEmail = "test@gmail.com"
               }
     -- You can add other plugins like Google Email, email or OAuth here
   authPlugins :: App -> [AuthPlugin App]
-  authPlugins app = [authOpenId Claimed []] ++ extraAuthPlugins
-        -- Enable authDummy login if enabled.
-    where
-      extraAuthPlugins = [authDummy | appAuthDummyLogin $ appSettings app]
+  authPlugins app = [authGoogleEmail clientId clientSecret]
 
 -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult
