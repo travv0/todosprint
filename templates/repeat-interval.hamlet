@@ -1,0 +1,10 @@
+<input id=#{idAttr}-count name=#{nameAttr} *{otherAttrs} type=text> #
+<select id=#{idAttr}-unit name=#{nameAttr} *{otherAttrs}>
+    <option value="Days">days
+    <option value="Weeks">weeks
+    <option value="Months">months
+    <option value="Years">years
+ #
+<select id=#{idAttr}-from name=#{nameAttr} *{otherAttrs}>
+    <option value="CompletionDate">from completion date
+    <option value="DueDate">from due date
