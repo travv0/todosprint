@@ -17,7 +17,7 @@ import qualified Data.List                     as L
 import           RepeatInterval
 import           Yesod.Form.Bootstrap3
 import           Data.Maybe
-import Text.Julius (RawJS (..))
+import           Text.Julius                    ( RawJS(..) )
 
 taskList :: [Entity Task] -> Widget
 taskList tasks = $(widgetFile "tasks")
@@ -120,9 +120,11 @@ getTodayR = do
   case mUserDueTime of
     Just dt -> do
       let userTz = maybe utc minutesToTimeZone (userDueTimeOffset user)
-      let mTod = fmap (snd . utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime) mUserDueTime
+      let mTod = fmap
+            (snd . utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime)
+            mUserDueTime
       (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId mTod
-      currentTime <- liftIO $ utctDayTime <$> getCurrentTime
+      currentTime       <- liftIO $ utctDayTime <$> getCurrentTime
       let dt' = utctDayTime dt
       let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
             (diffTimeToPicoseconds dt' - diffTimeToPicoseconds currentTime)
@@ -149,7 +151,7 @@ setTimeWidget widget enctype tzOffsetId = do
 
 postTodayR :: Handler Html
 postTodayR = do
-  tzOffsetId <- newIdent
+  tzOffsetId               <- newIdent
   ((res, widget), enctype) <- runFormPost $ dueTimeForm tzOffsetId Nothing
   case res of
     FormSuccess dt -> do
@@ -195,20 +197,21 @@ postMarkDoneR taskId = do
   task <- runDB $ get taskId
   runDB $ update taskId [TaskDone =. True]
   deps  <- runDB $ selectList [TaskDependencyTaskId ==. taskId] []
-  cdate <- liftIO today
-  runDB $
-    case task of
-      Just t ->
-        case incrementDueDate cdate t of
-          Just t2 -> do
-            newTaskId <- insert t2
-            mapM
-              (\(Entity _ dep) ->
-                insert $ TaskDependency newTaskId (taskDependencyDependsOnTaskId dep)
-              )
-              deps
-          Nothing -> redirectUltDest HomeR
+  utcTime <- liftIO getCurrentTime
+  (Entity userId user) <- requireAuth
+  let userTzOffset = fromMaybe 0 $ userDueTimeOffset user
+  let cdate = localDay $ utcToLocalTime (minutesToTimeZone userTzOffset) utcTime
+  runDB $ case task of
+    Just t -> case incrementDueDate cdate t of
+      Just t2 -> do
+        newTaskId <- insert t2
+        mapM
+          (\(Entity _ dep) -> insert
+            $ TaskDependency newTaskId (taskDependencyDependsOnTaskId dep)
+          )
+          deps
       Nothing -> redirectUltDest HomeR
+    Nothing -> redirectUltDest HomeR
   redirectUltDest HomeR
 
 incrementDueDate :: Day -> Task -> Maybe Task
@@ -222,7 +225,8 @@ incrementDueDate cdate task = case taskDueDate task of
       Just task { taskDueDate = Just (addGregorianMonthsClip ivl cdate) }
     Just (Years ivl CompletionDate) ->
       Just task { taskDueDate = Just (addGregorianYearsClip ivl cdate) }
-    Just (Days ivl DueDate) -> Just task { taskDueDate = Just (addDays ivl dd) }
+    Just (Days ivl DueDate) ->
+      Just task { taskDueDate = Just (addDays ivl dd) }
     Just (Weeks ivl DueDate) ->
       Just task { taskDueDate = Just (addDays (ivl * 7) dd) }
     Just (Months ivl DueDate) ->
