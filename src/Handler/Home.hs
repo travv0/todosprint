@@ -70,7 +70,7 @@ weight date task = case taskPriority task of
   None -> 0
  where
   weightMod dd modifier =
-    let divisor = (modifier * (date `diffDays` dd))
+    let divisor = modifier
     in  (date `diffDays` dd)
         * modifier
         - (toInteger (taskDuration task) `div` case divisor of
