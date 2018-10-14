@@ -1,5 +1,6 @@
-Make sure repeating task goes off of user day and not UTC day
+Make sure today list goes off of user's local date
 Fix time wrapping when UTC is the next day from user
+Keep user's TZ up to date
 Add repeat on certain weekdays functionality
 Make repeat interval prepopulate when editing task
 Make redirect back to correct page after marking task done
