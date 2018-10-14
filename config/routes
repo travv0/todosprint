@@ -11,6 +11,4 @@
 
 /user/#UserId UserR GET
 /new-task NewTaskR GET POST
-
-
-/profile ProfileR GET
+/add-deps/#TaskId AddDepsR GET POST
