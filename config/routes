@@ -13,3 +13,4 @@
 /new-task NewTaskR GET POST
 /edit-task/#TaskId EditTaskR GET POST
 /add-deps/#TaskId AddDepsR GET POST
+/today TodayR GET
