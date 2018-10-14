@@ -25,7 +25,7 @@ taskList tasks = $(widgetFile "tasks")
 getHomeR :: Handler Html
 getHomeR = do
   userId <- requireAuthId
-  tasks  <- runDB $ getTasks userId [Desc TaskId]
+  tasks  <- runDB $ getTasks userId [Asc TaskDueDate]
   defaultLayout $ do
     setTitle "Your Tasks"
     $(widgetFile "homepage")
