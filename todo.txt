@@ -1,4 +1,3 @@
-Let user create task without repeat
 Make sure repeating task goes off of user day and not UTC day
 Fix time wrapping when UTC is the next day from user
 Add repeat on certain weekdays functionality
