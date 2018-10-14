@@ -132,6 +132,12 @@ instance Yesod App
               }
           , NavbarLeft $
             MenuItem
+              { menuItemLabel = "Today"
+              , menuItemRoute = TodayR
+              , menuItemAccessCallback = isJust muser
+              }
+          , NavbarLeft $
+            MenuItem
               { menuItemLabel = "New Task"
               , menuItemRoute = NewTaskR
               , menuItemAccessCallback = isJust muser
@@ -182,6 +188,7 @@ instance Yesod App
   isAuthorized NewTaskR _       = isAuthenticated
   isAuthorized (EditTaskR _) _  = isAuthenticated
   isAuthorized (AddDepsR _) _   = isAuthenticated
+  isAuthorized TodayR _   = isAuthenticated
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
