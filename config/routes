@@ -9,10 +9,8 @@
 
 / HomeR GET
 
-/user/#UserId UserR GET
 /new-task NewTaskR GET POST
 /edit-task/#TaskId EditTaskR GET POST
 /add-deps/#TaskId AddDepsR GET POST
-/today/ TodayR GET
-/today/#Int TodayMinR GET
+/today/ TodayR GET POST
 /mark-done/#TaskId MarkDoneR POST

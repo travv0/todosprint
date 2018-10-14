@@ -185,13 +185,11 @@ instance Yesod App
   isAuthorized FaviconR _       = return Authorized
   isAuthorized RobotsR _        = return Authorized
   isAuthorized (StaticR _) _    = return Authorized
-  isAuthorized (UserR _) _      = return Authorized
   isAuthorized HomeR _          = isAuthenticated
   isAuthorized NewTaskR _       = isAuthenticated
   isAuthorized (EditTaskR _) _  = isAuthenticated
   isAuthorized (AddDepsR _) _   = isAuthenticated
   isAuthorized TodayR _         = isAuthenticated
-  isAuthorized (TodayMinR _) _  = isAuthenticated
   isAuthorized (MarkDoneR _) _  = isAuthenticated
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
