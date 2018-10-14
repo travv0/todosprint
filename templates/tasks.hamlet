@@ -4,5 +4,7 @@ $else
     <ul>
         $forall task <- tasks
             <li>#{taskName $ entityVal task}
+            <form action=@{MarkDoneR $ entityKey task} method=post>
+                <a href="javascript:;" onclick="parentNode.submit();">mark done
             <a href=@{EditTaskR $ entityKey task}>edit task
             <a href=@{AddDepsR $ entityKey task}>edit dependencies

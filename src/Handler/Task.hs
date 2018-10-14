@@ -52,13 +52,14 @@ taskForm userId mtask =
 
 getNewTaskR :: Handler Html
 getNewTaskR = do
+  setUltDestReferer
   userId                   <- requireAuthId
   ((res, widget), enctype) <- runFormPost $ taskForm userId Nothing
   case res of
     FormSuccess t -> do
       runDB $ insert t
       setMessage "Task created"
-      redirect HomeR
+      redirectUltDest HomeR
     _ -> defaultLayout $(widgetFile "new-task")
 
 postNewTaskR :: Handler Html
@@ -66,6 +67,7 @@ postNewTaskR = getNewTaskR
 
 getEditTaskR :: TaskId -> Handler Html
 getEditTaskR taskId = do
+  setUltDestReferer
   userId                   <- requireAuthId
   task                     <- runDB $ get taskId
   ((res, widget), enctype) <- runFormPost $ taskForm userId $ task
@@ -73,7 +75,7 @@ getEditTaskR taskId = do
     FormSuccess t -> do
       runDB $ replace taskId t
       setMessage "Task updated"
-      redirect HomeR
+      redirectUltDest HomeR
     _ -> defaultLayout $(widgetFile "edit-task")
 
 postEditTaskR :: TaskId -> Handler Html

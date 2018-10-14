@@ -29,6 +29,7 @@ depsForm taskId tasks taskDeps =
 
 getAddDepsR :: TaskId -> Handler Html
 getAddDepsR taskId = do
+  setUltDestReferer
   let optionify (Entity taskId task) = (taskName task, taskId)
   let getTaskDepId (Entity tdid td) = taskDependencyDependsOnTaskId td
   userId <- requireAuthId
@@ -51,9 +52,9 @@ getAddDepsR taskId = do
         Nothing -> do
           runDB $ deleteWhere [TaskDependencyTaskId ==. taskId]
           setMessage "Dependencies updated"
-          redirect HomeR
+          redirectUltDest HomeR
       setMessage "Dependencies updated"
-      redirect HomeR
+      redirectUltDest HomeR
     _ -> defaultLayout $(widgetFile "add-deps")
 
 postAddDepsR :: TaskId -> Handler Html
