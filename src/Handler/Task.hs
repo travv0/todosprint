@@ -13,12 +13,16 @@ import           Import
 import           Yesod.Form.Jquery
 import           Priority
 import           RepeatInterval
-import           Text.Read                      ( read )
+import           Text.Read                      ( read
+                                                , readMaybe
+                                                )
 
 repeatIntervalField :: Field Handler RepeatInterval
 repeatIntervalField = Field
   { fieldParse   = \rawVals _ -> case rawVals of
     [i, u, rf]
+      | isNothing ((readMaybe $ unpack i) :: Maybe Int) -> return
+      $  Right Nothing
       | u == "Days" -> return $ Right $ Just $ Days (read $ unpack i)
                                                     (read $ unpack rf)
       | u == "Weeks" -> return $ Right $ Just $ Weeks (read $ unpack i)
