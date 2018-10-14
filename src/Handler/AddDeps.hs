@@ -50,7 +50,9 @@ getAddDepsR taskId = do
             mapM (\d -> insert $ TaskDependency taskId d) jds
         Nothing -> do
           runDB $ deleteWhere [TaskDependencyTaskId ==. taskId]
+          setMessage "Dependencies updated"
           redirect HomeR
+      setMessage "Dependencies updated"
       redirect HomeR
     _ -> defaultLayout $(widgetFile "add-deps")
 

@@ -1,3 +1,4 @@
+#{show eResult}
 <input id=#{idAttr}-count name=#{nameAttr} *{otherAttrs} type=text> #
 <select id=#{idAttr}-unit name=#{nameAttr} *{otherAttrs}>
     <option value="Days">days
