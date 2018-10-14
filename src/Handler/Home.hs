@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE OverloadedStrings     #-}
@@ -15,6 +16,8 @@ import qualified Data.Time.Units               as TU
 import qualified Data.List                     as L
 import           RepeatInterval
 import           Yesod.Form.Bootstrap3
+import           Data.Maybe
+import Text.Julius (RawJS (..))
 
 taskList :: [Entity Task] -> Widget
 taskList tasks = $(widgetFile "tasks")
@@ -98,27 +101,27 @@ data DueTime = DueTime
   , tzOffset :: Int
   } deriving Show
 
-dueTimeForm :: Form DueTime
-dueTimeForm =
+dueTimeForm :: Text -> Maybe TimeOfDay -> Form DueTime
+dueTimeForm tzOffsetId mdt =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColXs 0) (ColXs 4) (ColXs 0) (ColXs 8))
+      (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 8))
     $   DueTime
-    <$> areq timeField "When would you like to work until?" Nothing
+    <$> areq timeField "When would you like to work until?" mdt
     <*> areq hiddenField
-             (FieldSettings "" Nothing (Just "tz-offset") Nothing [])
+             (FieldSettings "" Nothing (Just tzOffsetId) Nothing [])
              Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 getTodayR :: Handler Html
 getTodayR = do
-  userId            <- requireAuthId
-  user              <- runDB $ get userId
-  (widget, enctype) <- generateFormPost dueTimeForm
-  let dueTime = case user of
-        Just u  -> userDueTime u
-        Nothing -> Nothing
-  case dueTime of
+  (Entity userId user) <- requireAuth
+  let mUserDueTime = userDueTime user
+  tzOffsetId <- newIdent
+  case mUserDueTime of
     Just dt -> do
+      let userTz = maybe utc minutesToTimeZone (userDueTimeOffset user)
+      let mTod = fmap (snd . utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime) mUserDueTime
+      (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId mTod
       currentTime <- liftIO $ utctDayTime <$> getCurrentTime
       let dt' = utctDayTime dt
       let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
@@ -129,33 +132,41 @@ getTodayR = do
       tasks  <-
         liftIO $ daysList <$> today <*> pure mins <*> pure deps <*> pure tasks'
       defaultLayout $ do
-        $(widgetFile "set-time")
+        setTimeWidget widget enctype tzOffsetId
         $(widgetFile "tasks")
-        toWidget [julius|
-          $(function(){
-            $('#tz-offset').val(-new Date().getTimezoneOffset());
-          });
-          |]
     Nothing -> do
-      redirect HomeR
-      -- defaultLayout $(widgetFile "set-time")
+      (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId Nothing
+      defaultLayout $ setTimeWidget widget enctype tzOffsetId
+
+setTimeWidget :: Widget -> Enctype -> Text -> Widget
+setTimeWidget widget enctype tzOffsetId = do
+  $(widgetFile "set-time")
+  toWidget [julius|
+    $(function(){
+          $(#{rawJS tzOffsetId}).val(-new Date().getTimezoneOffset());
+    });
+          |]
 
 postTodayR :: Handler Html
 postTodayR = do
-  ((res, widget), enctype) <- runFormPost dueTimeForm
+  tzOffsetId <- newIdent
+  ((res, widget), enctype) <- runFormPost $ dueTimeForm tzOffsetId Nothing
   case res of
     FormSuccess dt -> do
       userId <- requireAuthId
 
       let userTz = minutesToTimeZone $ tzOffset dt
       utcTime <- liftIO getCurrentTime
-      let userTime = utcToLocalTime userTz utcTime
+      let userTime        = utcToLocalTime userTz utcTime
 
-      let (_, utcDueTime) = (localToUTCTimeOfDay userTz $ dueTime dt)
+      let (_, utcDueTime) = localToUTCTimeOfDay userTz $ dueTime dt
 
       runDB $ update
         userId
-        [UserDueTime =. Just (UTCTime (utctDay utcTime) (timeOfDayToTime utcDueTime))]
+        [ UserDueTime
+          =. Just (UTCTime (utctDay utcTime) (timeOfDayToTime utcDueTime))
+        , UserDueTimeOffset =. Just (tzOffset dt)
+        ]
       redirect TodayR
     _ -> redirect TodayR
 
