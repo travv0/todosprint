@@ -34,7 +34,9 @@ getAddDepsR taskId = do
   let getTaskDepId (Entity tdid td) = taskDependencyDependsOnTaskId td
   userId <- requireAuthId
 
-  tasks <- runDB $ selectList [TaskUserId ==. userId, TaskId !=. taskId] []
+  tasks  <- runDB $ selectList
+    [TaskUserId ==. userId, TaskId !=. taskId, TaskDone ==. False]
+    []
   taskDeps <- runDB $ selectList [TaskDependencyTaskId ==. taskId] []
 
   ((res, widget), enctype) <-
