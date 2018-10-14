@@ -131,9 +131,13 @@ getTodayR = do
       let mins = (todHour timeOfDay * 60) + todMin timeOfDay
       tasks' <- runDB $ getTasks userId []
       deps   <- runDB (selectList [] [])
-      tasks  <-
-        liftIO $ daysList <$> today <*> pure mins <*> pure deps <*> pure tasks'
+      utcTime <- liftIO getCurrentTime
+      let today = localDay $ utcToLocalTime userTz utcTime
+      let tasks = daysList today mins deps tasks'
       defaultLayout $ do
+        [whamlet|
+          current date: #{show today}
+          |]
         setTimeWidget widget enctype tzOffsetId
         $(widgetFile "tasks")
     Nothing -> do
