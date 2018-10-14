@@ -11,8 +11,10 @@ import           Import
 import qualified Data.Graph                    as G
 import           Priority
 import           Data.Time
+import qualified Data.Time.Units               as TU
 import qualified Data.List                     as L
 import           RepeatInterval
+import           Yesod.Form.Bootstrap3
 
 taskList :: [Entity Task] -> Widget
 taskList tasks = $(widgetFile "tasks")
@@ -24,14 +26,6 @@ getHomeR = do
   defaultLayout $ do
     setTitle "Your Tasks"
     $(widgetFile "homepage")
-
-getUserR :: UserId -> Handler Html
-getUserR userId = do
-  user  <- runDB $ get404 userId
-  tasks <- runDB $ getTasks userId []
-  defaultLayout $ do
-    setTitle $ toHtml $ userEmail user ++ "'s tasks"
-    $(widgetFile "tasks")
 
 sortTasks' :: [Entity Task] -> [Entity TaskDependency] -> [G.SCC (Entity Task)]
 sortTasks' tasks dependencies = G.stronglyConnComp tasksDeps
@@ -99,23 +93,71 @@ reduceLoad date min tasks
 timeToComplete :: [Entity Task] -> Int
 timeToComplete = foldr (\(Entity _ t) x -> x + taskDuration t) 0
 
+data DueTime = DueTime
+  { dueTime :: TimeOfDay
+  , tzOffset :: Int
+  } deriving Show
+
+dueTimeForm :: Form DueTime
+dueTimeForm =
+  renderBootstrap3
+      (BootstrapHorizontalForm (ColXs 0) (ColXs 4) (ColXs 0) (ColXs 8))
+    $   DueTime
+    <$> areq timeField "When would you like to work until?" Nothing
+    <*> areq hiddenField
+             (FieldSettings "" Nothing (Just "tz-offset") Nothing [])
+             Nothing
+    <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
+
 getTodayR :: Handler Html
 getTodayR = do
-  userId <- requireAuthId
-  user   <- runDB $ get userId
+  userId            <- requireAuthId
+  user              <- runDB $ get userId
+  (widget, enctype) <- generateFormPost dueTimeForm
   let dueTime = case user of
         Just u  -> userDueTime u
         Nothing -> Nothing
   case dueTime of
     Just dt -> do
-      currentTime <- liftIO getCurrentTime
-      let (_, timeOfDay) =
-            timeToDaysAndTimeOfDay (dt `diffUTCTime` currentTime)
+      currentTime <- liftIO $ utctDayTime <$> getCurrentTime
+      let dt' = utctDayTime dt
+      let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
+            (diffTimeToPicoseconds dt' - diffTimeToPicoseconds currentTime)
+      let mins = (todHour timeOfDay * 60) + todMin timeOfDay
       tasks' <- runDB $ getTasks userId []
       deps   <- runDB (selectList [] [])
-      let tasks = sortTasks deps tasks'
+      tasks  <-
+        liftIO $ daysList <$> today <*> pure mins <*> pure deps <*> pure tasks'
       defaultLayout $ do
+        $(widgetFile "set-time")
         $(widgetFile "tasks")
+        toWidget [julius|
+          $(function(){
+            $('#tz-offset').val(-new Date().getTimezoneOffset());
+          });
+          |]
+    Nothing -> do
+      redirect HomeR
+      -- defaultLayout $(widgetFile "set-time")
+
+postTodayR :: Handler Html
+postTodayR = do
+  ((res, widget), enctype) <- runFormPost dueTimeForm
+  case res of
+    FormSuccess dt -> do
+      userId <- requireAuthId
+
+      let userTz = minutesToTimeZone $ tzOffset dt
+      utcTime <- liftIO getCurrentTime
+      let userTime = utcToLocalTime userTz utcTime
+
+      let (_, utcDueTime) = (localToUTCTimeOfDay userTz $ dueTime dt)
+
+      runDB $ update
+        userId
+        [UserDueTime =. Just (UTCTime (utctDay utcTime) (timeOfDayToTime utcDueTime))]
+      redirect TodayR
+    _ -> redirect TodayR
 
 dueByDay :: Day -> [Entity Task] -> [Entity Task]
 dueByDay day = filter (dueByOrBeforeDay day)
@@ -127,22 +169,14 @@ dueByDay day = filter (dueByOrBeforeDay day)
 today :: IO Day
 today = localDay . zonedTimeToLocalTime <$> getZonedTime
 
+utcToday :: IO Day
+utcToday = utctDay <$> getCurrentTime
+
 daysList
   :: Day -> Int -> [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
 daysList day min dependencies =
   sortTasks dependencies . reduceLoad day min . dueByDay day . filter
     (\(Entity _ t) -> not $ taskDone t)
-
-getTodayMinR :: Int -> Handler Html
-getTodayMinR min = do
-  userId <- requireAuthId
-  tasks' <- runDB $ getTasks userId []
-  deps   <- runDB (selectList [] [])
-  tasks  <-
-    liftIO $ daysList <$> today <*> pure min <*> pure deps <*> pure tasks'
-
-  defaultLayout $ do
-    $(widgetFile "tasks")
 
 postMarkDoneR :: TaskId -> Handler Html
 postMarkDoneR taskId = do

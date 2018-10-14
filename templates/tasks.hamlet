@@ -1,5 +1,6 @@
+<div .row>
 $if null tasks
-    <div>no tasks
+    no tasks
 $else
     <ul>
         $forall task <- tasks
