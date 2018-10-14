@@ -102,11 +102,20 @@ timeToComplete = foldr (\(Entity _ t) x -> x + taskDuration t) 0
 getTodayR :: Handler Html
 getTodayR = do
   userId <- requireAuthId
-  tasks' <- runDB $ getTasks userId []
-  deps   <- runDB (selectList [] [])
-  let tasks = sortTasks deps tasks'
-  defaultLayout $ do
-    $(widgetFile "tasks")
+  user   <- runDB $ get userId
+  let dueTime = case user of
+        Just u  -> userDueTime u
+        Nothing -> Nothing
+  case dueTime of
+    Just dt -> do
+      currentTime <- liftIO getCurrentTime
+      let (_, timeOfDay) =
+            timeToDaysAndTimeOfDay (dt `diffUTCTime` currentTime)
+      tasks' <- runDB $ getTasks userId []
+      deps   <- runDB (selectList [] [])
+      let tasks = sortTasks deps tasks'
+      defaultLayout $ do
+        $(widgetFile "tasks")
 
 dueByDay :: Day -> [Entity Task] -> [Entity Task]
 dueByDay day = filter (dueByOrBeforeDay day)
