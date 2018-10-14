@@ -192,41 +192,44 @@ daysList day min dependencies =
 postMarkDoneR :: TaskId -> Handler Html
 postMarkDoneR taskId = do
   setUltDestReferer
-  runDB $ do
-    task <- get taskId
-    update taskId [TaskDone =. True]
-    deps      <- selectList [TaskDependencyTaskId ==. taskId] []
-    newTaskId <- case task of
-      Just t -> do
-        cdate <- liftIO today
-        insert $ incrementDueDate cdate t
+  task <- runDB $ get taskId
+  runDB $ update taskId [TaskDone =. True]
+  deps  <- runDB $ selectList [TaskDependencyTaskId ==. taskId] []
+  cdate <- liftIO today
+  runDB $
+    case task of
+      Just t ->
+        case incrementDueDate cdate t of
+          Just t2 -> do
+            newTaskId <- insert t2
+            mapM
+              (\(Entity _ dep) ->
+                insert $ TaskDependency newTaskId (taskDependencyDependsOnTaskId dep)
+              )
+              deps
+          Nothing -> redirectUltDest HomeR
       Nothing -> redirectUltDest HomeR
-    mapM
-      (\(Entity _ dep) ->
-        insert $ TaskDependency newTaskId (taskDependencyDependsOnTaskId dep)
-      )
-      deps
   redirectUltDest HomeR
 
-incrementDueDate :: Day -> Task -> Task
+incrementDueDate :: Day -> Task -> Maybe Task
 incrementDueDate cdate task = case taskDueDate task of
   Just dd -> case taskRepeat task of
     Just (Days ivl CompletionDate) ->
-      task { taskDueDate = (Just (addDays ivl cdate)) }
+      Just task { taskDueDate = Just (addDays ivl cdate) }
     Just (Weeks ivl CompletionDate) ->
-      task { taskDueDate = (Just (addDays (ivl * 7) cdate)) }
+      Just task { taskDueDate = Just (addDays (ivl * 7) cdate) }
     Just (Months ivl CompletionDate) ->
-      task { taskDueDate = (Just (addGregorianMonthsClip ivl cdate)) }
+      Just task { taskDueDate = Just (addGregorianMonthsClip ivl cdate) }
     Just (Years ivl CompletionDate) ->
-      task { taskDueDate = (Just (addGregorianYearsClip ivl cdate)) }
-    Just (Days ivl DueDate) -> task { taskDueDate = (Just (addDays ivl dd)) }
+      Just task { taskDueDate = Just (addGregorianYearsClip ivl cdate) }
+    Just (Days ivl DueDate) -> Just task { taskDueDate = Just (addDays ivl dd) }
     Just (Weeks ivl DueDate) ->
-      task { taskDueDate = (Just (addDays (ivl * 7) dd)) }
+      Just task { taskDueDate = Just (addDays (ivl * 7) dd) }
     Just (Months ivl DueDate) ->
-      task { taskDueDate = (Just (addGregorianMonthsClip ivl dd)) }
+      Just task { taskDueDate = Just (addGregorianMonthsClip ivl dd) }
     Just (Years ivl DueDate) ->
-      task { taskDueDate = (Just (addGregorianYearsClip ivl dd)) }
-    Nothing -> task
-  Nothing -> task
+      Just task { taskDueDate = Just (addGregorianYearsClip ivl dd) }
+    Nothing -> Nothing
+  Nothing -> Nothing
 
 getTasks userId = selectList [TaskUserId ==. userId, TaskDone ==. False]
