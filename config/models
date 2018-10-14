@@ -16,7 +16,7 @@ Task
     repeat RepeatInterval Maybe
     done Bool
     userId UserId
-    deriving Show
+    deriving Show Ord Eq
 
 TaskDependency
     taskId TaskId
