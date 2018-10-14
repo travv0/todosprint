@@ -4,4 +4,5 @@ $else
     <ul>
         $forall task <- tasks
             <li>#{taskName $ entityVal task}
+            <a href=@{EditTaskR $ entityKey task}>edit task
             <a href=@{AddDepsR $ entityKey task}>edit dependencies
