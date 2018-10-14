@@ -192,6 +192,7 @@ instance Yesod App
   isAuthorized (AddDepsR _) _   = isAuthenticated
   isAuthorized TodayR _         = isAuthenticated
   isAuthorized (TodayMinR _) _  = isAuthenticated
+  isAuthorized (MarkDoneR _) _  = isAuthenticated
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of

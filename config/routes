@@ -15,3 +15,4 @@
 /add-deps/#TaskId AddDepsR GET POST
 /today/ TodayR GET
 /today/#Int TodayMinR GET
+/mark-done/#TaskId MarkDoneR POST

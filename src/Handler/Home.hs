@@ -12,6 +12,7 @@ import qualified Data.Graph                    as G
 import           Priority
 import           Data.Time
 import qualified Data.List                     as L
+import           RepeatInterval
 
 taskList :: [Entity Task] -> Widget
 taskList tasks = $(widgetFile "tasks")
@@ -19,7 +20,7 @@ taskList tasks = $(widgetFile "tasks")
 getHomeR :: Handler Html
 getHomeR = do
   userId <- requireAuthId
-  tasks  <- runDB $ selectList [TaskUserId ==. userId] [Asc TaskDueDate]
+  tasks  <- runDB $ getTasks userId [Desc TaskId]
   defaultLayout $ do
     setTitle "Your Tasks"
     $(widgetFile "homepage")
@@ -27,7 +28,7 @@ getHomeR = do
 getUserR :: UserId -> Handler Html
 getUserR userId = do
   user  <- runDB $ get404 userId
-  tasks <- runDB $ selectList [TaskUserId ==. userId] []
+  tasks <- runDB $ getTasks userId []
   defaultLayout $ do
     setTitle $ toHtml $ userEmail user ++ "'s tasks"
     $(widgetFile "tasks")
@@ -72,9 +73,13 @@ weight date task = case taskPriority task of
   None -> 0
  where
   weightMod dd modifier =
-    (date `diffDays` dd)
-      * modifier
-      - (toInteger (taskDuration task) `div` (modifier * (date `diffDays` dd)))
+    let divisor = (modifier * (date `diffDays` dd))
+    in  (date `diffDays` dd)
+        * modifier
+        - (toInteger (taskDuration task) `div` case divisor of
+            0 -> 1
+            _ -> divisor
+          )
 
 reduceLoad :: Day -> Int -> [Entity Task] -> [Entity Task]
 reduceLoad date min tasks
@@ -97,7 +102,7 @@ timeToComplete = foldr (\(Entity _ t) x -> x + taskDuration t) 0
 getTodayR :: Handler Html
 getTodayR = do
   userId <- requireAuthId
-  tasks' <- runDB $ selectList [TaskUserId ==. userId] []
+  tasks' <- runDB $ getTasks userId []
   deps   <- runDB (selectList [] [])
   let tasks = sortTasks deps tasks'
   defaultLayout $ do
@@ -122,10 +127,52 @@ daysList day min dependencies =
 getTodayMinR :: Int -> Handler Html
 getTodayMinR min = do
   userId <- requireAuthId
-  tasks' <- runDB $ selectList [TaskUserId ==. userId] []
+  tasks' <- runDB $ getTasks userId []
   deps   <- runDB (selectList [] [])
   tasks  <-
     liftIO $ daysList <$> today <*> pure min <*> pure deps <*> pure tasks'
 
   defaultLayout $ do
     $(widgetFile "tasks")
+
+postMarkDoneR :: TaskId -> Handler Html
+postMarkDoneR taskId = do
+  setUltDestReferer
+  runDB $ do
+    task <- get taskId
+    update taskId [TaskDone =. True]
+    deps      <- selectList [TaskDependencyTaskId ==. taskId] []
+    newTaskId <- case task of
+      Just t -> do
+        cdate <- liftIO today
+        insert $ incrementDueDate cdate t
+      Nothing -> redirectUltDest HomeR
+    mapM
+      (\(Entity _ dep) ->
+        insert $ TaskDependency newTaskId (taskDependencyDependsOnTaskId dep)
+      )
+      deps
+  redirectUltDest HomeR
+
+incrementDueDate :: Day -> Task -> Task
+incrementDueDate cdate task = case taskDueDate task of
+  Just dd -> case taskRepeat task of
+    Just (Days ivl CompletionDate) ->
+      task { taskDueDate = (Just (addDays ivl cdate)) }
+    Just (Weeks ivl CompletionDate) ->
+      task { taskDueDate = (Just (addDays (ivl * 7) cdate)) }
+    Just (Months ivl CompletionDate) ->
+      task { taskDueDate = (Just (addGregorianMonthsClip ivl cdate)) }
+    Just (Years ivl CompletionDate) ->
+      task { taskDueDate = (Just (addGregorianYearsClip ivl cdate)) }
+    Just (Days ivl DueDate) -> task { taskDueDate = (Just (addDays ivl dd)) }
+    Just (Weeks ivl DueDate) ->
+      task { taskDueDate = (Just (addDays (ivl * 7) dd)) }
+    Just (Months ivl DueDate) ->
+      task { taskDueDate = (Just (addGregorianMonthsClip ivl dd)) }
+    Just (Years ivl DueDate) ->
+      task { taskDueDate = (Just (addGregorianYearsClip ivl dd)) }
+    Nothing -> task
+  Nothing -> task
+
+getTasks userId = selectList [TaskUserId ==. userId, TaskDone ==. False]
