@@ -1,0 +1,11 @@
+Fix time wrapping when UTC is the next day from user
+Add repeat on certain weekdays functionality
+Make repeat interval prepopulate when editing task
+Make redirect back to correct page after marking task done
+Let user create task without repeat
+Make sure repeating task goes off of user day and not UTC day
+Add a way to postpone tasks
+Make look pretty
+
+Algorithm improvements:
+	"Fill in" time remaining after reducing load.  Start with shortest high priority tasks and work up to longest hp tasks, then short mp to long mp, etc.
