@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE OverloadedStrings     #-}
@@ -51,16 +52,15 @@ taskForm userId mtask =
 
 getNewTaskR :: Handler Html
 getNewTaskR = do
-  userId            <- requireAuthId
-  (widget, enctype) <- generateFormPost $ taskForm userId Nothing
-  defaultLayout $(widgetFile "new-task")
-
-postNewTaskR :: Handler Html
-postNewTaskR = do
+  let optionify (Entity taskId task) = (taskName task, taskId)
   userId                   <- requireAuthId
+  tasks                    <- runDB $ selectList [TaskUserId ==. userId] []
   ((res, widget), enctype) <- runFormPost $ taskForm userId Nothing
   case res of
     FormSuccess t -> do
       runDB $ insert t
       redirect HomeR
     _ -> defaultLayout $(widgetFile "new-task")
+
+postNewTaskR :: Handler Html
+postNewTaskR = getNewTaskR

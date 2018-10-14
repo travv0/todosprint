@@ -1,13 +1,6 @@
 <div .container>
-    <!-- $case maid -->
-    <!--     $of Just id -->
-    <!--         <div>#{show id} -->
-    <!--     $of Nothing -->
-    <!--         <div> -->
-    <!-- Tasks -->
     <div .bs-docs-section>
         <div .row>
             <div .col-lg-12>
                 <p>
                     ^{taskList tasks}
-

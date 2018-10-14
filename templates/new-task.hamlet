@@ -1,2 +1,3 @@
 <form method=post action=@{NewTaskR} enctype=#{enctype}>
-    ^{widget}
+    <div .row>
+        ^{widget}

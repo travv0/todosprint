@@ -18,8 +18,8 @@ Task
     userId UserId
     deriving Show
 
-TaskDependencies
+TaskDependency
     taskId TaskId
     dependsOnTaskId TaskId
-    TaskDependency taskId dependsOnTaskId
+    TaskDepends taskId dependsOnTaskId
     deriving Show
