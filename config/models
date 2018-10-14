@@ -6,6 +6,7 @@ User
     firstName Text Maybe
     lastName Text Maybe
     dueTime UTCTime Maybe
+    dueTimeOffset Int Maybe
     UniqueEmail email
     deriving Show
 

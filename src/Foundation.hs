@@ -265,6 +265,7 @@ instance YesodAuth App where
               , userFirstName = Nothing
               , userLastName = Nothing
               , userDueTime = Nothing
+              , userDueTimeOffset = Nothing
               }
     -- You can add other plugins like Google Email, email or OAuth here
   authPlugins :: App -> [AuthPlugin App]
