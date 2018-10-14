@@ -5,6 +5,7 @@ User
     email Text
     firstName Text Maybe
     lastName Text Maybe
+    dueTime UTCTime Maybe
     UniqueEmail email
     deriving Show
 
