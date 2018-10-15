@@ -13,7 +13,6 @@ import qualified Data.Graph                    as G
 import           Priority
 import           Data.Time
 import           Data.Time.Calendar.WeekDate
-import qualified Data.Time.Units               as TU
 import qualified Data.List                     as L
 import           RepeatInterval
 import           Yesod.Form.Bootstrap3

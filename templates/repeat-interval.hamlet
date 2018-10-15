@@ -8,6 +8,7 @@
 <select id=#{idAttr}-from name=#{nameAttr} *{otherAttrs}>
     <option value="CompletionDate">from completion date
     <option value="DueDate">from due date
+
 <input type=checkbox name=#{nameAttr} id=#{idAttr}-mon *{otherAttrs} value="Monday">Monday
 <input type=checkbox name=#{nameAttr} id=#{idAttr}-tue *{otherAttrs} value="Tuesday">Tuesday
 <input type=checkbox name=#{nameAttr} id=#{idAttr}-wed *{otherAttrs} value="Wednesday">Wednesday
