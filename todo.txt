@@ -1,7 +1,6 @@
-Random redirect to login screen upon adding new task
 Add repeat on certain weekdays functionality
 Make repeat interval prepopulate when editing task
-Make redirect back to correct page after marking task done
+Fix redirects
 Add a way to postpone tasks
 Make look pretty
 
