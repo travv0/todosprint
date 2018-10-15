@@ -1,0 +1,9 @@
+$(function() {
+	$.post(
+		"@{TimeZoneR}",
+		{
+			userId: #{jsUserId},
+			tz: -new Date().getTimezoneOffset()
+		}
+	);
+});

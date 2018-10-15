@@ -1,4 +1,4 @@
-Keep user's TZ up to date
+Learn about yesod authentication
 Add repeat on certain weekdays functionality
 Make repeat interval prepopulate when editing task
 Make redirect back to correct page after marking task done

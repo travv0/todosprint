@@ -14,3 +14,4 @@
 /add-deps/#TaskId AddDepsR GET POST
 /today/ TodayR GET POST
 /mark-done/#TaskId MarkDoneR POST
+/time-zone TimeZoneR POST

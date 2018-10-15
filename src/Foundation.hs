@@ -3,6 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE QuasiQuotes           #-}
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
@@ -10,13 +11,16 @@
 
 module Foundation where
 
+import           Data.Maybe
 import           Control.Monad.Logger           ( LogSource )
 import           Database.Persist.Sql           ( ConnectionPool
                                                 , runSqlPool
+                                                , fromSqlKey
                                                 )
 import           Import.NoFoundation
 import           Text.Hamlet                    ( hamletFile )
 import           Text.Jasmine                   ( minifym )
+import           Text.Julius                    ( RawJS(..) )
 
 -- Used only when in "auth-dummy-login" setting is enabled.
 import           Yesod.Auth.Dummy
@@ -168,9 +172,13 @@ instance Yesod App
         -- default-layout-wrapper is the entire page. Since the final
         -- value passed to hamletToRepHtml cannot be a widget, this allows
         -- you to use normal widget features in default-layout.
+    let jsUserId = case muser of
+                   Nothing -> rawJS $ show 0
+                   Just (userKey, user) -> rawJS $ show $ fromSqlKey userKey
     pc <-
       widgetToPageContent $ do
         addStylesheet $ StaticR css_bootstrap_css
+        $(widgetFile "update-tz")
         $(widgetFile "default-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
     -- The page to be redirected to when authentication is required.
@@ -191,6 +199,7 @@ instance Yesod App
   isAuthorized (AddDepsR _) _   = isAuthenticated
   isAuthorized TodayR _         = isAuthenticated
   isAuthorized (MarkDoneR _) _  = isAuthenticated
+  isAuthorized TimeZoneR _      = isAuthenticated
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
