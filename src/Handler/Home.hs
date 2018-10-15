@@ -209,7 +209,6 @@ postMarkDoneR taskId = do
   setUltDestReferer
   task <- runDB $ get taskId
   runDB $ update taskId [TaskDone =. True]
-  deps  <- runDB $ selectList [TaskDependencyTaskId ==. taskId] []
   utcTime <- liftIO getCurrentTime
   (Entity userId user) <- requireAuth
   let userTzOffset = fromMaybe 0 $ userDueTimeOffset user
@@ -218,11 +217,18 @@ postMarkDoneR taskId = do
     Just t -> case incrementDueDate cdate t of
       Just t2 -> do
         newTaskId <- insert t2
+        deps <- selectList [TaskDependencyTaskId ==. taskId] []
+        depd <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
         mapM
           (\(Entity _ dep) -> insert
             $ TaskDependency newTaskId (taskDependencyDependsOnTaskId dep)
           )
           deps
+        mapM
+          (\(Entity _ dep) -> insert
+            $ TaskDependency (taskDependencyTaskId dep) newTaskId
+          )
+          depd
       Nothing -> redirectUltDest HomeR
     Nothing -> redirectUltDest HomeR
   redirectUltDest HomeR
