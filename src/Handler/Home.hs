@@ -12,11 +12,12 @@ import           Import
 import qualified Data.Graph                    as G
 import           Priority
 import           Data.Time
+import           Data.Time.Calendar.WeekDate
 import qualified Data.Time.Units               as TU
 import qualified Data.List                     as L
 import           RepeatInterval
 import           Yesod.Form.Bootstrap3
-import           Data.Maybe
+import qualified Data.Maybe                    as M
 import           Text.Julius                    ( RawJS(..) )
 
 taskList :: [Entity Task] -> Widget
@@ -236,6 +237,20 @@ postMarkDoneR taskId = do
 incrementDueDate :: Day -> Task -> Maybe Task
 incrementDueDate cdate task = case taskDueDate task of
   Just dd -> case taskRepeat task of
+    Just (OnWeekdays wkdays CompletionDate) -> do
+      let (_, _, wkdayNum) = toWeekDate cdate
+      let nextWkday = next $ weekdayFromInt wkdayNum
+      if nextWkday `elem` wkdays
+         then Just task { taskDueDate = Just (addDays 1 cdate) }
+         else incrementDueDate (addDays 1 cdate) task
+    Just (OnWeekdays wkdays DueDate) -> do
+      let (_, _, wkdayNum) = toWeekDate dd
+      let potWkdays = map weekdayFromInt [wkdayNum+1..wkdayNum+7]
+      let matches = map (`elem` wkdays) potWkdays
+      let offset = fmap (+1) (True `L.elemIndex` matches)
+      case offset of
+        Nothing -> Nothing
+        Just o -> Just task { taskDueDate = Just (addDays (toInteger o) dd) }
     Just (Days ivl CompletionDate) ->
       Just task { taskDueDate = Just (addDays ivl cdate) }
     Just (Weeks ivl CompletionDate) ->

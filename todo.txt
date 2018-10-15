@@ -1,4 +1,4 @@
-Add repeat on certain weekdays functionality
+Clear due time when new day
 Make repeat interval prepopulate when editing task
 Fix redirects
 Add a way to postpone tasks
