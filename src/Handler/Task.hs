@@ -84,3 +84,13 @@ getEditTaskR taskId = do
 
 postEditTaskR :: TaskId -> Handler Html
 postEditTaskR = getEditTaskR
+
+getDeleteTaskR :: TaskId -> Handler ()
+getDeleteTaskR taskId = do
+  setUltDestReferer
+  runDB $ deleteWhere
+    (   [TaskDependencyTaskId ==. taskId]
+    ||. [TaskDependencyDependsOnTaskId ==. taskId]
+    )
+  runDB $ delete taskId
+  redirectUltDest HomeR
