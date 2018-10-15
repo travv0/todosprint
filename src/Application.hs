@@ -20,26 +20,25 @@ module Application
     , db
     ) where
 
-import Control.Monad.Logger                 (liftLoc, runLoggingT)
-import Database.Persist.Postgresql          (createPostgresqlPool, runSqlPool,
-                                             pgConnStr, pgPoolSize)
+import Control.Monad.Logger (liftLoc, runLoggingT)
+import Database.Persist.Postgresql (createPostgresqlPool, pgConnStr,
+                                    pgPoolSize, runSqlPool)
 import Import
-import Language.Haskell.TH.Syntax           (qLocation)
-import Network.HTTP.Client.TLS              (getGlobalManager)
+import Language.Haskell.TH.Syntax (qLocation)
 import Network.Wai (Middleware)
-import Network.Wai.Handler.Warp             (Settings, defaultSettings,
-                                             defaultShouldDisplayException,
-                                             runSettings, setHost,
-                                             setOnException, setPort, getPort)
+import Network.Wai.Handler.Warp (Settings, defaultSettings,
+                                 defaultShouldDisplayException,
+                                 runSettings, setHost,
+                                 setOnException, setPort, getPort)
 import Network.Wai.Middleware.RequestLogger (Destination (Logger),
                                              IPAddrSource (..),
                                              OutputFormat (..), destination,
                                              mkRequestLogger, outputFormat)
-import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
-                                             toLogStr)
+import System.Log.FastLogger (defaultBufSize, newStdoutLoggerSet, toLogStr)
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
+import Handler.Home
 import Handler.Common
 import Handler.Home
 import Handler.Task
@@ -59,7 +58,7 @@ makeFoundation :: AppSettings -> IO App
 makeFoundation appSettings = do
     -- Some basic initializations: HTTP connection manager, logger, and static
     -- subsite.
-    appHttpManager <- getGlobalManager
+    appHttpManager <- newManager
     appLogger <- newStdoutLoggerSet defaultBufSize >>= makeYesodLogger
     appStatic <-
         (if appMutableStatic appSettings then staticDevel else static)
@@ -79,7 +78,7 @@ makeFoundation appSettings = do
 
     -- Create the database connection pool
     pool <- flip runLoggingT logFunc $ createPostgresqlPool
-        (pgConnStr $ appDatabaseConf appSettings)
+        (pgConnStr  $ appDatabaseConf appSettings)
         (pgPoolSize $ appDatabaseConf appSettings)
 
     -- Perform database migration using our application's logging settings.
@@ -136,7 +135,7 @@ getApplicationDev = do
     return (wsettings, app)
 
 getAppSettings :: IO AppSettings
-getAppSettings = loadYamlSettings [configSettingsYml] [] useEnv
+getAppSettings = loadAppSettings [configSettingsYml] [] useEnv
 
 -- | main function for use by yesod devel
 develMain :: IO ()
@@ -146,7 +145,7 @@ develMain = develMainHelper getApplicationDev
 appMain :: IO ()
 appMain = do
     -- Get the settings from all relevant sources
-    settings <- loadYamlSettingsArgs
+    settings <- loadAppSettingsArgs
         -- fall back to compile-time values, set to [] to require values at runtime
         [configSettingsYmlValue]
 
@@ -187,5 +186,5 @@ handler :: Handler a -> IO a
 handler h = getAppSettings >>= makeFoundation >>= flip unsafeHandler h
 
 -- | Run DB queries
-db :: ReaderT SqlBackend Handler a -> IO a
+db :: ReaderT SqlBackend (HandlerT App IO) a -> IO a
 db = handler . runDB
