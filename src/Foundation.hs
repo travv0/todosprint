@@ -1,4 +1,5 @@
 {-# LANGUAGE ExplicitForAll        #-}
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE InstanceSigs          #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
@@ -195,10 +196,10 @@ instance Yesod App
   isAuthorized (StaticR _) _    = return Authorized
   isAuthorized HomeR _          = isAuthenticated
   isAuthorized NewTaskR _       = isAuthenticated
-  isAuthorized (EditTaskR _) _  = isAuthenticated
-  isAuthorized (AddDepsR _) _   = isAuthenticated
+  isAuthorized (EditTaskR taskId) _ = userOwnsTask taskId
+  isAuthorized (AddDepsR taskId) _ = userOwnsTask taskId
   isAuthorized TodayR _         = isAuthenticated
-  isAuthorized (MarkDoneR _) _  = isAuthenticated
+  isAuthorized (MarkDoneR taskId) _ = userOwnsTask taskId
   isAuthorized TimeZoneR _      = isAuthenticated
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
@@ -232,6 +233,16 @@ instance Yesod App
     level == LevelWarn || level == LevelError
   makeLogger :: App -> IO Logger
   makeLogger = return . appLogger
+
+userOwnsTask taskId = do
+  mu <- maybeAuthId
+  case mu of
+    Nothing     -> return AuthenticationRequired
+    Just userId -> do
+      mtask <- runDB $ selectFirst [TaskId ==. taskId, TaskUserId ==. userId] []
+      case mtask of
+        Nothing -> return $ Unauthorized "This isn't your task."
+        Just _  -> return Authorized
 
 -- How to run database actions.
 instance YesodPersist App where
