@@ -1,4 +1,4 @@
-Tasks dependencies might not be getting copied
+Random redirect to login screen upon adding new task
 Add repeat on certain weekdays functionality
 Make repeat interval prepopulate when editing task
 Make redirect back to correct page after marking task done
