@@ -1,4 +1,3 @@
-Fix time wrapping when UTC is the next day from user
 Keep user's TZ up to date
 Add repeat on certain weekdays functionality
 Make repeat interval prepopulate when editing task

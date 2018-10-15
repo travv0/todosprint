@@ -120,24 +120,33 @@ getTodayR = do
   case mUserDueTime of
     Just dt -> do
       let userTz = maybe utc minutesToTimeZone (userDueTimeOffset user)
-      let mTod = fmap
-            (snd . utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime)
+
+      let mLocalTod = fmap
+            (utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime)
             mUserDueTime
-      (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId mTod
+      (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId (snd <$> mLocalTod)
+
       currentTime       <- liftIO $ utctDayTime <$> getCurrentTime
-      let dt' = utctDayTime dt
+      let currentTime' = timeToTimeOfDay currentTime
+      let (_, currentTime'') = utcToLocalTimeOfDay userTz currentTime'
+      let curTime = timeOfDayToTime currentTime''
+
+      let dt' = timeToTimeOfDay $ utctDayTime dt
+      let (_, dt'') = utcToLocalTimeOfDay userTz dt'
+      let dTime = timeOfDayToTime dt''
+
       let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
-            (diffTimeToPicoseconds dt' - diffTimeToPicoseconds currentTime)
+            (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
       let mins = (todHour timeOfDay * 60) + todMin timeOfDay
+
       tasks' <- runDB $ getTasks userId []
       deps   <- runDB (selectList [] [])
+
       utcTime <- liftIO getCurrentTime
       let today = localDay $ utcToLocalTime userTz utcTime
       let tasks = daysList today mins deps tasks'
+
       defaultLayout $ do
-        [whamlet|
-          current date: #{show today}
-          |]
         setTimeWidget widget enctype tzOffsetId
         $(widgetFile "tasks")
     Nothing -> do
