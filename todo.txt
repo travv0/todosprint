@@ -1,4 +1,4 @@
-Learn about yesod authentication
+Tasks dependencies might not be getting copied
 Add repeat on certain weekdays functionality
 Make repeat interval prepopulate when editing task
 Make redirect back to correct page after marking task done
