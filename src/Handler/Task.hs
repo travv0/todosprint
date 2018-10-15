@@ -20,7 +20,10 @@ import           Text.Read                      ( read
 repeatIntervalField :: Field Handler RepeatInterval
 repeatIntervalField = Field
   { fieldParse   = \rawVals _ -> case rawVals of
-    [i, u, rf]
+    (i : u : rf : xs)
+      | not $ null xs -> return $ Right $ Just $ OnWeekdays
+        (map (read . unpack) xs)
+        (read $ unpack rf)
       | isNothing ((readMaybe $ unpack i) :: Maybe Int) -> return
       $  Right Nothing
       | u == "Days" -> return $ Right $ Just $ Days (read $ unpack i)
