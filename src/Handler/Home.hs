@@ -25,6 +25,7 @@ taskList tasks = $(widgetFile "tasks")
 
 getHomeR :: Handler Html
 getHomeR = do
+  setUltDestCurrent
   userId <- requireAuthId
   tasks  <- runDB $ getTasks userId [Asc TaskDueDate]
   defaultLayout $ do
@@ -123,6 +124,7 @@ utcToUserTime time user = do
 
 getTodayR :: Handler Html
 getTodayR = do
+  setUltDestCurrent
   (Entity userId user') <- requireAuth
 
   -- get current day in user's time zone

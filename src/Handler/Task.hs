@@ -35,31 +35,30 @@ repeatIntervalField = Field
                                                       (read $ unpack rf)
       | otherwise -> return $ Left "Invalid unit of time for repeat interval"
     _ -> return $ Right Nothing
-  , fieldView    = \idAttr nameAttr otherAttrs eResult isReq -> do
-    case eResult of
-      Right (Days n ri) -> do
-        let days = []
-        let u    = "Days"
-        $(widgetFile "repeat-interval")
-      Right (Weeks n ri) -> do
-        let days = []
-        let u    = "Weeks"
-        $(widgetFile "repeat-interval")
-      Right (Months n ri) -> do
-        let days = []
-        let u    = "Months"
-        $(widgetFile "repeat-interval")
-      Right (Years n ri) -> do
-        let days = []
-        let u    = "Years"
-        $(widgetFile "repeat-interval")
-      Right (OnWeekdays days ri) -> do
-        let n = 0
-        let u = ""
-        $(widgetFile "repeat-interval")
-      Left _ -> do
-        let (n, ri, days, u) = (0, CompletionDate, [], "")
-        $(widgetFile "repeat-interval")
+  , fieldView    = \idAttr nameAttr otherAttrs eResult isReq -> case eResult of
+    Right (Days n ri) -> do
+      let days = []
+      let u    = "Days"
+      $(widgetFile "repeat-interval")
+    Right (Weeks n ri) -> do
+      let days = []
+      let u    = "Weeks"
+      $(widgetFile "repeat-interval")
+    Right (Months n ri) -> do
+      let days = []
+      let u    = "Months"
+      $(widgetFile "repeat-interval")
+    Right (Years n ri) -> do
+      let days = []
+      let u    = "Years"
+      $(widgetFile "repeat-interval")
+    Right (OnWeekdays days ri) -> do
+      let n = 0
+      let u = ""
+      $(widgetFile "repeat-interval")
+    Left _ -> do
+      let (n, ri, days, u) = (0, CompletionDate, [], "")
+      $(widgetFile "repeat-interval")
   , fieldEnctype = UrlEncoded
   }
 
@@ -81,7 +80,6 @@ taskForm userId mtask =
 
 getNewTaskR :: Handler Html
 getNewTaskR = do
-  setUltDestReferer
   userId                   <- requireAuthId
   ((res, widget), enctype) <- runFormPost $ taskForm userId Nothing
   case res of
@@ -89,14 +87,14 @@ getNewTaskR = do
       runDB $ insert t
       setMessage "Task created"
       redirectUltDest HomeR
-    _ -> defaultLayout $(widgetFile "new-task")
+    _ -> do
+      defaultLayout $(widgetFile "new-task")
 
 postNewTaskR :: Handler Html
 postNewTaskR = getNewTaskR
 
 getEditTaskR :: TaskId -> Handler Html
 getEditTaskR taskId = do
-  setUltDestReferer
   userId                   <- requireAuthId
   task                     <- runDB $ get taskId
   ((res, widget), enctype) <- runFormPost $ taskForm userId $ task
