@@ -1,18 +1,18 @@
 #{show eResult}
-<input id=#{idAttr}-count name=#{nameAttr} *{otherAttrs} type=text> #
-<select id=#{idAttr}-unit name=#{nameAttr} *{otherAttrs}>
-    <option value="Days">days
-    <option value="Weeks">weeks
-    <option value="Months">months
-    <option value="Years">years
-<select id=#{idAttr}-from name=#{nameAttr} *{otherAttrs}>
-    <option value="CompletionDate">from completion date
-    <option value="DueDate">from due date
+<input id=#{idAttr}-count name=#{nameAttr} *{otherAttrs} type=text :isReq:required :show n /= "0":value="#{show n}"> #
+<select id=#{idAttr}-unit name=#{nameAttr} *{otherAttrs} :isReq:required>
+    <option value="Days" :u == "Days":selected>days
+    <option value="Weeks" :u == "Weeks":selected>weeks
+    <option value="Months" :u == "Months":selected>months
+    <option value="Years" :u == "Years":selected>years
+<select id=#{idAttr}-from name=#{nameAttr} *{otherAttrs} :isReq:required>
+    <option value="CompletionDate" :ri == CompletionDate:selected>from completion date
+    <option value="DueDate" :ri == DueDate:selected>from due date
 
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-mon *{otherAttrs} value="Monday">Monday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-tue *{otherAttrs} value="Tuesday">Tuesday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-wed *{otherAttrs} value="Wednesday">Wednesday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-thu *{otherAttrs} value="Thursday">Thursday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-fri *{otherAttrs} value="Friday">Friday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-sat *{otherAttrs} value="Saturday">Saturday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-sun *{otherAttrs} value="Sunday">Sunday
+<input type=checkbox name=#{nameAttr} id=#{idAttr}-mon *{otherAttrs} :elem Monday days:checked :isReq:required value="Monday">Monday
+<input type=checkbox name=#{nameAttr} id=#{idAttr}-tue *{otherAttrs} :elem Tuesday days:checked :isReq:required value="Tuesday">Tuesday
+<input type=checkbox name=#{nameAttr} id=#{idAttr}-wed *{otherAttrs} :elem Wednesday days:checked :isReq:required value="Wednesday">Wednesday
+<input type=checkbox name=#{nameAttr} id=#{idAttr}-thu *{otherAttrs} :elem Thursday days:checked :isReq:required value="Thursday">Thursday
+<input type=checkbox name=#{nameAttr} id=#{idAttr}-fri *{otherAttrs} :elem Friday days:checked :isReq:required value="Friday">Friday
+<input type=checkbox name=#{nameAttr} id=#{idAttr}-sat *{otherAttrs} :elem Saturday days:checked :isReq:required value="Saturday">Saturday
+<input type=checkbox name=#{nameAttr} id=#{idAttr}-sun *{otherAttrs} :elem Sunday days:checked :isReq:required value="Sunday">Sunday
