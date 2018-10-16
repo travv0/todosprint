@@ -15,6 +15,8 @@ import           RepeatInterval
 import           Text.Read                      ( read
                                                 , readMaybe
                                                 )
+import           Data.Time.LocalTime
+import           Data.Time
 
 repeatIntervalField :: Field Handler RepeatInterval
 repeatIntervalField = Field
@@ -76,6 +78,19 @@ taskForm userId mtask =
     <*> aopt repeatIntervalField "Repeat Every" (taskRepeat <$> mtask)
     <*> pure False
     <*> pure userId
+    <*> pure Nothing
+    <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
+
+data PostponeTodayInfo = PostponeTodayInfo
+  { pptTime :: TimeOfDay }
+  deriving Show
+
+postponeTodayForm :: Form PostponeTodayInfo
+postponeTodayForm =
+  renderBootstrap3
+      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
+    $   PostponeTodayInfo
+    <$> areq timeField "Postpone until later today" Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 getNewTaskR :: Handler Html
@@ -117,3 +132,30 @@ getDeleteTaskR taskId = do
     )
   runDB $ delete taskId
   redirectUltDest HomeR
+
+getPostponeTaskR :: TaskId -> Handler Html
+getPostponeTaskR taskId = do
+  (widget, enctype) <- generateFormPost postponeTodayForm
+  defaultLayout $(widgetFile "postpone-task")
+
+postPostponeTodayR :: TaskId -> Handler ()
+postPostponeTodayR taskId = do
+  (Entity _ user)          <- requireAuth
+  ((res, widget), enctype) <- runFormPost postponeTodayForm
+  case res of
+    FormSuccess t -> do
+      let ppTime = pptTime t
+      currUtcTime <- liftIO getCurrentTime
+      let tz = fromMaybe utc $ minutesToTimeZone <$> userDueTimeOffset user
+      let (dayAdj, utcTime) = localToUTCTimeOfDay tz ppTime
+      let userTime = utcToLocalTime tz currUtcTime
+      runDB $ update
+        taskId
+        [ TaskPostponeTime
+            =. Just
+                 (UTCTime (addDays dayAdj (localDay userTime))
+                          (timeOfDayToTime utcTime)
+                 )
+        ]
+      redirectUltDest HomeR
+    _ -> redirectUltDest HomeR
