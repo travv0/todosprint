@@ -172,15 +172,25 @@ getTodayR = do
       let today = localDay $ utcToLocalTime userTz utcTime
       let tasks = daysList today mins deps tasks'
 
+      -- calculate estimated time of completion
+      let estimatedToc = Just $ estimateTimeOfCompletion tasks currentTime''
+
       defaultLayout $ do
-        setTimeWidget widget enctype tzOffsetId
+        setTimeWidget widget enctype tzOffsetId estimatedToc
         $(widgetFile "tasks")
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId Nothing
-      defaultLayout $ setTimeWidget widget enctype tzOffsetId
+      defaultLayout $ setTimeWidget widget enctype tzOffsetId Nothing
 
-setTimeWidget :: Widget -> Enctype -> Text -> Widget
-setTimeWidget widget enctype tzOffsetId = do
+estimateTimeOfCompletion :: [Entity Task] -> TimeOfDay -> TimeOfDay
+estimateTimeOfCompletion tasks tod = TimeOfDay hours mins (todSec tod)
+  where taskMins = timeToComplete tasks
+        mins = (todMin tod + taskMins) `mod` 60
+        hours = (todHour tod + ((todMin tod + taskMins) `div` 60)) `mod` 24
+
+setTimeWidget :: Widget -> Enctype -> Text -> Maybe TimeOfDay -> Widget
+setTimeWidget widget enctype tzOffsetId estimatedToc = do
+  let formattedEstimatedToc = maybe "" (formatTime defaultTimeLocale "Estimated Completion Time: %r") estimatedToc
   $(widgetFile "set-time")
   toWidget [julius|
     $(function(){
