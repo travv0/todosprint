@@ -18,6 +18,7 @@ Task
     repeat RepeatInterval Maybe
     done Bool
     userId UserId
+    postponeTime UTCTime Maybe
     deriving Show Eq
 
 TaskDependency

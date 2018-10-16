@@ -157,12 +157,12 @@ getTodayR = do
             (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
       let mins = (todHour timeOfDay * 60) + todMin timeOfDay
 
-      tasks'  <- runDB $ getTasks userId []
+      tasks'  <- runDB $ getTasksForToday (Just currentDateTime) userId []
       deps    <- runDB (selectList [] [])
 
       utcTime <- liftIO getCurrentTime
       let today = localDay $ utcToLocalTime userTz utcTime
-      let tasks = daysList today mins deps tasks'
+      let tasks = daysList utcTime today mins deps tasks'
 
       -- calculate estimated time of completion
       let estimatedToc = if null tasks
@@ -190,11 +190,6 @@ setTimeWidget widget enctype tzOffsetId estimatedToc = do
         (formatTime defaultTimeLocale "Estimated Completion Time: %l:%M %p")
         estimatedToc
   $(widgetFile "set-time")
-  toWidget [julius|
-    $(function(){
-          $(#{rawJS tzOffsetId}).val(-new Date().getTimezoneOffset());
-    });
-          |]
 
 postTodayR :: Handler Html
 postTodayR = do
@@ -272,7 +267,8 @@ fillInGaps mins allTasks reducedTasks
             else reducedTasks
           )
  where
-  potTasks = allTasks L.\\ reducedTasks
+  potTasks =
+    filter (\(Entity _ t) -> not $ taskDone t) allTasks L.\\ reducedTasks
   highestPriorityThenShortestLength (Entity _ a) (Entity _ b) =
     taskPriority b
       `compare` taskPriority a
@@ -281,15 +277,23 @@ fillInGaps mins allTasks reducedTasks
   getTaskFromEntity (Entity _ t) = t
 
 daysList
-  :: Day -> Int -> [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
-daysList day min dependencies tasks =
+  :: UTCTime
+  -> Day
+  -> Int
+  -> [Entity TaskDependency]
+  -> [Entity Task]
+  -> [Entity Task]
+daysList currUtcTime day min dependencies tasks =
   ( sortTasks dependencies
     . fillInGaps min (dueByDay day tasks)
     . reduceLoad day min
     . dueByDay day
-    . filter (\(Entity _ t) -> not $ taskDone t)
     )
     tasks
+ where
+  notPostponed (Entity _ t) = case taskPostponeTime t of
+    Just tppTime -> currUtcTime > tppTime
+    Nothing      -> True
 
 postMarkDoneR :: TaskId -> Handler Html
 postMarkDoneR taskId = do
@@ -358,3 +362,10 @@ incrementDueDate cdate task = case taskDueDate task of
   Nothing -> Nothing
 
 getTasks userId = selectList [TaskUserId ==. userId, TaskDone ==. False]
+getTasksForToday currUtcTime userId = selectList
+  (   [TaskUserId ==. userId, TaskDone ==. False, TaskPostponeTime ==. Nothing]
+  ||. [ TaskUserId ==. userId
+      , TaskDone ==. False
+      , TaskPostponeTime <. currUtcTime
+      ]
+  )
