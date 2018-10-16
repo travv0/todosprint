@@ -1,6 +1,5 @@
 Add a way to postpone tasks
 require due date if you select "from due date" or if you repeat by unit of time
 automatically set unset due date if repeating by days of week to next occurrence of one of those weekdays
-"Fill in" time remaining after reducing load.  Start with shortest high priority tasks and work up to longest hp tasks, then short mp to long mp, etc.
 Make look pretty
 does stable topological sort exist???
