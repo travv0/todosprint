@@ -21,7 +21,10 @@ import           Text.Julius                    ( RawJS(..) )
 import           Control.Monad
 
 taskList :: [Entity Task] -> Widget
-taskList tasks = $(widgetFile "tasks")
+taskList tasks = do
+  currUtcTime <- liftIO getCurrentTime
+  let postponedTasks = postponedTaskList currUtcTime tasks
+  $(widgetFile "tasks")
 
 getHomeR :: Handler Html
 getHomeR = do
@@ -95,6 +98,13 @@ utcToUserTime time user = do
   userTz <- userTimeZone user
   return $ utcToLocalTime userTz time
 
+postponedTaskList :: UTCTime -> [Entity Task] -> [Entity Task]
+postponedTaskList currUtcTime tasks = filter postponed tasks
+ where
+  postponed (Entity _ task) = case taskPostponeTime task of
+    Nothing     -> False
+    Just ppTime -> currUtcTime < ppTime
+
 getTodayR :: Handler Html
 getTodayR = do
   setUltDestCurrent
@@ -159,7 +169,7 @@ getTodayR = do
 
       defaultLayout $ do
         setTimeWidget widget enctype tzOffsetId estimatedToc
-        $(widgetFile "tasks")
+        taskList tasks
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId Nothing
       defaultLayout $ setTimeWidget widget enctype tzOffsetId Nothing

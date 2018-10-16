@@ -1,0 +1,3 @@
+.postponed {
+  color: lightgrey;
+}
