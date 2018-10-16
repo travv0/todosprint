@@ -1,4 +1,3 @@
-Show estimated completion time
 Make repeat interval prepopulate when editing task
 Fix redirects
 Add a way to postpone tasks
