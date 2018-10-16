@@ -80,21 +80,6 @@ weight date task = case taskPriority task of
             _ -> divisor
           )
 
-reduceLoad :: Day -> Int -> [Entity Task] -> [Entity Task]
-reduceLoad date min tasks
-  | timeToComplete tasks > min && not (allHighPriority tasks)
-  = reduceLoad date min $ L.tail $ L.sortBy
-    (\et1@(Entity _ t1) et2@(Entity _ t2) ->
-      lowestWeight et1 et2 <> (taskDuration t2 `compare` taskDuration t1)
-    )
-    tasks
-  | otherwise
-  = tasks
- where
-  lowestWeight (Entity _ t1) (Entity _ t2) =
-    weight date t1 `compare` weight date t2
-  allHighPriority = foldr (\(Entity _ t) b -> b && taskPriority t == High) True
-
 timeToComplete :: [Entity Task] -> Int
 timeToComplete = foldr (\(Entity _ t) x -> x + taskDuration t) 0
 
@@ -202,7 +187,7 @@ setTimeWidget :: Widget -> Enctype -> Text -> Maybe TimeOfDay -> Widget
 setTimeWidget widget enctype tzOffsetId estimatedToc = do
   let formattedEstimatedToc = maybe
         ""
-        (formatTime defaultTimeLocale "Estimated Completion Time: %l:%H %p")
+        (formatTime defaultTimeLocale "Estimated Completion Time: %l:%M %p")
         estimatedToc
   $(widgetFile "set-time")
   toWidget [julius|
@@ -250,11 +235,61 @@ today = localDay . zonedTimeToLocalTime <$> getZonedTime
 utcToday :: IO Day
 utcToday = utctDay <$> getCurrentTime
 
+reduceLoad :: Day -> Int -> [Entity Task] -> [Entity Task]
+reduceLoad date min tasks
+  | timeToComplete tasks > min && not (allHighPriority tasks)
+  = reduceLoad date min $ L.tail $ L.sortBy
+    (\et1@(Entity _ t1) et2@(Entity _ t2) ->
+      lowestWeight et1 et2 <> (taskDuration t2 `compare` taskDuration t1)
+    )
+    tasks
+  | otherwise
+  = tasks
+ where
+  lowestWeight (Entity _ t1) (Entity _ t2) =
+    weight date t1 `compare` weight date t2
+  allHighPriority = foldr (\(Entity _ t) b -> b && taskPriority t == High) True
+
+fillInGaps :: Int -> [Entity Task] -> [Entity Task] -> [Entity Task]
+fillInGaps mins allTasks reducedTasks
+  | null allTasks
+  = reducedTasks
+  | length reducedTasks == length allTasks
+  = reducedTasks
+  | timeToComplete reducedTasks
+    + L.minimum (map (\(Entity _ t) -> taskDuration t) potTasks)
+    > mins
+  = reducedTasks
+  | otherwise
+  = let sortedPot = sortBy highestPriorityThenShortestLength potTasks
+    in  fillInGaps
+          mins
+          (L.tail sortedPot)
+          (if timeToComplete reducedTasks
+               + taskDuration (getTaskFromEntity $ L.head sortedPot)
+               < mins
+            then L.head sortedPot : reducedTasks
+            else reducedTasks
+          )
+ where
+  potTasks = allTasks L.\\ reducedTasks
+  highestPriorityThenShortestLength (Entity _ a) (Entity _ b) =
+    taskPriority b
+      `compare` taskPriority a
+      <>        taskDuration a
+      `compare` taskDuration b
+  getTaskFromEntity (Entity _ t) = t
+
 daysList
   :: Day -> Int -> [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
-daysList day min dependencies =
-  sortTasks dependencies . reduceLoad day min . dueByDay day . filter
-    (\(Entity _ t) -> not $ taskDone t)
+daysList day min dependencies tasks =
+  ( sortTasks dependencies
+    . fillInGaps min (dueByDay day tasks)
+    . reduceLoad day min
+    . dueByDay day
+    . filter (\(Entity _ t) -> not $ taskDone t)
+    )
+    tasks
 
 postMarkDoneR :: TaskId -> Handler Html
 postMarkDoneR taskId = do
