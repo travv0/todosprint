@@ -23,22 +23,14 @@ import           Text.Hamlet                    ( hamletFile )
 import           Text.Jasmine                   ( minifym )
 import           Text.Julius                    ( RawJS(..) )
 
--- Used only when in "auth-dummy-login" setting is enabled.
-import           Yesod.Auth.Dummy
-
 import qualified Data.CaseInsensitive          as CI
 import qualified Data.Text.Encoding            as TE
-import           Yesod.Auth.OpenId              ( IdentifierType(Claimed)
-                                                , authOpenId
-                                                )
 import           Yesod.Auth.GoogleEmail2
 import           Yesod.Core.Types               ( Logger )
 import qualified Yesod.Core.Unsafe             as Unsafe
 import           Yesod.Default.Util             ( addStaticContentExternal )
 
 import           Yesod.Form.Jquery
-
-import           Data.Time.LocalTime
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -127,7 +119,6 @@ instance Yesod App
     master <- getYesod
     mmsg <- getMessage
     muser <- maybeAuthPair
-    session <- getSession
     mcurrentRoute <- getCurrentRoute
         -- Define the menu items of the header.
     let menuItems =
