@@ -1,4 +1,3 @@
-#{show eResult}
 <input id=#{idAttr}-count name=#{nameAttr} *{otherAttrs} type=text :isReq:required :show n /= "0":value="#{show n}"> #
 <select id=#{idAttr}-unit name=#{nameAttr} *{otherAttrs} :isReq:required>
     <option value="Days" :u == "Days":selected>days
