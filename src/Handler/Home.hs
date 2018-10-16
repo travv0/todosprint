@@ -126,17 +126,21 @@ getTodayR = do
   (Entity userId user') <- requireAuth
 
   -- get current day in user's time zone
-  currentDateTime <- liftIO getCurrentTime
+  currentDateTime       <- liftIO getCurrentTime
   let mCurrentUserDateTime = utcToUserTime currentDateTime user'
 
   -- get day of due time in user's time zone
-  let mDueDateTime = userDueTime user'
-  let mDueUserDateTime = mDueDateTime >>= (`utcToUserTime` user')
+  let mDueDateTime         = userDueTime user'
+  let mDueUserDateTime     = mDueDateTime >>= (`utcToUserTime` user')
 
   -- if not the same day user set due time, reset it
-  let shouldUpdateTime = (localDay <$> mDueUserDateTime) /= (localDay <$> mCurrentUserDateTime)
-  runDB $ update userId [UserDueTime =. if shouldUpdateTime then Nothing else mDueDateTime]
-  let user = if shouldUpdateTime then user' { userDueTime = Nothing } else user'
+  let shouldUpdateTime =
+        (localDay <$> mDueUserDateTime) /= (localDay <$> mCurrentUserDateTime)
+  runDB $ update
+    userId
+    [UserDueTime =. if shouldUpdateTime then Nothing else mDueDateTime]
+  let user =
+        if shouldUpdateTime then user' { userDueTime = Nothing } else user'
 
   let mUserDueTime = userDueTime user
   tzOffsetId <- newIdent
@@ -147,33 +151,36 @@ getTodayR = do
       let mLocalTod = fmap
             (utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime)
             mUserDueTime
-      (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId (snd <$> mLocalTod)
+      (widget, enctype) <- generateFormPost
+        $ dueTimeForm tzOffsetId (snd <$> mLocalTod)
 
       -- get current time in user's time zone
-      currentTime       <- liftIO $ utctDayTime <$> getCurrentTime
-      let currentTime' = timeToTimeOfDay currentTime
+      currentTime <- liftIO $ utctDayTime <$> getCurrentTime
+      let currentTime'            = timeToTimeOfDay currentTime
       let (dayAdj, currentTime'') = utcToLocalTimeOfDay userTz currentTime'
-      let curTime = timeOfDayToTime currentTime''
+      let curTime                 = timeOfDayToTime currentTime''
 
       -- get due time in user's time zone
-      let dt' = timeToTimeOfDay $ utctDayTime dt
-      let (_, dt'') = utcToLocalTimeOfDay userTz dt'
-      let dTime = timeOfDayToTime dt''
+      let dt'                     = timeToTimeOfDay $ utctDayTime dt
+      let (_, dt'')               = utcToLocalTimeOfDay userTz dt'
+      let dTime                   = timeOfDayToTime dt''
 
       -- use those to calulate how many minutes are left
       let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
             (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
       let mins = (todHour timeOfDay * 60) + todMin timeOfDay
 
-      tasks' <- runDB $ getTasks userId []
-      deps   <- runDB (selectList [] [])
+      tasks'  <- runDB $ getTasks userId []
+      deps    <- runDB (selectList [] [])
 
       utcTime <- liftIO getCurrentTime
       let today = localDay $ utcToLocalTime userTz utcTime
       let tasks = daysList today mins deps tasks'
 
       -- calculate estimated time of completion
-      let estimatedToc = Just $ estimateTimeOfCompletion tasks currentTime''
+      let estimatedToc = if null tasks
+            then Nothing
+            else Just $ estimateTimeOfCompletion tasks currentTime''
 
       defaultLayout $ do
         setTimeWidget widget enctype tzOffsetId estimatedToc
@@ -184,13 +191,17 @@ getTodayR = do
 
 estimateTimeOfCompletion :: [Entity Task] -> TimeOfDay -> TimeOfDay
 estimateTimeOfCompletion tasks tod = TimeOfDay hours mins (todSec tod)
-  where taskMins = timeToComplete tasks
-        mins = (todMin tod + taskMins) `mod` 60
-        hours = (todHour tod + ((todMin tod + taskMins) `div` 60)) `mod` 24
+ where
+  taskMins = timeToComplete tasks
+  mins     = (todMin tod + taskMins) `mod` 60
+  hours    = (todHour tod + ((todMin tod + taskMins) `div` 60)) `mod` 24
 
 setTimeWidget :: Widget -> Enctype -> Text -> Maybe TimeOfDay -> Widget
 setTimeWidget widget enctype tzOffsetId estimatedToc = do
-  let formattedEstimatedToc = maybe "" (formatTime defaultTimeLocale "Estimated Completion Time: %r") estimatedToc
+  let formattedEstimatedToc = maybe
+        ""
+        (formatTime defaultTimeLocale "Estimated Completion Time: %l:%H %p")
+        estimatedToc
   $(widgetFile "set-time")
   toWidget [julius|
     $(function(){
@@ -208,14 +219,17 @@ postTodayR = do
 
       let userTz = minutesToTimeZone $ tzOffset dt
       utcTime <- liftIO getCurrentTime
-      let userTime        = utcToLocalTime userTz utcTime
+      let userTime             = utcToLocalTime userTz utcTime
 
       let (dayAdj, utcDueTime) = localToUTCTimeOfDay userTz $ dueTime dt
 
       runDB $ update
         userId
         [ UserDueTime
-          =. Just (UTCTime (addDays dayAdj (localDay userTime)) (timeOfDayToTime utcDueTime))
+          =. Just
+               (UTCTime (addDays dayAdj (localDay userTime))
+                        (timeOfDayToTime utcDueTime)
+               )
         , UserDueTimeOffset =. Just (tzOffset dt)
         ]
       redirect TodayR
@@ -245,24 +259,25 @@ postMarkDoneR taskId = do
   setUltDestReferer
   task <- runDB $ get taskId
   runDB $ update taskId [TaskDone =. True]
-  utcTime <- liftIO getCurrentTime
+  utcTime              <- liftIO getCurrentTime
   (Entity userId user) <- requireAuth
   let userTzOffset = fromMaybe 0 $ userDueTimeOffset user
-  let cdate = localDay $ utcToLocalTime (minutesToTimeZone userTzOffset) utcTime
+  let cdate =
+        localDay $ utcToLocalTime (minutesToTimeZone userTzOffset) utcTime
   runDB $ case task of
     Just t -> case incrementDueDate cdate t of
       Just t2 -> do
         newTaskId <- insert t2
-        deps <- selectList [TaskDependencyTaskId ==. taskId] []
-        depd <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
+        deps      <- selectList [TaskDependencyTaskId ==. taskId] []
+        depd      <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
         mapM
           (\(Entity _ dep) -> insert
             $ TaskDependency newTaskId (taskDependencyDependsOnTaskId dep)
           )
           deps
         mapM
-          (\(Entity _ dep) -> insert
-            $ TaskDependency (taskDependencyTaskId dep) newTaskId
+          (\(Entity _ dep) ->
+            insert $ TaskDependency (taskDependencyTaskId dep) newTaskId
           )
           depd
       Nothing -> redirectUltDest HomeR
@@ -274,18 +289,18 @@ incrementDueDate cdate task = case taskDueDate task of
   Just dd -> case taskRepeat task of
     Just (OnWeekdays wkdays CompletionDate) -> do
       let (_, _, wkdayNum) = toWeekDate cdate
-      let nextWkday = next $ weekdayFromInt wkdayNum
+      let nextWkday        = next $ weekdayFromInt wkdayNum
       if nextWkday `elem` wkdays
-         then Just task { taskDueDate = Just (addDays 1 cdate) }
-         else incrementDueDate (addDays 1 cdate) task
+        then Just task { taskDueDate = Just (addDays 1 cdate) }
+        else incrementDueDate (addDays 1 cdate) task
     Just (OnWeekdays wkdays DueDate) -> do
       let (_, _, wkdayNum) = toWeekDate dd
-      let potWkdays = map weekdayFromInt [wkdayNum+1..wkdayNum+7]
-      let matches = map (`elem` wkdays) potWkdays
-      let offset = fmap (+1) (True `L.elemIndex` matches)
+      let potWkdays = map weekdayFromInt [wkdayNum + 1 .. wkdayNum + 7]
+      let matches          = map (`elem` wkdays) potWkdays
+      let offset           = fmap (+ 1) (True `L.elemIndex` matches)
       case offset of
         Nothing -> Nothing
-        Just o -> Just task { taskDueDate = Just (addDays (toInteger o) dd) }
+        Just o  -> Just task { taskDueDate = Just (addDays (toInteger o) dd) }
     Just (Days ivl CompletionDate) ->
       Just task { taskDueDate = Just (addDays ivl cdate) }
     Just (Weeks ivl CompletionDate) ->
