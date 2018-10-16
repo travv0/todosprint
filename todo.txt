@@ -1,4 +1,3 @@
-Make repeat interval prepopulate when editing task
 Fix redirects
 Add a way to postpone tasks
 "Fill in" time remaining after reducing load.  Start with shortest high priority tasks and work up to longest hp tasks, then short mp to long mp, etc.
