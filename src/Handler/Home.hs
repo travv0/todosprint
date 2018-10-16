@@ -18,6 +18,7 @@ import           RepeatInterval
 import           Yesod.Form.Bootstrap3
 import qualified Data.Maybe                    as M
 import           Text.Julius                    ( RawJS(..) )
+import           Control.Monad
 
 taskList :: [Entity Task] -> Widget
 taskList tasks = $(widgetFile "tasks")
@@ -112,29 +113,54 @@ dueTimeForm tzOffsetId mdt =
              Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
+userTimeZone :: User -> Maybe TimeZone
+userTimeZone user = fmap minutesToTimeZone $ userDueTimeOffset user
+
+utcToUserTime :: UTCTime -> User -> Maybe LocalTime
+utcToUserTime time user = do
+  userTz <- userTimeZone user
+  return $ utcToLocalTime userTz time
+
 getTodayR :: Handler Html
 getTodayR = do
-  (Entity userId user) <- requireAuth
+  (Entity userId user') <- requireAuth
+
+  -- get current day in user's time zone
+  currentDateTime <- liftIO getCurrentTime
+  let mCurrentUserDateTime = utcToUserTime currentDateTime user'
+
+  -- get day of due time in user's time zone
+  let mDueDateTime = userDueTime user'
+  let mDueUserDateTime = mDueDateTime >>= (`utcToUserTime` user')
+
+  -- if not the same day user set due time, reset it
+  let shouldUpdateTime = (localDay <$> mDueUserDateTime) /= (localDay <$> mCurrentUserDateTime)
+  runDB $ update userId [UserDueTime =. if shouldUpdateTime then Nothing else mDueDateTime]
+  let user = if shouldUpdateTime then user' { userDueTime = Nothing } else user'
+
   let mUserDueTime = userDueTime user
   tzOffsetId <- newIdent
   case mUserDueTime of
     Just dt -> do
-      let userTz = maybe utc minutesToTimeZone (userDueTimeOffset user)
+      let userTz = fromMaybe utc $ userTimeZone user
 
       let mLocalTod = fmap
             (utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime)
             mUserDueTime
       (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId (snd <$> mLocalTod)
 
+      -- get current time in user's time zone
       currentTime       <- liftIO $ utctDayTime <$> getCurrentTime
       let currentTime' = timeToTimeOfDay currentTime
-      let (_, currentTime'') = utcToLocalTimeOfDay userTz currentTime'
+      let (dayAdj, currentTime'') = utcToLocalTimeOfDay userTz currentTime'
       let curTime = timeOfDayToTime currentTime''
 
+      -- get due time in user's time zone
       let dt' = timeToTimeOfDay $ utctDayTime dt
       let (_, dt'') = utcToLocalTimeOfDay userTz dt'
       let dTime = timeOfDayToTime dt''
 
+      -- use those to calulate how many minutes are left
       let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
             (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
       let mins = (todHour timeOfDay * 60) + todMin timeOfDay
@@ -174,12 +200,12 @@ postTodayR = do
       utcTime <- liftIO getCurrentTime
       let userTime        = utcToLocalTime userTz utcTime
 
-      let (_, utcDueTime) = localToUTCTimeOfDay userTz $ dueTime dt
+      let (dayAdj, utcDueTime) = localToUTCTimeOfDay userTz $ dueTime dt
 
       runDB $ update
         userId
         [ UserDueTime
-          =. Just (UTCTime (utctDay utcTime) (timeOfDayToTime utcDueTime))
+          =. Just (UTCTime (addDays dayAdj (localDay userTime)) (timeOfDayToTime utcDueTime))
         , UserDueTimeOffset =. Just (tzOffset dt)
         ]
       redirect TodayR
