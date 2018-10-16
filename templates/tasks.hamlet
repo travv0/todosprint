@@ -8,6 +8,6 @@ $else
             <form action=@{MarkDoneR $ entityKey task} method=post>
                 <a href="javascript:;" onclick="parentNode.submit();">mark done
             <a href=@{EditTaskR $ entityKey task}>edit task
-            <a href=@{AddDepsR $ entityKey task}>edit dependencies
+            <!-- <a href=@{AddDepsR $ entityKey task}>edit dependencies -->
             <a href=@{PostponeTaskR $ entityKey task}>postpone task
             <a href=@{DeleteTaskR $ entityKey task}>delete task

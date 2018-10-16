@@ -70,15 +70,7 @@ weight date task = case taskPriority task of
     Just dd -> weightMod dd lowOverdueMod
     Nothing -> 0
   None -> 0
- where
-  weightMod dd modifier =
-    let divisor = modifier
-    in  (date `diffDays` dd)
-        * modifier
-        - (toInteger (taskDuration task) `div` case divisor of
-            0 -> 1
-            _ -> divisor
-          )
+  where weightMod dd modifier = (date `diffDays` dd) * modifier
 
 timeToComplete :: [Entity Task] -> Int
 timeToComplete = foldr (\(Entity _ t) x -> x + taskDuration t) 0
@@ -153,7 +145,7 @@ getTodayR = do
             (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
       let mins = (todHour timeOfDay * 60) + todMin timeOfDay
 
-      tasks'  <- runDB $ getTasksForToday (Just currentDateTime) userId []
+      tasks'  <- runDB $ getTasks userId []
       deps    <- runDB (selectList [] [])
 
       utcTime <- liftIO getCurrentTime
@@ -361,10 +353,3 @@ incrementDueDate cdate task = case taskDueDate task of
   Nothing -> Nothing
 
 getTasks userId = selectList [TaskUserId ==. userId, TaskDone ==. False]
-getTasksForToday currUtcTime userId = selectList
-  (   [TaskUserId ==. userId, TaskDone ==. False, TaskPostponeTime ==. Nothing]
-  ||. [ TaskUserId ==. userId
-      , TaskDone ==. False
-      , TaskPostponeTime <. currUtcTime
-      ]
-  )
