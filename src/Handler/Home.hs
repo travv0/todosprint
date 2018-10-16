@@ -85,7 +85,6 @@ timeToComplete = foldr (\(Entity _ t) x -> x + taskDuration t) 0
 
 data DueTime = DueTime
   { dueTime :: TimeOfDay
-  , tzOffset :: Int
   } deriving Show
 
 dueTimeForm :: Text -> Maybe TimeOfDay -> Form DueTime
@@ -94,9 +93,6 @@ dueTimeForm tzOffsetId mdt =
       (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 8))
     $   DueTime
     <$> areq timeField "When would you like to work until?" mdt
-    <*> areq hiddenField
-             (FieldSettings "" Nothing (Just tzOffsetId) Nothing [])
-             Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 userTimeZone :: User -> Maybe TimeZone
@@ -193,13 +189,15 @@ setTimeWidget widget enctype tzOffsetId estimatedToc = do
 
 postTodayR :: Handler Html
 postTodayR = do
+  (Entity userId user)     <- requireAuth
   tzOffsetId               <- newIdent
   ((res, widget), enctype) <- runFormPost $ dueTimeForm tzOffsetId Nothing
   case res of
     FormSuccess dt -> do
       userId <- requireAuthId
 
-      let userTz = minutesToTimeZone $ tzOffset dt
+      let tzOffsetMins = fromMaybe 0 $ userDueTimeOffset user
+      let userTz       = minutesToTimeZone tzOffsetMins
       utcTime <- liftIO getCurrentTime
       let userTime             = utcToLocalTime userTz utcTime
 
@@ -208,14 +206,15 @@ postTodayR = do
       runDB $ update
         userId
         [ UserDueTime
-          =. Just
-               (UTCTime (addDays dayAdj (localDay userTime))
-                        (timeOfDayToTime utcDueTime)
-               )
-        , UserDueTimeOffset =. Just (tzOffset dt)
+            =. Just
+                 (UTCTime (addDays dayAdj (localDay userTime))
+                          (timeOfDayToTime utcDueTime)
+                 )
         ]
       redirect TodayR
-    _ -> redirect TodayR
+    _ -> do
+      setMessage "Error updating time"
+      redirect TodayR
 
 dueByDay :: Day -> [Entity Task] -> [Entity Task]
 dueByDay day = filter (dueByOrBeforeDay day)
