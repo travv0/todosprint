@@ -15,7 +15,7 @@ import           Data.Time
 import           Data.Time.Calendar.WeekDate
 import qualified Data.List                     as L
 import           RepeatInterval
-import           Yesod.Form.Bootstrap4
+import           Yesod.Form.Bootstrap3
 import qualified Data.Maybe                    as M
 import           Text.Julius                    ( RawJS(..) )
 import           Control.Monad
@@ -85,7 +85,7 @@ data DueTime = DueTime
 
 dueTimeForm :: Text -> Maybe TimeOfDay -> Form DueTime
 dueTimeForm tzOffsetId mdt =
-  renderBootstrap4
+  renderBootstrap3
       (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 8))
     $   DueTime
     <$> areq timeField "When would you like to work until?" mdt
