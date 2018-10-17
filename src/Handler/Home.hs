@@ -181,7 +181,7 @@ getTodayR = do
 
       utcTime <- liftIO getCurrentTime
       let today = localDay $ utcToLocalTime userTz utcTime
-      let tasks = daysList utcTime today mins deps tasks'
+      let tasks = daysList today mins deps tasks'
 
       -- calculate estimated time of completion
       let estimatedToc = if null tasks
@@ -244,7 +244,9 @@ dueByDay :: Day -> [Entity Task] -> [Entity Task]
 dueByDay day = filter (dueByOrBeforeDay day)
  where
   dueByOrBeforeDay d (Entity _ t) = case taskDueDate t of
-    Just dd -> dd <= d
+    Just dd -> case taskPostponeDay t of
+      Just ppd -> dd <= d && ppd <= d
+      Nothing  -> dd <= d
     Nothing -> True
 
 today :: IO Day
@@ -300,13 +302,8 @@ fillInGaps mins allTasks reducedTasks
   getTaskFromEntity (Entity _ t) = t
 
 daysList
-  :: UTCTime
-  -> Day
-  -> Int
-  -> [Entity TaskDependency]
-  -> [Entity Task]
-  -> [Entity Task]
-daysList currUtcTime day min dependencies tasks =
+  :: Day -> Int -> [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
+daysList day min dependencies tasks =
   ( sortTasks dependencies
     . fillInGaps min (dueByDay day tasks)
     . reduceLoad day min
