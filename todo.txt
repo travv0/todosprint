@@ -1,3 +1,5 @@
+Postponing more than one task only shows one task postponed?
+Fix redirect from add dependencies page
 Make today page look pretty
 	confirm task deletion
 Make new task page look pretty
