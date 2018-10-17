@@ -8,7 +8,7 @@
 module Handler.Task where
 
 import           Database.Persist.Sql
-import           Yesod.Form.Bootstrap3
+import           Yesod.Form.Bootstrap4
 import           Import
 import           Yesod.Form.Jquery
 import           RepeatInterval
@@ -66,11 +66,11 @@ repeatIntervalField = Field
 
 taskForm :: UserId -> Maybe Task -> Form Task
 taskForm userId mtask =
-  renderBootstrap3
+  renderBootstrap4
       (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
     $   Task
     <$> areq textField "Task Name" (taskName <$> mtask)
-    <*> areq intField "Duration in Minutes" (taskDuration <$> mtask)
+    <*> areq durationField "Duration in Minutes" (taskDuration <$> mtask)
     <*> areq (selectField optionsEnum) "Priority" (taskPriority <$> mtask)
     <*> aopt (jqueryDayField def { jdsChangeYear = True })
              "Due Date"
@@ -81,6 +81,9 @@ taskForm userId mtask =
     <*> pure Nothing
     <*> pure Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
+ where
+  durationField =
+    checkBool (> 0) ("Duration must be greater than 0." :: Text) intField
 
 data PostponeTodayInfo = PostponeTodayInfo
   { pptTime :: TimeOfDay }
@@ -92,7 +95,7 @@ data PostponeDateInfo = PostponeDateInfo
 
 postponeTodayForm :: Form PostponeTodayInfo
 postponeTodayForm =
-  renderBootstrap3
+  renderBootstrap4
       (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
     $   PostponeTodayInfo
     <$> areq timeField "Postpone until later today" Nothing
@@ -100,7 +103,7 @@ postponeTodayForm =
 
 postponeDateForm :: Form PostponeDateInfo
 postponeDateForm =
-  renderBootstrap3
+  renderBootstrap4
       (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
     $   PostponeDateInfo
     <$> areq (jqueryDayField def { jdsChangeYear = True })
