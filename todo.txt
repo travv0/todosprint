@@ -1,10 +1,11 @@
-require due date if you select "from due date" or if you repeat by unit of time
-automatically set unset due date if repeating by days of week to next occurrence of one of those weekdays
 Make today page look pretty
 Make new task page look pretty
+	require due date if you select "from due date" or if you repeat by unit of time
+	automatically set unset due date if repeating by days of week to next occurrence of one of those weekdays
 Make manage task page look pretty
 	show more details about tasks on manage task page
 Make add dependencies page look pretty
 Handle logged-out user better
 Make login page look pretty
+Make postpone page look pretty
 does stable topological sort exist???
