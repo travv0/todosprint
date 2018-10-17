@@ -3,4 +3,4 @@
         <div .row>
             <div .col-lg-12>
                 <p>
-                    ^{taskList tasks}
+                    ^{taskList tasks postponedTasks}
