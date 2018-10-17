@@ -125,13 +125,13 @@ instance Yesod App
           [ NavbarLeft $
             MenuItem
               { menuItemLabel = "Home"
-              , menuItemRoute = HomeR
-              , menuItemAccessCallback = True
+              , menuItemRoute = TodayR
+              , menuItemAccessCallback = isJust muser
               }
           , NavbarLeft $
             MenuItem
-              { menuItemLabel = "Today"
-              , menuItemRoute = TodayR
+              { menuItemLabel = "Manage"
+              , menuItemRoute = HomeR
               , menuItemAccessCallback = isJust muser
               }
           , NavbarLeft $
