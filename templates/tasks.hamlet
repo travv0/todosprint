@@ -2,15 +2,27 @@
 $if null tasks
     no tasks
 $else
-    <ul>
+    <div .taskList>
         $forall task <- tasks
-            <div :elem task postponedTasks:class="postponed">
-                <li>#{taskName $ entityVal task} #{show $ taskDueDate $ entityVal task}
-                <form action=@{MarkDoneR $ entityKey task} method=post>
-                    <a href="javascript:;" onclick="parentNode.submit();">mark done
-                <a href=@{EditTaskR $ entityKey task}>edit task | #
-                <a href=@{AddDepsR $ entityKey task}>edit dependencies | #
-                <a href=@{PostponeTaskR $ entityKey task}>postpone task | #
-                $if isJust (taskPostponeTime $ entityVal task) || isJust (taskPostponeDay $ entityVal task)
-                    <a href=@{UnpostponeR $ entityKey task}>unpostpone task | #
-                <a href=@{DeleteTaskR $ entityKey task}>delete task
+            <div .row.task :elem task postponedTasks:class="postponed">
+                <div .col-xs-1>
+                    <form .checkbox action=@{MarkDoneR $ entityKey task} method=post>
+                        <a href="javascript:;" onclick="parentNode.submit();">
+                            <span class="glyphicon glyphicon-unchecked" aria-hidden="true">
+                <div .col-xs-7>
+                    #{taskName $ entityVal task}
+                <div .col-xs-4>
+                    <span .taskManagement>
+                        <a href=@{EditTaskR $ entityKey task}>
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true">
+                        <!-- <a href=@{AddDepsR $ entityKey task}>edit dependencies | # -->
+                        $if isJust (taskPostponeTime $ entityVal task) || isJust (taskPostponeDay $ entityVal task)
+                            <a href=@{UnpostponeR $ entityKey task}>
+                                <span class="glyphicon glyphicon-calendar" aria-hidden="true" style="color: lightgray">
+                        $else
+                            <a href=@{PostponeTaskR $ entityKey task}>
+                                <span class="glyphicon glyphicon-calendar" aria-hidden="true">
+                        <!-- $if isJust (taskPostponeTime $ entityVal task) || isJust (taskPostponeDay $ entityVal task) -->
+                        <!--     <a href=@{UnpostponeR $ entityKey task}>unpostpone task | # -->
+                        <a href=@{DeleteTaskR $ entityKey task}>
+                            <span class="glyphicon glyphicon-remove" aria-hidden="true">

@@ -67,7 +67,7 @@ repeatIntervalField = Field
 taskForm :: UserId -> Maybe Task -> Form Task
 taskForm userId mtask =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
+      (BootstrapHorizontalForm (ColSm 1) (ColSm 3) (ColSm 0) (ColSm 8))
     $   Task
     <$> areq textField "Task Name" (taskName <$> mtask)
     <*> areq intField "Duration in Minutes" (taskDuration <$> mtask)
