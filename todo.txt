@@ -1,4 +1,5 @@
 let repostpone after postpone time or date
+set google login creds from env var
 Make today page look pretty
 	confirm task deletion
 Make new task page look pretty
