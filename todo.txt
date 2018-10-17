@@ -1,5 +1,3 @@
-make it so you can postpone tasks to later date (this one shouldn't be recursive)
-make it so you can un-postpone tasks
 require due date if you select "from due date" or if you repeat by unit of time
 automatically set unset due date if repeating by days of week to next occurrence of one of those weekdays
 Make look pretty
