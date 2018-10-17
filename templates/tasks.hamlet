@@ -13,16 +13,15 @@ $else
                     #{taskName $ entityVal task}
                 <div .col-xs-4>
                     <span .taskManagement>
-                        <a href=@{EditTaskR $ entityKey task}>
+                        <a .manageIcon href=@{EditTaskR $ entityKey task}>
                             <span class="glyphicon glyphicon-pencil" aria-hidden="true">
-                        <!-- <a href=@{AddDepsR $ entityKey task}>edit dependencies | # -->
+
                         $if isJust (taskPostponeTime $ entityVal task) || isJust (taskPostponeDay $ entityVal task)
-                            <a href=@{UnpostponeR $ entityKey task}>
+                            <a .manageIcon href=@{UnpostponeR $ entityKey task}>
                                 <span class="glyphicon glyphicon-calendar" aria-hidden="true" style="color: lightgray">
                         $else
-                            <a href=@{PostponeTaskR $ entityKey task}>
+                            <a .manageIcon href=@{PostponeTaskR $ entityKey task}>
                                 <span class="glyphicon glyphicon-calendar" aria-hidden="true">
-                        <!-- $if isJust (taskPostponeTime $ entityVal task) || isJust (taskPostponeDay $ entityVal task) -->
-                        <!--     <a href=@{UnpostponeR $ entityKey task}>unpostpone task | # -->
-                        <a href=@{DeleteTaskR $ entityKey task}>
+
+                        <a .manageIcon href=@{DeleteTaskR $ entityKey task}>
                             <span class="glyphicon glyphicon-remove" aria-hidden="true">
