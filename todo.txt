@@ -1,4 +1,3 @@
-make tasks postponed to later in the day recursively postpone dependent tasks (tasks postponed later in the day should just be shaded gray)
 make it so you can postpone tasks to later date (this one shouldn't be recursive)
 make it so you can un-postpone tasks
 require due date if you select "from due date" or if you repeat by unit of time
