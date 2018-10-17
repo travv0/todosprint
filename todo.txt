@@ -1,4 +1,3 @@
-Editing task (changed date) cleared out postponement
 let repostpone after postpone time or date
 Make today page look pretty
 	confirm task deletion

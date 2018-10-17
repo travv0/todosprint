@@ -130,7 +130,12 @@ getEditTaskR taskId = do
   ((res, widget), enctype) <- runFormPost $ taskForm userId $ task
   case res of
     FormSuccess t -> do
-      runDB $ replace taskId t
+      case task of
+        Just t2 -> runDB $ replace taskId $ t
+          { taskPostponeTime = taskPostponeTime t2
+          , taskPostponeDay  = taskPostponeDay t2
+          }
+        Nothing -> runDB $ replace taskId t
       setMessage "Task updated"
       redirectUltDest HomeR
     _ -> defaultLayout $(widgetFile "edit-task")
