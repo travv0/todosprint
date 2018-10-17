@@ -8,7 +8,9 @@ $else
                 <li>#{taskName $ entityVal task} #{show $ taskDueDate $ entityVal task}
                 <form action=@{MarkDoneR $ entityKey task} method=post>
                     <a href="javascript:;" onclick="parentNode.submit();">mark done
-                <a href=@{EditTaskR $ entityKey task}>edit task
-                <a href=@{AddDepsR $ entityKey task}>edit dependencies
-                <a href=@{PostponeTaskR $ entityKey task}>postpone task
+                <a href=@{EditTaskR $ entityKey task}>edit task | #
+                <a href=@{AddDepsR $ entityKey task}>edit dependencies | #
+                <a href=@{PostponeTaskR $ entityKey task}>postpone task | #
+                $if isJust (taskPostponeTime $ entityVal task) || isJust (taskPostponeDay $ entityVal task)
+                    <a href=@{UnpostponeR $ entityKey task}>unpostpone task | #
                 <a href=@{DeleteTaskR $ entityKey task}>delete task

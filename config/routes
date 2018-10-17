@@ -15,6 +15,7 @@
 /postpone-task/#TaskId PostponeTaskR GET
 /postpone-today/#TaskId PostponeTodayR POST
 /postpone-date/#TaskId PostponeDateR POST
+/unpostpone/#TaskId UnpostponeR GET
 /add-deps/#TaskId AddDepsR GET POST
 /today/ TodayR GET POST
 /mark-done/#TaskId MarkDoneR POST

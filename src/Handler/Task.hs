@@ -178,10 +178,15 @@ postPostponeTodayR taskId = do
 
 postPostponeDateR :: TaskId -> Handler ()
 postPostponeDateR taskId = do
-  (Entity _ user)          <- requireAuth
   ((res, widget), enctype) <- runFormPost postponeDateForm
   case res of
     FormSuccess day -> do
       runDB $ update taskId [TaskPostponeDay =. Just (ppdDay day)]
       redirectUltDest HomeR
     _ -> redirectUltDest HomeR
+
+getUnpostponeR :: TaskId -> Handler ()
+getUnpostponeR taskId = do
+  runDB
+    $ update taskId [TaskPostponeDay =. Nothing, TaskPostponeTime =. Nothing]
+  redirectUltDest HomeR
