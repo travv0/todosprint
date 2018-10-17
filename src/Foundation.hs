@@ -169,7 +169,7 @@ instance Yesod App
                    Just (userKey, user) -> rawJS $ show $ fromSqlKey userKey
     pc <-
       widgetToPageContent $ do
-        addStylesheet $ StaticR css_bootstrap_min_css
+        addStylesheet $ StaticR css_bootstrap_css
         $(widgetFile "update-tz")
         $(widgetFile "default-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")

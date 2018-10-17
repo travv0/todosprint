@@ -8,7 +8,7 @@
 module Handler.AddDeps where
 
 import           Database.Persist.Sql
-import           Yesod.Form.Bootstrap4
+import           Yesod.Form.Bootstrap3
 import           Import
 import           Yesod.Form.Jquery
 import           Priority
@@ -21,7 +21,7 @@ data TaskDeps = TaskDeps
 
 depsForm :: TaskId -> [(Text, TaskId)] -> (Maybe [TaskId]) -> Form TaskDeps
 depsForm taskId tasks taskDeps =
-  renderBootstrap4
+  renderBootstrap3
       (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
     $   TaskDeps
     <$> aopt (checkboxesFieldList tasks) "Dependencies" (Just taskDeps)
