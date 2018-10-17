@@ -1,2 +1,3 @@
+<a href=@{AddDepsR taskId}>Edit dependencies
 <form method=post action=@{EditTaskR taskId} enctype=#{enctype}>
     ^{widget}

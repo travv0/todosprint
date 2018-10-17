@@ -29,6 +29,7 @@ depsForm taskId tasks taskDeps =
 
 getAddDepsR :: TaskId -> Handler Html
 getAddDepsR taskId = do
+  setUltDest $ EditTaskR taskId
   let optionify (Entity taskId task) = (taskName task, taskId)
   let getTaskDepId (Entity tdid td) = taskDependencyDependsOnTaskId td
   userId <- requireAuthId

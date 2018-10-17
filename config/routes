@@ -7,7 +7,7 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
-/ HomeR GET
+/ TodayR GET POST
 
 /new-task NewTaskR GET POST
 /edit-task/#TaskId EditTaskR GET POST
@@ -17,6 +17,6 @@
 /postpone-date/#TaskId PostponeDateR POST
 /unpostpone/#TaskId UnpostponeR GET
 /add-deps/#TaskId AddDepsR GET POST
-/today/ TodayR GET POST
+/manage/ HomeR GET
 /mark-done/#TaskId MarkDoneR POST
 /time-zone TimeZoneR POST
