@@ -79,10 +79,15 @@ taskForm userId mtask =
     <*> pure False
     <*> pure userId
     <*> pure Nothing
+    <*> pure Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 data PostponeTodayInfo = PostponeTodayInfo
   { pptTime :: TimeOfDay }
+  deriving Show
+
+data PostponeDateInfo = PostponeDateInfo
+  { ppdDay :: Day }
   deriving Show
 
 postponeTodayForm :: Form PostponeTodayInfo
@@ -91,6 +96,16 @@ postponeTodayForm =
       (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
     $   PostponeTodayInfo
     <$> areq timeField "Postpone until later today" Nothing
+    <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
+
+postponeDateForm :: Form PostponeDateInfo
+postponeDateForm =
+  renderBootstrap3
+      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
+    $   PostponeDateInfo
+    <$> areq (jqueryDayField def { jdsChangeYear = True })
+             "Postpone until future date"
+             Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 getNewTaskR :: Handler Html
@@ -135,7 +150,8 @@ getDeleteTaskR taskId = do
 
 getPostponeTaskR :: TaskId -> Handler Html
 getPostponeTaskR taskId = do
-  (widget, enctype) <- generateFormPost postponeTodayForm
+  (todayWidget, todayEnctype) <- generateFormPost postponeTodayForm
+  (dateWidget , dateEnctype ) <- generateFormPost postponeDateForm
   defaultLayout $(widgetFile "postpone-task")
 
 postPostponeTodayR :: TaskId -> Handler ()
@@ -159,3 +175,18 @@ postPostponeTodayR taskId = do
         ]
       redirectUltDest HomeR
     _ -> redirectUltDest HomeR
+
+postPostponeDateR :: TaskId -> Handler ()
+postPostponeDateR taskId = do
+  ((res, widget), enctype) <- runFormPost postponeDateForm
+  case res of
+    FormSuccess day -> do
+      runDB $ update taskId [TaskPostponeDay =. Just (ppdDay day)]
+      redirectUltDest HomeR
+    _ -> redirectUltDest HomeR
+
+getUnpostponeR :: TaskId -> Handler ()
+getUnpostponeR taskId = do
+  runDB
+    $ update taskId [TaskPostponeDay =. Nothing, TaskPostponeTime =. Nothing]
+  redirectUltDest HomeR
