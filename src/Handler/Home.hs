@@ -324,9 +324,10 @@ postMarkDoneR taskId = do
   runDB $ case task of
     Just t -> case incrementDueDate cdate t of
       Just t2 -> do
-        newTaskId <- insert t2
-        deps      <- selectList [TaskDependencyTaskId ==. taskId] []
-        depd      <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
+        newTaskId <- insert
+          $ t2 { taskPostponeDay = Nothing, taskPostponeTime = Nothing }
+        deps <- selectList [TaskDependencyTaskId ==. taskId] []
+        depd <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
         mapM
           (\(Entity _ dep) -> insert
             $ TaskDependency newTaskId (taskDependencyDependsOnTaskId dep)
