@@ -1,4 +1,5 @@
 Make today page look pretty
+	confirm task deletion
 Make new task page look pretty
 	require due date if you select "from due date" or if you repeat by unit of time
 	automatically set unset due date if repeating by days of week to next occurrence of one of those weekdays
