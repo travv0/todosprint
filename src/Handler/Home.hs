@@ -113,8 +113,9 @@ postponeDependencies tasks = postponeDependencies' tasks []
 postponeDependencies' :: [Entity Task] -> [Entity Task] -> Handler [Entity Task]
 postponeDependencies' []    postponedTasks = return postponedTasks
 postponeDependencies' tasks postponedTasks = do
-  tad <- taskAndDependencies (L.head tasks)
-  postponeDependencies' (L.tail tasks) tad
+  tad               <- taskAndDependencies (L.head tasks)
+  newPostponedTasks <- postponeDependencies' (L.tail tasks) tad
+  return $ postponedTasks ++ newPostponedTasks
 
 taskAndDependencies :: Entity Task -> Handler [Entity Task]
 taskAndDependencies task = do
