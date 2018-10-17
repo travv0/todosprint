@@ -19,6 +19,7 @@ Task
     done Bool
     userId UserId
     postponeTime UTCTime Maybe
+    postponeDay Day Maybe
     deriving Show Eq
 
 TaskDependency

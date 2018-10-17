@@ -1,2 +1,5 @@
-<form method=post action=@{PostponeTodayR taskId} enctype=#{enctype}>
-    ^{widget}
+<form method=post action=@{PostponeTodayR taskId} enctype=#{todayEnctype}>
+    ^{todayWidget}
+
+<form method=post action=@{PostponeDateR taskId} enctype=#{dateEnctype}>
+    ^{dateWidget}
