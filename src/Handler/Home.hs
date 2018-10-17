@@ -20,14 +20,18 @@ import qualified Data.Maybe                    as M
 import           Text.Julius                    ( RawJS(..) )
 import           Control.Monad
 
-taskList :: [Entity Task] -> Widget
-taskList tasks = $(widgetFile "tasks")
+taskList :: [Entity Task] -> [Entity Task] -> Widget
+taskList tasks postponedTasks = do
+  currUtcTime <- liftIO getCurrentTime
+  $(widgetFile "tasks")
 
 getHomeR :: Handler Html
 getHomeR = do
   setUltDestCurrent
-  userId <- requireAuthId
-  tasks  <- runDB $ getTasks userId [Asc TaskDueDate]
+  userId         <- requireAuthId
+  tasks          <- runDB $ getTasks userId [Asc TaskDueDate]
+  utcTime        <- liftIO getCurrentTime
+  postponedTasks <- postponedTaskList utcTime tasks
   defaultLayout $ do
     setTitle "Your Tasks"
     $(widgetFile "homepage")
@@ -95,6 +99,33 @@ utcToUserTime time user = do
   userTz <- userTimeZone user
   return $ utcToLocalTime userTz time
 
+postponedTaskList :: UTCTime -> [Entity Task] -> Handler [Entity Task]
+postponedTaskList currUtcTime tasks = postponeDependencies
+  $ filter postponed tasks
+ where
+  postponed (Entity _ task) = case taskPostponeTime task of
+    Nothing     -> False
+    Just ppTime -> currUtcTime < ppTime
+
+postponeDependencies :: [Entity Task] -> Handler [Entity Task]
+postponeDependencies tasks = postponeDependencies' tasks []
+
+postponeDependencies' :: [Entity Task] -> [Entity Task] -> Handler [Entity Task]
+postponeDependencies' []    postponedTasks = return postponedTasks
+postponeDependencies' tasks postponedTasks = do
+  tad <- taskAndDependencies (L.head tasks)
+  postponeDependencies' (L.tail tasks) tad
+
+taskAndDependencies :: Entity Task -> Handler [Entity Task]
+taskAndDependencies task = do
+  dependents <- runDB
+    $ selectList [TaskDependencyDependsOnTaskId ==. entityKey task] []
+  let tdIds = map (\(Entity _ td) -> taskDependencyTaskId td) dependents
+  dependentEntities <- runDB
+    $ mapM (\tdId -> selectList [TaskId ==. tdId] []) tdIds
+  more <- sequence $ map taskAndDependencies $ L.concat dependentEntities
+  return $ task : L.concat more
+
 getTodayR :: Handler Html
 getTodayR = do
   setUltDestCurrent
@@ -157,9 +188,10 @@ getTodayR = do
             then Nothing
             else Just $ estimateTimeOfCompletion tasks currentTime''
 
+      postponedTasks <- postponedTaskList utcTime tasks
       defaultLayout $ do
         setTimeWidget widget enctype tzOffsetId estimatedToc
-        $(widgetFile "tasks")
+        taskList tasks postponedTasks
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId Nothing
       defaultLayout $ setTimeWidget widget enctype tzOffsetId Nothing
@@ -281,10 +313,6 @@ daysList currUtcTime day min dependencies tasks =
     . dueByDay day
     )
     tasks
- where
-  notPostponed (Entity _ t) = case taskPostponeTime t of
-    Just tppTime -> currUtcTime > tppTime
-    Nothing      -> True
 
 postMarkDoneR :: TaskId -> Handler Html
 postMarkDoneR taskId = do
