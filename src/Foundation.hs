@@ -32,7 +32,6 @@ import           Yesod.Default.Util             ( addStaticContentExternal )
 
 import           Yesod.Form.Jquery
 import           Data.Time
-import           System.Environment
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -57,14 +56,6 @@ data MenuItem = MenuItem
 data MenuTypes
   = NavbarLeft MenuItem
   | NavbarRight MenuItem
-
-clientId :: IO Text
-clientId = fmap pack $ getEnv "GoogleClientID"
-  -- "1003459615329-f1o9glc5detcestdr298rqg5ggnfs40v.apps.googleusercontent.com"
-
-clientSecret :: IO Text
-clientSecret = fmap pack $ getEnv "GoogleClientSecret"
-  -- "LwgujWvjSsRQjsqcFa8TABP4"
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
