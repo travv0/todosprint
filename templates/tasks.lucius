@@ -43,6 +43,11 @@
     white-space: nowrap;
 }
 
+.taskDuration {
+    font-size: 11px;
+    color: gray;
+}
+
 .taskRepeatIcon {
     padding-right: 5px;
 }

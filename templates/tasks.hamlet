@@ -10,8 +10,13 @@ $else
                         <a href="javascript:;" title="Complete task" onclick="parentNode.submit();">
                             <span class="glyphicon glyphicon-unchecked" aria-hidden="true">
                 <td .taskInfo #task-#{show $ fromSqlKey $ entityKey task}>
-                    <span .taskName>
-                        #{taskName $ entityVal task}
+                    <span .taskNameAndDuration>
+                        <span .taskName>
+                            #{taskName $ entityVal task}
+                        $if detailed
+                            <br>
+                            <span .taskDuration>
+                                Duration: #{show $ taskDuration $ entityVal task}
                     <span .taskDate>
                         $if detailed
                             $if isJust $ taskRepeat $ entityVal task
