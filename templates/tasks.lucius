@@ -24,9 +24,23 @@
     margin-bottom: -1px;
 }
 
-.taskName {
-    width: 400px;
+.taskInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 400px;
     word-break: break-word;
+}
+
+.taskDate {
+    color: gray;
+    text-align: right;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.taskRepeatIcon {
+    padding-right: 5px;
 }
 
 .manageIcon {

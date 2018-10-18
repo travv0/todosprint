@@ -22,7 +22,9 @@ import           Control.Monad
 
 taskList :: [Entity Task] -> [Entity Task] -> Widget
 taskList tasks postponedTasks = do
+  (Entity _ user) <- requireAuth
   currUtcTime <- liftIO getCurrentTime
+  let userTz = userTimeZone user
   $(widgetFile "tasks")
 
 getHomeR :: Handler Html
@@ -203,6 +205,14 @@ estimateTimeOfCompletion tasks tod = TimeOfDay hours mins (todSec tod)
   taskMins = timeToComplete tasks
   mins     = (todMin tod + taskMins) `mod` 60
   hours    = (todHour tod + ((todMin tod + taskMins) `div` 60)) `mod` 24
+
+formatPostponeTime :: TimeZone -> Entity Task -> String
+formatPostponeTime userTz (Entity _ task) =
+  case taskPostponeTime task of
+    Just time ->
+      formatTime defaultTimeLocale "%l:%M %p" $ userTime time
+    Nothing -> ""
+  where userTime time = utcToLocalTime userTz time
 
 setTimeWidget :: Widget -> Enctype -> Text -> Maybe TimeOfDay -> Widget
 setTimeWidget widget enctype tzOffsetId estimatedToc = do
