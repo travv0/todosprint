@@ -194,6 +194,7 @@ instance Yesod App
   isAuthorized (PostponeDateR taskId) _ = userOwnsTask taskId
   isAuthorized (UnpostponeR taskId) _ = userOwnsTask taskId
   isAuthorized (AddDepsR taskId) _ = userOwnsTask taskId
+  isAuthorized (AddDependentsR taskId) _ = userOwnsTask taskId
   isAuthorized TodayR _         = isAuthenticated
   isAuthorized (MarkDoneR taskId) _ = userOwnsTask taskId
   isAuthorized TimeZoneR _      = isAuthenticated

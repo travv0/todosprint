@@ -19,12 +19,12 @@ data TaskDeps = TaskDeps
   { deps :: Maybe [TaskId] }
   deriving Show
 
-depsForm :: TaskId -> [(Text, TaskId)] -> (Maybe [TaskId]) -> Form TaskDeps
-depsForm taskId tasks taskDeps =
+depsForm :: TaskId -> [(Text, TaskId)] -> String -> (Maybe [TaskId]) -> Form TaskDeps
+depsForm taskId tasks label taskDeps =
   renderBootstrap3
       (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
     $   TaskDeps
-    <$> aopt (checkboxesFieldList tasks) "Dependencies" (Just taskDeps)
+    <$> aopt (checkboxesFieldList tasks) (fromString label) (Just taskDeps)
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 getAddDepsR :: TaskId -> Handler Html
@@ -39,7 +39,7 @@ getAddDepsR taskId = do
   taskDeps <- runDB $ selectList [TaskDependencyTaskId ==. taskId] []
 
   ((res, widget), enctype) <-
-    runFormPost $ depsForm taskId (map optionify tasks) $ Just $ map
+    runFormPost $ depsForm taskId (map optionify tasks) "Dependencies" $ Just $ map
       getTaskDepId
       taskDeps
 
@@ -61,3 +61,38 @@ getAddDepsR taskId = do
 
 postAddDepsR :: TaskId -> Handler Html
 postAddDepsR = getAddDepsR
+
+getAddDependentsR :: TaskId -> Handler Html
+getAddDependentsR taskId = do
+  let optionify (Entity taskId task) = (taskName task, taskId)
+  let getTaskDepId (Entity tdid td) = taskDependencyTaskId td
+  userId <- requireAuthId
+
+  tasks  <- runDB $ selectList
+    [TaskUserId ==. userId, TaskId !=. taskId, TaskDone ==. False]
+    []
+  taskDeps <- runDB $ selectList [TaskDependencyDependsOnTaskId ==. taskId] []
+
+  ((res, widget), enctype) <-
+    runFormPost $ depsForm taskId (map optionify tasks) "Dependents" $ Just $ map
+      getTaskDepId
+      taskDeps
+
+  case res of
+    FormSuccess ds -> do
+      case deps ds of
+        Just jds -> do
+          runDB $ do
+            deleteWhere [TaskDependencyDependsOnTaskId ==. taskId]
+            mapM (\d -> insert $ TaskDependency d taskId) jds
+        Nothing -> do
+          runDB $ deleteWhere [TaskDependencyDependsOnTaskId ==. taskId]
+          setMessage "Dependents updated"
+          redirect $ EditTaskR taskId
+      setMessage "Dependents updated"
+      redirect $ EditTaskR taskId
+    _ -> do
+      defaultLayout $(widgetFile "add-dependents")
+
+postAddDependentsR :: TaskId -> Handler Html
+postAddDependentsR = getAddDependentsR
