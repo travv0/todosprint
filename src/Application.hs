@@ -35,6 +35,7 @@ import Network.Wai.Middleware.RequestLogger (Destination (Logger),
                                              OutputFormat (..), destination,
                                              mkRequestLogger, outputFormat)
 import System.Log.FastLogger (defaultBufSize, newStdoutLoggerSet, toLogStr)
+import System.Environment
 
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
@@ -84,8 +85,16 @@ makeFoundation appSettings = do
     -- Perform database migration using our application's logging settings.
     runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
 
+    let app = mkFoundation pool
+    mClientId <- lookupEnv "CLIENT_ID"
+    mClientSecret <- lookupEnv "CLIENT_SECRET"
+
     -- Return the foundation
-    return $ mkFoundation pool
+    return $ app
+        { googleClientId = fromMaybe "1003459615329-f1o9glc5detcestdr298rqg5ggnfs40v.apps.googleusercontent.com"
+                                     $ fmap pack mClientId
+        , googleClientSecret = fromMaybe "LwgujWvjSsRQjsqcFa8TABP4" $ fmap pack mClientSecret
+        }
 
 -- | Convert our foundation to a WAI Application by calling @toWaiAppPlain@ and
 -- applying some additional middlewares.
