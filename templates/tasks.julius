@@ -1,0 +1,14 @@
+$(function() {
+	$(".task").hover(
+		function() {
+			$(this).css("background-color", "lightcyan");
+		},
+		function () {
+			$(this).css("background-color", "initial");
+		});
+
+	$(".taskDate").each(
+		function() {
+			$(this).html($(this).html().replace(/^\<br.*?\>+|\<br.*?\>+$/g, ''))
+		});
+})

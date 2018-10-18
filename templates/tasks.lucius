@@ -28,7 +28,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* max-width: 463px; */
     width: 100%;
     word-break: break-word;
 }
