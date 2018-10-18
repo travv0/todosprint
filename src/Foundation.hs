@@ -31,8 +31,8 @@ import qualified Yesod.Core.Unsafe             as Unsafe
 import           Yesod.Default.Util             ( addStaticContentExternal )
 
 import           Yesod.Form.Jquery
-
 import           Data.Time
+import           System.Environment
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -44,6 +44,8 @@ data App = App
   , appConnPool    :: ConnectionPool -- ^ Database connection pool.
   , appHttpManager :: Manager
   , appLogger      :: Logger
+  , googleClientId       :: Text
+  , googleClientSecret   :: Text
   }
 
 data MenuItem = MenuItem
@@ -56,12 +58,13 @@ data MenuTypes
   = NavbarLeft MenuItem
   | NavbarRight MenuItem
 
-clientId :: Text
-clientId =
-  "1003459615329-f1o9glc5detcestdr298rqg5ggnfs40v.apps.googleusercontent.com"
+clientId :: IO Text
+clientId = fmap pack $ getEnv "GoogleClientID"
+  -- "1003459615329-f1o9glc5detcestdr298rqg5ggnfs40v.apps.googleusercontent.com"
 
-clientSecret :: Text
-clientSecret = "LwgujWvjSsRQjsqcFa8TABP4"
+clientSecret :: IO Text
+clientSecret = fmap pack $ getEnv "GoogleClientSecret"
+  -- "LwgujWvjSsRQjsqcFa8TABP4"
 
 -- This is where we define all of the routes in our application. For a full
 -- explanation of the syntax, please see:
@@ -293,7 +296,7 @@ instance YesodAuth App where
               }
     -- You can add other plugins like Google Email, email or OAuth here
   authPlugins :: App -> [AuthPlugin App]
-  authPlugins app = [authGoogleEmail clientId clientSecret]
+  authPlugins app = [authGoogleEmail (googleClientId app) (googleClientSecret app)]
 
 -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult
