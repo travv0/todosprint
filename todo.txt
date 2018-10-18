@@ -1,5 +1,4 @@
 let repostpone after postpone time or date
-make add dependents screen
 set google login creds from env var
 Make today page look pretty
 	confirm task deletion
