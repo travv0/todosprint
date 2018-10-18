@@ -17,6 +17,7 @@
 /postpone-date/#TaskId PostponeDateR POST
 /unpostpone/#TaskId UnpostponeR GET
 /add-deps/#TaskId AddDepsR GET POST
+/add-dependents/#TaskId AddDependentsR GET POST
 /manage/ HomeR GET
 /mark-done/#TaskId MarkDoneR POST
 /time-zone TimeZoneR POST
