@@ -19,7 +19,7 @@
 
 .task {
     border-style: solid;
-    border-color: black;
+    border-color: darkgray;
     border-width: 1px;
     margin-bottom: -1px;
 }
