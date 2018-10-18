@@ -13,17 +13,19 @@ $else
                     <span .taskName>
                         #{taskName $ entityVal task}
                     <span .taskDate>
-                        $if isJust $ taskRepeat $ entityVal task
-                            <span class="glyphicon glyphicon-repeat taskRepeatIcon">
-                        $maybe dd <- taskDueDate $ entityVal task
-                            #{show $ dd}
+                        $if detailed
+                            $if isJust $ taskRepeat $ entityVal task
+                                <span class="glyphicon glyphicon-repeat taskRepeatIcon">
+                            $maybe dd <- taskDueDate $ entityVal task
+                                #{show $ dd}
                         $if isJust $ taskPostponeTime $ entityVal task
-                            <br>
+                            $if detailed
+                                <br>
                             $maybe tz <- userTz
                                 (#{formatPostponeTime tz task})
                             $nothing
                                 (#{formatPostponeTime utc task})
-                        $if isJust $ taskPostponeDay $ entityVal task
+                        $if detailed && (isJust $ taskPostponeDay $ entityVal task)
                             <br>
                             (#{show $ M.fromJust $ taskPostponeDay $ entityVal task})
                 <td .taskManagement>

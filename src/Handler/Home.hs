@@ -20,8 +20,8 @@ import qualified Data.Maybe                    as M
 import           Text.Julius                    ( RawJS(..) )
 import           Control.Monad
 
-taskList :: [Entity Task] -> [Entity Task] -> Widget
-taskList tasks postponedTasks = do
+taskList :: [Entity Task] -> [Entity Task] -> Bool -> Widget
+taskList tasks postponedTasks detailed = do
   (Entity _ user) <- requireAuth
   currUtcTime <- liftIO getCurrentTime
   let userTz = userTimeZone user
@@ -194,7 +194,7 @@ getTodayR = do
       postponedTasks <- postponedTaskList utcTime tasks
       defaultLayout $ do
         setTimeWidget widget enctype tzOffsetId estimatedToc
-        taskList tasks postponedTasks
+        taskList tasks postponedTasks False
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId Nothing
       defaultLayout $ setTimeWidget widget enctype tzOffsetId Nothing
