@@ -19,7 +19,8 @@ data TaskDeps = TaskDeps
   { deps :: Maybe [TaskId] }
   deriving Show
 
-depsForm :: TaskId -> [(Text, TaskId)] -> String -> (Maybe [TaskId]) -> Form TaskDeps
+depsForm
+  :: TaskId -> [(Text, TaskId)] -> String -> (Maybe [TaskId]) -> Form TaskDeps
 depsForm taskId tasks label taskDeps =
   renderBootstrap3
       (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
@@ -31,17 +32,16 @@ getAddDepsR :: TaskId -> Handler Html
 getAddDepsR taskId = do
   let optionify (Entity taskId task) = (taskName task, taskId)
   let getTaskDepId (Entity tdid td) = taskDependencyDependsOnTaskId td
-  userId <- requireAuthId
+  userId                   <- requireAuthId
 
-  tasks  <- runDB $ selectList
-    [TaskUserId ==. userId, TaskId !=. taskId, TaskDone ==. False]
-    []
+  tasks                    <- runDB $ getTasks userId taskId
   taskDeps <- runDB $ selectList [TaskDependencyTaskId ==. taskId] []
 
   ((res, widget), enctype) <-
-    runFormPost $ depsForm taskId (map optionify tasks) "Dependencies" $ Just $ map
-      getTaskDepId
-      taskDeps
+    runFormPost
+    $ depsForm taskId (map optionify tasks) "Dependencies"
+    $ Just
+    $ map getTaskDepId taskDeps
 
   case res of
     FormSuccess ds -> do
@@ -49,7 +49,7 @@ getAddDepsR taskId = do
         Just jds -> do
           runDB $ do
             deleteWhere [TaskDependencyTaskId ==. taskId]
-            mapM (\d -> insert $ TaskDependency taskId d) jds
+            mapM (\d -> insert $ TaskDependency taskId d False) jds
         Nothing -> do
           runDB $ deleteWhere [TaskDependencyTaskId ==. taskId]
           setMessage "Dependencies updated"
@@ -66,17 +66,16 @@ getAddDependentsR :: TaskId -> Handler Html
 getAddDependentsR taskId = do
   let optionify (Entity taskId task) = (taskName task, taskId)
   let getTaskDepId (Entity tdid td) = taskDependencyTaskId td
-  userId <- requireAuthId
+  userId                   <- requireAuthId
 
-  tasks  <- runDB $ selectList
-    [TaskUserId ==. userId, TaskId !=. taskId, TaskDone ==. False]
-    []
+  tasks                    <- runDB $ getTasks userId taskId
   taskDeps <- runDB $ selectList [TaskDependencyDependsOnTaskId ==. taskId] []
 
   ((res, widget), enctype) <-
-    runFormPost $ depsForm taskId (map optionify tasks) "Dependents" $ Just $ map
-      getTaskDepId
-      taskDeps
+    runFormPost
+    $ depsForm taskId (map optionify tasks) "Dependents"
+    $ Just
+    $ map getTaskDepId taskDeps
 
   case res of
     FormSuccess ds -> do
@@ -84,7 +83,7 @@ getAddDependentsR taskId = do
         Just jds -> do
           runDB $ do
             deleteWhere [TaskDependencyDependsOnTaskId ==. taskId]
-            mapM (\d -> insert $ TaskDependency d taskId) jds
+            mapM (\d -> insert $ TaskDependency d taskId False) jds
         Nothing -> do
           runDB $ deleteWhere [TaskDependencyDependsOnTaskId ==. taskId]
           setMessage "Dependents updated"
@@ -96,3 +95,11 @@ getAddDependentsR taskId = do
 
 postAddDependentsR :: TaskId -> Handler Html
 postAddDependentsR = getAddDependentsR
+
+getTasks userId taskId = selectList
+  [ TaskUserId ==. userId
+  , TaskId !=. taskId
+  , TaskDone ==. False
+  , TaskDeleted ==. False
+  ]
+  []

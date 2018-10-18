@@ -32,6 +32,8 @@ import           Yesod.Default.Util             ( addStaticContentExternal )
 
 import           Yesod.Form.Jquery
 
+import           Data.Time
+
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
@@ -272,8 +274,11 @@ instance YesodAuth App where
     liftHandler $
     runDB $ do
       x <- getBy $ UniqueEmail $ credsIdent creds
+      currTime <- liftIO $ getCurrentTime
       case x of
-        Just (Entity uid _) -> return $ Authenticated uid
+        Just (Entity uid _) -> do
+          updateWhere [UserEmail ==. credsIdent creds] [UserLastLogin =. currTime]
+          return $ Authenticated uid
         Nothing ->
           Authenticated <$>
           insert
@@ -283,6 +288,8 @@ instance YesodAuth App where
               , userLastName = Nothing
               , userDueTime = Nothing
               , userDueTimeOffset = Nothing
+              , userLastLogin = currTime
+              , userCreateTime = currTime
               }
     -- You can add other plugins like Google Email, email or OAuth here
   authPlugins :: App -> [AuthPlugin App]
