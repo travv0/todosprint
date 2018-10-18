@@ -2,8 +2,8 @@
     color: lightgrey;
 }
 
-.checkbox {
-    display: inline;
+.taskCheckbox {
+    width: 35px;
 }
 
 .taskManagement {
@@ -28,14 +28,19 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 400px;
+    /* max-width: 463px; */
+    width: 100%;
     word-break: break-word;
+}
+
+.taskName {
+    padding-right: 5px;
 }
 
 .taskDate {
     color: gray;
     text-align: right;
-    font-size: 0.9em;
+    font-size: 11px;
     white-space: nowrap;
 }
 
@@ -52,6 +57,9 @@
 }
 
 .taskList {
+    max-width: 600px;
     margin-left:auto;
     margin-right:auto;
+    table-layout: fixed;
+    width: 100%;
 }

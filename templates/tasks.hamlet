@@ -5,8 +5,8 @@ $else
     <table .taskList>
         $forall task <- tasks
             <tr .task :elem task postponedTasks:class="postponed">
-                <td>
-                    <form .checkbox action=@{MarkDoneR $ entityKey task} method=post>
+                <td .taskCheckbox>
+                    <form action=@{MarkDoneR $ entityKey task} method=post>
                         <a href="javascript:;" onclick="parentNode.submit();">
                             <span class="glyphicon glyphicon-unchecked" aria-hidden="true">
                 <td .taskInfo>
