@@ -7,7 +7,14 @@
 }
 
 .taskManagement {
-    float: right;
+    width: 100px;
+    min-width: 100px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.taskManagement > .manageIcon {
+    text-decoration: none;
 }
 
 .task {
@@ -15,9 +22,22 @@
     border-color: black;
     border-width: 1px;
     margin-bottom: -1px;
-    font-size: 1.3em;
+}
+
+.taskName {
+    width: 400px;
+    word-break: break-word;
 }
 
 .manageIcon {
-    margin: 4px;
+    margin: 5px;
+}
+
+.taskList td {
+    padding: 10px;
+}
+
+.taskList {
+    margin-left:auto;
+    margin-right:auto;
 }
