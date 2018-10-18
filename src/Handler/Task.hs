@@ -64,8 +64,8 @@ repeatIntervalField = Field
   , fieldEnctype = UrlEncoded
   }
 
-taskForm :: UserId -> Maybe Task -> Form Task
-taskForm userId mtask =
+taskForm :: UserId -> UTCTime -> Maybe Task -> Form Task
+taskForm userId currUtcTime mtask =
   renderBootstrap3
       (BootstrapHorizontalForm (ColSm 1) (ColSm 3) (ColSm 0) (ColSm 8))
     $   Task
@@ -79,6 +79,10 @@ taskForm userId mtask =
     <*> pure False
     <*> pure userId
     <*> pure Nothing
+    <*> pure Nothing
+    <*> pure currUtcTime
+    <*> pure Nothing
+    <*> pure False
     <*> pure Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
@@ -111,7 +115,8 @@ postponeDateForm =
 getNewTaskR :: Handler Html
 getNewTaskR = do
   userId                   <- requireAuthId
-  ((res, widget), enctype) <- runFormPost $ taskForm userId Nothing
+  currTime                 <- liftIO getCurrentTime
+  ((res, widget), enctype) <- runFormPost $ taskForm userId currTime Nothing
   case res of
     FormSuccess t -> do
       runDB $ insert t
@@ -127,7 +132,8 @@ getEditTaskR :: TaskId -> Handler Html
 getEditTaskR taskId = do
   userId                   <- requireAuthId
   task                     <- runDB $ get taskId
-  ((res, widget), enctype) <- runFormPost $ taskForm userId $ task
+  currTime                 <- liftIO getCurrentTime
+  ((res, widget), enctype) <- runFormPost $ taskForm userId currTime $ task
   case res of
     FormSuccess t -> do
       case task of
@@ -146,11 +152,13 @@ postEditTaskR = getEditTaskR
 getDeleteTaskR :: TaskId -> Handler ()
 getDeleteTaskR taskId = do
   setUltDestReferer
-  runDB $ deleteWhere
+  currTime <- liftIO getCurrentTime
+  runDB $ updateWhere
     (   [TaskDependencyTaskId ==. taskId]
     ||. [TaskDependencyDependsOnTaskId ==. taskId]
     )
-  runDB $ delete taskId
+    [TaskDependencyDeleted =. True]
+  runDB $ update taskId [TaskDeleted =. True, TaskDeleteTime =. Just currTime]
   redirectUltDest HomeR
 
 getPostponeTaskR :: TaskId -> Handler Html

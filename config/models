@@ -7,6 +7,8 @@ User
     lastName Text Maybe
     dueTime UTCTime Maybe
     dueTimeOffset Int Maybe
+    lastLogin UTCTime default=CURRENT_TIMESTAMP
+    createTime UTCTime default=CURRENT_TIMESTAMP
     UniqueEmail email
     deriving Show
 
@@ -20,10 +22,15 @@ Task
     userId UserId
     postponeTime UTCTime Maybe
     postponeDay Day Maybe
+    createTime UTCTime default=CURRENT_TIMESTAMP
+    doneTime UTCTime Maybe
+    deleted Bool default=false
+    deleteTime UTCTime Maybe
     deriving Show Eq
 
 TaskDependency
     taskId TaskId
     dependsOnTaskId TaskId
+    deleted Bool default=false
     TaskDepends taskId dependsOnTaskId
     deriving Show

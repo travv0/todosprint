@@ -23,7 +23,7 @@ import           Control.Monad
 taskList :: [Entity Task] -> [Entity Task] -> Bool -> Widget
 taskList tasks postponedTasks detailed = do
   (Entity _ user) <- requireAuth
-  currUtcTime <- liftIO getCurrentTime
+  currUtcTime     <- liftIO getCurrentTime
   let userTz = userTimeZone user
   $(widgetFile "tasks")
 
@@ -207,11 +207,9 @@ estimateTimeOfCompletion tasks tod = TimeOfDay hours mins (todSec tod)
   hours    = (todHour tod + ((todMin tod + taskMins) `div` 60)) `mod` 24
 
 formatPostponeTime :: TimeZone -> Entity Task -> String
-formatPostponeTime userTz (Entity _ task) =
-  case taskPostponeTime task of
-    Just time ->
-      formatTime defaultTimeLocale "%l:%M %p" $ userTime time
-    Nothing -> ""
+formatPostponeTime userTz (Entity _ task) = case taskPostponeTime task of
+  Just time -> formatTime defaultTimeLocale "%l:%M %p" $ userTime time
+  Nothing   -> ""
   where userTime time = utcToLocalTime userTz time
 
 setTimeWidget :: Widget -> Enctype -> Text -> Maybe TimeOfDay -> Widget
@@ -325,9 +323,9 @@ daysList day min dependencies tasks =
 postMarkDoneR :: TaskId -> Handler Html
 postMarkDoneR taskId = do
   setUltDestReferer
-  task <- runDB $ get taskId
-  runDB $ update taskId [TaskDone =. True]
-  utcTime              <- liftIO getCurrentTime
+  task    <- runDB $ get taskId
+  utcTime <- liftIO getCurrentTime
+  runDB $ update taskId [TaskDone =. True, TaskDoneTime =. Just utcTime]
   (Entity userId user) <- requireAuth
   let userTzOffset = fromMaybe 0 $ userDueTimeOffset user
   let cdate =
@@ -340,13 +338,15 @@ postMarkDoneR taskId = do
         deps <- selectList [TaskDependencyTaskId ==. taskId] []
         depd <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
         mapM
-          (\(Entity _ dep) -> insert
-            $ TaskDependency newTaskId (taskDependencyDependsOnTaskId dep)
+          (\(Entity _ dep) -> insert $ TaskDependency
+            newTaskId
+            (taskDependencyDependsOnTaskId dep)
+            False
           )
           deps
         mapM
           (\(Entity _ dep) ->
-            insert $ TaskDependency (taskDependencyTaskId dep) newTaskId
+            insert $ TaskDependency (taskDependencyTaskId dep) newTaskId False
           )
           depd
       Nothing -> redirectUltDest HomeR
@@ -389,4 +389,5 @@ incrementDueDate cdate task = case taskDueDate task of
     Nothing -> Nothing
   Nothing -> Nothing
 
-getTasks userId = selectList [TaskUserId ==. userId, TaskDone ==. False]
+getTasks userId =
+  selectList [TaskUserId ==. userId, TaskDone ==. False, TaskDeleted ==. False]
