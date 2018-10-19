@@ -16,7 +16,7 @@ $else
                         $if detailed
                             <br>
                             <span .taskDuration>
-                                Duration: #{show $ taskDuration $ entityVal task}
+                                #{show $ taskDuration $ entityVal task} minutes
                     <span .taskDate>
                         $if detailed
                             $if isJust $ taskRepeat $ entityVal task
