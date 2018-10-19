@@ -102,31 +102,47 @@ utcToUserTime time user = do
   return $ utcToLocalTime userTz time
 
 postponedTaskList :: UTCTime -> [Entity Task] -> Handler [Entity Task]
-postponedTaskList currUtcTime tasks = postponeDependencies
+postponedTaskList currUtcTime tasks = tasksAndDependents
   $ filter postponed tasks
  where
   postponed (Entity _ task) = case taskPostponeTime task of
     Nothing     -> False
     Just ppTime -> currUtcTime < ppTime
 
-postponeDependencies :: [Entity Task] -> Handler [Entity Task]
-postponeDependencies tasks = postponeDependencies' tasks []
+tasksAndDependents :: [Entity Task] -> Handler [Entity Task]
+tasksAndDependents tasks = tasksAndDependents' tasks []
 
-postponeDependencies' :: [Entity Task] -> [Entity Task] -> Handler [Entity Task]
-postponeDependencies' []    postponedTasks = return postponedTasks
-postponeDependencies' tasks postponedTasks = do
-  tad               <- taskAndDependencies (L.head tasks)
-  newPostponedTasks <- postponeDependencies' (L.tail tasks) tad
+tasksAndDependents' :: [Entity Task] -> [Entity Task] -> Handler [Entity Task]
+tasksAndDependents' []    postponedTasks = return postponedTasks
+tasksAndDependents' tasks postponedTasks = do
+  tad               <- taskAndDependents (L.head tasks)
+  newPostponedTasks <- tasksAndDependents' (L.tail tasks) tad
   return $ postponedTasks ++ newPostponedTasks
+
+taskAndDependents :: Entity Task -> Handler [Entity Task]
+taskAndDependents task = do
+  dependents <- runDB
+    $ selectList [TaskDependencyDependsOnTaskId ==. entityKey task
+                 , TaskDependencyDeleted ==. False] []
+  let tdIds = map (\(Entity _ td) -> taskDependencyTaskId td) dependents
+  dependentEntities <- runDB
+    $ mapM (\tdId -> selectList [ TaskId ==. tdId
+                                , TaskDeleted ==. False
+                                , TaskDone ==. False ] []) tdIds
+  more <- sequence $ map taskAndDependents $ L.concat dependentEntities
+  return $ task : L.concat more
 
 taskAndDependencies :: Entity Task -> Handler [Entity Task]
 taskAndDependencies task = do
-  dependents <- runDB
-    $ selectList [TaskDependencyDependsOnTaskId ==. entityKey task] []
-  let tdIds = map (\(Entity _ td) -> taskDependencyTaskId td) dependents
-  dependentEntities <- runDB
-    $ mapM (\tdId -> selectList [TaskId ==. tdId] []) tdIds
-  more <- sequence $ map taskAndDependencies $ L.concat dependentEntities
+  dependencies <- runDB
+    $ selectList [ TaskDependencyTaskId ==. entityKey task
+                 , TaskDependencyDeleted ==. False] []
+  let tdIds = map (\(Entity _ td) -> taskDependencyDependsOnTaskId td) dependencies
+  dependencyEntities <- runDB
+    $ mapM (\tdId -> selectList [ TaskId ==. tdId
+                                , TaskDeleted ==. False
+                                , TaskDone ==. False ] []) tdIds
+  more <- sequence $ map taskAndDependencies $ L.concat dependencyEntities
   return $ task : L.concat more
 
 getTodayR :: Handler Html
@@ -388,6 +404,52 @@ incrementDueDate cdate task = case taskDueDate task of
       Just task { taskDueDate = Just (addGregorianYearsClip ivl dd) }
     Nothing -> Nothing
   Nothing -> Nothing
+
+getTodayDepsR :: TaskId -> Handler Html
+getTodayDepsR taskId = do
+  setUltDestCurrent
+
+  (Entity userId user) <- requireAuth
+  mTask <- runDB $ getEntity taskId
+
+  case mTask of
+    Just task -> do
+      utcTime <- liftIO getCurrentTime
+      let today = localDay $ fromMaybe (utcToLocalTime utc utcTime) $ utcToUserTime utcTime user
+      let userTz = fromMaybe utc $ userTimeZone user
+
+      case taskPostponeTime $ entityVal task of
+        Just ppt -> do
+          -- get current time in user's time zone
+          currentTime <- liftIO $ utctDayTime <$> getCurrentTime
+          let currentTime'            = timeToTimeOfDay currentTime
+          let (dayAdj, currentTime'') = utcToLocalTimeOfDay userTz currentTime'
+          let curTime                 = timeOfDayToTime currentTime''
+
+          -- get due time in user's time zone
+          let ppt'                     = timeToTimeOfDay $ utctDayTime ppt
+          let (_, ppt'')               = utcToLocalTimeOfDay userTz ppt'
+          let ppTime                   = timeOfDayToTime ppt''
+
+          -- use those to calulate how many minutes are left
+          let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
+                (diffTimeToPicoseconds ppTime - diffTimeToPicoseconds curTime)
+          let mins = (todHour timeOfDay * 60) + todMin timeOfDay
+
+          tasks'  <- taskAndDependencies task
+          let tasks'' = L.delete task tasks'
+          deps    <- runDB (selectList [] [])
+
+          let tasks = L.nub $ daysList today mins deps tasks''
+
+          case tasks of
+            [] -> redirect TodayR
+            _ -> do
+              postponedTasks <- postponedTaskList utcTime tasks
+              defaultLayout $
+                taskList tasks postponedTasks True
+        Nothing -> redirect TodayR
+    Nothing -> redirect TodayR
 
 getTasks userId =
   selectList [TaskUserId ==. userId, TaskDone ==. False, TaskDeleted ==. False]
