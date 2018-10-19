@@ -60,7 +60,7 @@ a.unpostpone {
     color: gray;
 }
 
-.taskRepeatIcon {
+.modIcon {
     padding-right: 5px;
 }
 

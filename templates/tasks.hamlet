@@ -20,11 +20,13 @@ $else
                     <span .taskDate>
                         $if detailed
                             $if isJust $ taskRepeat $ entityVal task
-                                <span class="glyphicon glyphicon-repeat taskRepeatIcon">
+                                <span class="glyphicon glyphicon-repeat modIcon">
                             $maybe dd <- taskDueDate $ entityVal task
                                 #{show $ dd}
                         $if isJust $ taskPostponeTime $ entityVal task
                             <br>
+                            <a href=@{TodayDepsR $ entityKey task}>
+                                <span class="glyphicon glyphicon-th-list modIcon">
                             $maybe tz <- userTz
                                 (#{formatPostponeTime tz task})
                             $nothing

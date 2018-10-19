@@ -1,4 +1,3 @@
-add way to work on task dependencies before certain time
 add search
 let repostpone after postpone time or date
 Make today page look pretty
