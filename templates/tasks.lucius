@@ -24,6 +24,18 @@
     margin-bottom: -1px;
 }
 
+.task a {
+    color: darkgray;
+}
+
+.task a:hover {
+    color: gray;
+}
+
+a.unpostpone {
+    color: lightgray;
+}
+
 .taskInfo {
     display: flex;
     justify-content: space-between;
