@@ -456,7 +456,7 @@ getTodayDepsR taskId = do
             [] -> redirect TodayR
             _  -> do
               postponedTasks <- postponedTaskList utcTime tasks
-              defaultLayout $ taskList tasks postponedTasks True
+              defaultLayout $ taskList tasks postponedTasks False
         Nothing -> redirect TodayR
     Nothing -> redirect TodayR
 
