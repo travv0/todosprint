@@ -23,16 +23,20 @@ $else
                                 <span class="glyphicon glyphicon-repeat modIcon">
                             $maybe dd <- taskDueDate $ entityVal task
                                 #{show $ dd}
-                        $if isJust $ taskPostponeTime $ entityVal task
+                        $if (isJust $ taskPostponeTime $ entityVal task) && elem task postponedTasks
                             <br>
                             <a href=@{TodayDepsR $ entityKey task}>
                                 <span class="glyphicon glyphicon-th-list modIcon">
+                            <a href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
+                                <span class="glyphicon glyphicon-remove modIcon" aria-hidden="true">
                             $maybe tz <- userTz
                                 (#{formatPostponeTime tz task})
                             $nothing
                                 (#{formatPostponeTime utc task})
                         $if detailed && (isJust $ taskPostponeDay $ entityVal task)
                             <br>
+                            <a href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
+                                <span class="glyphicon glyphicon-remove modIcon" aria-hidden="true">
                             (#{show $ M.fromJust $ taskPostponeDay $ entityVal task})
                         $if detailed
                             <br>
@@ -41,12 +45,8 @@ $else
                     <a .manageIcon href=@{EditTaskR $ entityKey task} title="Edit task">
                         <span class="glyphicon glyphicon-pencil" aria-hidden="true">
 
-                    $if isJust (taskPostponeTime $ entityVal task) || isJust (taskPostponeDay $ entityVal task)
-                        <a .manageIcon.unpostpone href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
-                            <span class="glyphicon glyphicon-calendar" aria-hidden="true">
-                    $else
-                        <a .manageIcon href=@{PostponeTaskR $ entityKey task} title="Postpone task">
-                            <span class="glyphicon glyphicon-calendar" aria-hidden="true">
+                    <a .manageIcon href=@{PostponeTaskR $ entityKey task} title="Postpone task">
+                        <span class="glyphicon glyphicon-calendar" aria-hidden="true">
 
                     <a .manageIcon href=@{DeleteTaskR $ entityKey task} title="Delete task">
                         <span class="glyphicon glyphicon-remove" aria-hidden="true">

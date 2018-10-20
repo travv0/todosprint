@@ -1,6 +1,5 @@
 pre-1.0
 only show task dependencies link if there are dependencies left to work on
-let repostpone after postpone time or date
 Make today page look pretty
 	confirm task deletion
 Make new task page look pretty

@@ -13,7 +13,7 @@
     vertical-align: middle;
 }
 
-.taskManagement > .manageIcon {
+.taskManagement > .manageIcon, .taskDate a:not(.btn) {
     text-decoration: none;
 }
 
