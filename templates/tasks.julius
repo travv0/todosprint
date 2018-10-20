@@ -11,4 +11,14 @@ $(function() {
 		function() {
 			$(this).html($(this).html().replace(/^\<br.*?\>+|\<br.*?\>+$/g, ''))
 		});
+
+	$(".taskCheckbox form a span").hover(
+		function() {
+			$(this).removeClass("glyphicon-unchecked");
+			$(this).addClass("glyphicon-check");
+		},
+		function() {
+			$(this).removeClass("glyphicon-check");
+			$(this).addClass("glyphicon-unchecked");
+		});
 })
