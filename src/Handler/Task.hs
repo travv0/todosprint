@@ -181,10 +181,11 @@ postPostponeTodayR taskId = do
       runDB $ update
         taskId
         [ TaskPostponeTime
-            =. Just
-                 (UTCTime (addDays dayAdj (localDay userTime))
-                          (timeOfDayToTime utcTime)
-                 )
+          =. Just
+               (UTCTime (addDays dayAdj (localDay userTime))
+                        (timeOfDayToTime utcTime)
+               )
+        , TaskPostponeDay =. Nothing
         ]
       redirectUltDest HomeR
     _ -> redirectUltDest HomeR
@@ -194,7 +195,9 @@ postPostponeDateR taskId = do
   ((res, widget), enctype) <- runFormPost postponeDateForm
   case res of
     FormSuccess day -> do
-      runDB $ update taskId [TaskPostponeDay =. Just (ppdDay day)]
+      runDB $ update
+        taskId
+        [TaskPostponeDay =. Just (ppdDay day), TaskPostponeTime =. Nothing]
       redirectUltDest HomeR
     _ -> redirectUltDest HomeR
 
