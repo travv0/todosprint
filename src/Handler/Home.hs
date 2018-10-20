@@ -444,13 +444,34 @@ getTodayDepsR taskId = do
           -- use those to calulate how many minutes are left
           let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
                 (diffTimeToPicoseconds ppTime - diffTimeToPicoseconds curTime)
-          let mins = (todHour timeOfDay * 60) + todMin timeOfDay
+          let mins         = (todHour timeOfDay * 60) + todMin timeOfDay
+
+          let mUserDueTime = userDueTime user
+          todayMins <- case mUserDueTime of
+            Just dt -> do
+               -- get due time in user's time zone
+              let dt'       = timeToTimeOfDay $ utctDayTime dt
+              let (_, dt'') = utcToLocalTimeOfDay userTz dt'
+              let dTime     = timeOfDayToTime dt''
+
+              -- use those to calulate how many minutes are left
+              let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
+                    (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime
+                    )
+              return $ (todHour timeOfDay * 60) + todMin timeOfDay
+            Nothing -> return mins
+
+          deps     <- runDB (selectList [] [])
+
+          allTasks <- runDB $ getTasks userId []
+
+          let todaysTasks = daysList today todayMins deps allTasks
 
           tasks' <- taskAndDependencies task
           let tasks'' = L.delete task tasks'
-          deps <- runDB (selectList [] [])
 
-          let tasks = daysList today mins deps tasks''
+          let tasks =
+                daysList today mins deps $ tasks'' `L.intersect` todaysTasks
 
           case tasks of
             [] -> redirect TodayR
