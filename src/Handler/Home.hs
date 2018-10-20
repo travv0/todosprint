@@ -121,27 +121,34 @@ tasksAndDependents' tasks postponedTasks = do
 
 taskAndDependents :: Entity Task -> Handler [Entity Task]
 taskAndDependents task = do
-  dependents <- runDB
-    $ selectList [TaskDependencyDependsOnTaskId ==. entityKey task
-                 , TaskDependencyDeleted ==. False] []
+  dependents <- runDB $ selectList
+    [ TaskDependencyDependsOnTaskId ==. entityKey task
+    , TaskDependencyDeleted ==. False
+    ]
+    []
   let tdIds = map (\(Entity _ td) -> taskDependencyTaskId td) dependents
-  dependentEntities <- runDB
-    $ mapM (\tdId -> selectList [ TaskId ==. tdId
-                                , TaskDeleted ==. False
-                                , TaskDone ==. False ] []) tdIds
+  dependentEntities <- runDB $ mapM
+    (\tdId -> selectList
+      [TaskId ==. tdId, TaskDeleted ==. False, TaskDone ==. False]
+      []
+    )
+    tdIds
   more <- sequence $ map taskAndDependents $ L.concat dependentEntities
   return $ task : L.concat more
 
 taskAndDependencies :: Entity Task -> Handler [Entity Task]
 taskAndDependencies task = do
-  dependencies <- runDB
-    $ selectList [ TaskDependencyTaskId ==. entityKey task
-                 , TaskDependencyDeleted ==. False] []
-  let tdIds = map (\(Entity _ td) -> taskDependencyDependsOnTaskId td) dependencies
-  dependencyEntities <- runDB
-    $ mapM (\tdId -> selectList [ TaskId ==. tdId
-                                , TaskDeleted ==. False
-                                , TaskDone ==. False ] []) tdIds
+  dependencies <- runDB $ selectList
+    [TaskDependencyTaskId ==. entityKey task, TaskDependencyDeleted ==. False]
+    []
+  let tdIds =
+        map (\(Entity _ td) -> taskDependencyDependsOnTaskId td) dependencies
+  dependencyEntities <- runDB $ mapM
+    (\tdId -> selectList
+      [TaskId ==. tdId, TaskDeleted ==. False, TaskDone ==. False]
+      []
+    )
+    tdIds
   more <- sequence $ map taskAndDependencies $ L.concat dependencyEntities
   return $ task : L.concat more
 
@@ -410,12 +417,15 @@ getTodayDepsR taskId = do
   setUltDestCurrent
 
   (Entity userId user) <- requireAuth
-  mTask <- runDB $ getEntity taskId
+  mTask                <- runDB $ getEntity taskId
 
   case mTask of
     Just task -> do
       utcTime <- liftIO getCurrentTime
-      let today = localDay $ fromMaybe (utcToLocalTime utc utcTime) $ utcToUserTime utcTime user
+      let today =
+            localDay $ fromMaybe (utcToLocalTime utc utcTime) $ utcToUserTime
+              utcTime
+              user
       let userTz = fromMaybe utc $ userTimeZone user
 
       case taskPostponeTime $ entityVal task of
@@ -427,27 +437,26 @@ getTodayDepsR taskId = do
           let curTime                 = timeOfDayToTime currentTime''
 
           -- get due time in user's time zone
-          let ppt'                     = timeToTimeOfDay $ utctDayTime ppt
-          let (_, ppt'')               = utcToLocalTimeOfDay userTz ppt'
-          let ppTime                   = timeOfDayToTime ppt''
+          let ppt'                    = timeToTimeOfDay $ utctDayTime ppt
+          let (_, ppt'')              = utcToLocalTimeOfDay userTz ppt'
+          let ppTime                  = timeOfDayToTime ppt''
 
           -- use those to calulate how many minutes are left
           let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
                 (diffTimeToPicoseconds ppTime - diffTimeToPicoseconds curTime)
           let mins = (todHour timeOfDay * 60) + todMin timeOfDay
 
-          tasks'  <- taskAndDependencies task
+          tasks' <- taskAndDependencies task
           let tasks'' = L.delete task tasks'
-          deps    <- runDB (selectList [] [])
+          deps <- runDB (selectList [] [])
 
           let tasks = L.nub $ daysList today mins deps tasks''
 
           case tasks of
             [] -> redirect TodayR
-            _ -> do
+            _  -> do
               postponedTasks <- postponedTaskList utcTime tasks
-              defaultLayout $
-                taskList tasks postponedTasks True
+              defaultLayout $ taskList tasks postponedTasks True
         Nothing -> redirect TodayR
     Nothing -> redirect TodayR
 
