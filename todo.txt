@@ -1,4 +1,4 @@
-add search
+pre-1.0
 only show task dependencies link if there are dependencies left to work on
 let repostpone after postpone time or date
 Make today page look pretty
@@ -12,4 +12,7 @@ Make add dependencies page look pretty
 Handle logged-out user better
 Make login page look pretty
 Make postpone page look pretty
+
+post-1.0
+add search
 does stable topological sort exist???
