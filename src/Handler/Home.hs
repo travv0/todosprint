@@ -150,7 +150,7 @@ taskAndDependencies task = do
     )
     tdIds
   more <- sequence $ map taskAndDependencies $ L.concat dependencyEntities
-  return $ task : L.concat more
+  return $ L.nub $ task : L.concat more
 
 getTodayR :: Handler Html
 getTodayR = do
@@ -450,7 +450,7 @@ getTodayDepsR taskId = do
           let tasks'' = L.delete task tasks'
           deps <- runDB (selectList [] [])
 
-          let tasks = L.nub $ daysList today mins deps tasks''
+          let tasks = daysList today mins deps tasks''
 
           case tasks of
             [] -> redirect TodayR
