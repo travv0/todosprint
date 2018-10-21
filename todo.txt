@@ -7,6 +7,7 @@ Handle logged-out user better
 Make login page look pretty
 Make postpone page look pretty
 Make set time page look pretty
+Make deps page look pretty
 optimize
 
 post-1.0

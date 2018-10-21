@@ -3,4 +3,5 @@
     margin-left: auto;
     margin-right: auto;
     padding: 5px;
+    padding-left: 10px;
 }
