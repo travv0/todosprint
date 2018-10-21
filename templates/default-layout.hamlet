@@ -23,6 +23,7 @@
                 $case muser
                     $of Just (_, u)
                         Logged in as #{userEmail u}
+                    $of Nothing
 
 <!-- Page Contents -->
 
