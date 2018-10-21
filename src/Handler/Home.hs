@@ -65,11 +65,13 @@ taskList tasks postponedTasks detailed estimatedToc = do
   let todaysTasks = daysList today mins deps allTasks
 
   tasksDeps <- handlerToWidget $ sequence $ map
-    (\t ->
-      (<) 1
-        <$> (   L.length
-            <$> (L.intersect <$> taskAndDependencies t <*> pure todaysTasks)
-            )
+    (\t -> if M.isNothing (taskPostponeTime $ entityVal t)
+      then return False
+      else
+        (<) 1
+          <$> (   L.length
+              <$> (L.intersect <$> taskAndDependencies t <*> pure todaysTasks)
+              )
     )
     tasks
   let tasksHasDeps = zip tasks tasksDeps
