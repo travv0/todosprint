@@ -1,7 +1,5 @@
 pre-1.0
 only show task dependencies link if there are dependencies left to work on
-Make today page look pretty
-	confirm task deletion
 Make new task page look pretty
 	require due date if you select "from due date" or if you repeat by unit of time
 	automatically set unset due date if repeating by days of week to next occurrence of one of those weekdays
@@ -9,6 +7,7 @@ Make add dependencies page look pretty
 Handle logged-out user better
 Make login page look pretty
 Make postpone page look pretty
+Make set time page look pretty
 
 post-1.0
 add search
