@@ -31,7 +31,7 @@ $else
                                         <span class="glyphicon glyphicon-th-list modIcon">
                                 <a href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
                                     <span class="glyphicon glyphicon-remove modIcon" aria-hidden="true">
-                                $maybe tz <- userTz
+                                $maybe tz <- mUserTz
                                     (#{formatPostponeTime tz task})
                                 $nothing
                                     (#{formatPostponeTime utc task})
