@@ -2,13 +2,6 @@ h3 {
     text-align: center;
 }
 
-.loggedInAs {
-    float: right;
-    padding-top: 19.5px;
-    padding-bottom: 19.5px;
-    color: lightgray;
-}
-
 .estimatedToc {
     float: right;
 }
