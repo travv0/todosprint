@@ -23,8 +23,8 @@ $(function() {
 		});
 })
 
-function confirmThenDelete(taskId, taskName) {
+function confirmThenDelete(taskName, deleteUrl) {
 	if (confirm('Would you like to delete "' + taskName + '"?')) {
-		window.location.href = "/delete-task/" + taskId;
+		window.location.href = deleteUrl;
 	}
 }
