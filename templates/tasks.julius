@@ -22,3 +22,9 @@ $(function() {
 			$(this).addClass("glyphicon-unchecked");
 		});
 })
+
+function confirmThenDelete(taskId, taskName) {
+	if (confirm('Would you like to delete "' + taskName + '"?')) {
+		window.location.href = "/delete-task/" + taskId;
+	}
+}
