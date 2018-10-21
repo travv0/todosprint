@@ -4,7 +4,7 @@ $if null tasks
 $else
     <div .tasksDiv>
         <table .taskList>
-            $forall task <- tasks
+            $forall (task, hasDeps) <- tasksHasDeps
                 <tr .task :elem task postponedTasks:class="postponed">
                     <td .taskCheckbox>
                         <form action=@{MarkDoneR $ entityKey task} method=post>
@@ -26,8 +26,9 @@ $else
                                     #{show $ dd}
                             $if (isJust $ taskPostponeTime $ entityVal task) && elem task postponedTasks
                                 <br>
-                                <a href=@{TodayDepsR $ entityKey task}>
-                                    <span class="glyphicon glyphicon-th-list modIcon">
+                                $if hasDeps
+                                    <a href=@{TodayDepsR $ entityKey task}>
+                                        <span class="glyphicon glyphicon-th-list modIcon">
                                 <a href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
                                     <span class="glyphicon glyphicon-remove modIcon" aria-hidden="true">
                                 $maybe tz <- userTz
