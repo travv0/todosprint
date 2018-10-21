@@ -306,8 +306,6 @@ fillInGaps :: Int -> [Entity Task] -> [Entity Task] -> [Entity Task]
 fillInGaps mins allTasks reducedTasks
   | null allTasks
   = reducedTasks
-  | length reducedTasks == length allTasks
-  = reducedTasks
   | timeToComplete reducedTasks
     + L.minimum (map (\(Entity _ t) -> taskDuration t) potTasks)
     > mins
