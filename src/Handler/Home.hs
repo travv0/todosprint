@@ -19,6 +19,7 @@ import           Yesod.Form.Bootstrap3
 import qualified Data.Maybe                    as M
 import           Text.Julius                    ( RawJS(..) )
 import           Control.Monad
+import qualified Data.Text                     as T
 
 taskList :: [Entity Task] -> [Entity Task] -> Bool -> Maybe TimeOfDay -> Widget
 taskList tasks postponedTasks detailed estimatedToc = do
