@@ -1,5 +1,2 @@
 <form method=post action=@{TodayR} enctype=#{enctype}>
     ^{widget}
-
-<div .row style="float: left;">
-    #{formattedEstimatedToc}

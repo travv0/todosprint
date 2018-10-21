@@ -19,14 +19,14 @@
                     <li :Just route == mcurrentRoute:.active>
                         <a href="@{route}">#{label}
 
+            <div .loggedInAs>
+                $case muser
+                    $of Just (_, u)
+                        Logged in as #{userEmail u}
+
 <!-- Page Contents -->
 
 <div .container>
-    $case muser
-        $of Just (_, u)
-            #{userEmail u}
-        $of Nothing
-            <div>
 
     $maybe msg <- mmsg
       <div .alert.alert-info #message>#{msg}
