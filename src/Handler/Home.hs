@@ -40,7 +40,7 @@ getHomeR = do
   utcTime        <- liftIO getCurrentTime
   postponedTasks <- postponedTaskList utcTime tasks
   defaultLayout $ do
-    setTitle "Your Tasks"
+    setTitle "Manage Tasks"
     $(widgetFile "homepage")
 
 sortTasks' :: [Entity Task] -> [Entity TaskDependency] -> [G.SCC (Entity Task)]
@@ -227,11 +227,14 @@ getTodayR = do
 
       postponedTasks <- postponedTaskList utcTime tasks
       defaultLayout $ do
+        setTitle "Today's Tasks"
         $(widgetFile "work-message")
         taskList tasks postponedTasks False estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId Nothing
-      defaultLayout $ setTimeWidget widget enctype tzOffsetId
+      defaultLayout $ do
+        setTitle "Set Time"
+        setTimeWidget widget enctype tzOffsetId
 
 estimateTimeOfCompletion :: [Entity Task] -> TimeOfDay -> TimeOfDay
 estimateTimeOfCompletion tasks tod = TimeOfDay hours mins (todSec tod)
