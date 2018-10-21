@@ -1,17 +1,33 @@
-<input id=#{idAttr}-count name=#{nameAttr} *{otherAttrs} type=text :isReq:required :show n /= "0":value="#{show n}"> #
-<select id=#{idAttr}-unit name=#{nameAttr} *{otherAttrs} :isReq:required>
-    <option value="Days" :u == "Days":selected>days
-    <option value="Weeks" :u == "Weeks":selected>weeks
-    <option value="Months" :u == "Months":selected>months
-    <option value="Years" :u == "Years":selected>years
-<select id=#{idAttr}-from name=#{nameAttr} *{otherAttrs} :isReq:required>
-    <option value="CompletionDate" :ri == CompletionDate:selected>from completion date
-    <option value="DueDate" :ri == DueDate:selected>from due date
+<input type="radio" name=#{nameAttr} onchange="showIntervals()" value="Interval" :null days:checked>
+    By Interval
+<input type="radio" name=#{nameAttr} onchange="showDaysOfWeek()" value="DayOfWeek" :not $ null days:checked>
+    By Day(s) of Week
 
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-mon *{otherAttrs} :elem Monday days:checked :isReq:required value="Monday">Monday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-tue *{otherAttrs} :elem Tuesday days:checked :isReq:required value="Tuesday">Tuesday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-wed *{otherAttrs} :elem Wednesday days:checked :isReq:required value="Wednesday">Wednesday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-thu *{otherAttrs} :elem Thursday days:checked :isReq:required value="Thursday">Thursday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-fri *{otherAttrs} :elem Friday days:checked :isReq:required value="Friday">Friday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-sat *{otherAttrs} :elem Saturday days:checked :isReq:required value="Saturday">Saturday
-<input type=checkbox name=#{nameAttr} id=#{idAttr}-sun *{otherAttrs} :elem Sunday days:checked :isReq:required value="Sunday">Sunday
+<br>
+every
+<br>
+<div .intervals :not $ null days:.hidden>
+    <input id=#{idAttr}-count name=#{nameAttr} *{otherAttrs} type=text :isReq:required :show n /= "0":value="#{show n}"> #
+    <select id=#{idAttr}-unit name=#{nameAttr} *{otherAttrs} :isReq:required>
+        <option value="Days" :u == "Days":selected>days
+        <option value="Weeks" :u == "Weeks":selected>weeks
+        <option value="Months" :u == "Months":selected>months
+        <option value="Years" :u == "Years":selected>years
+    <select id=#{idAttr}-from name=#{nameAttr} *{otherAttrs} :isReq:required>
+        <option value="CompletionDate" :ri == CompletionDate:selected>from completion date
+        <option value="DueDate" :ri == DueDate:selected>from due date
+
+<div .daysOfWeek :null days:.hidden>
+    <input type=checkbox name=#{nameAttr} id=#{idAttr}-mon *{otherAttrs} :elem Monday days:checked :isReq:required value="Monday">Monday
+    <br>
+    <input type=checkbox name=#{nameAttr} id=#{idAttr}-tue *{otherAttrs} :elem Tuesday days:checked :isReq:required value="Tuesday">Tuesday
+    <br>
+    <input type=checkbox name=#{nameAttr} id=#{idAttr}-wed *{otherAttrs} :elem Wednesday days:checked :isReq:required value="Wednesday">Wednesday
+    <br>
+    <input type=checkbox name=#{nameAttr} id=#{idAttr}-thu *{otherAttrs} :elem Thursday days:checked :isReq:required value="Thursday">Thursday
+    <br>
+    <input type=checkbox name=#{nameAttr} id=#{idAttr}-fri *{otherAttrs} :elem Friday days:checked :isReq:required value="Friday">Friday
+    <br>
+    <input type=checkbox name=#{nameAttr} id=#{idAttr}-sat *{otherAttrs} :elem Saturday days:checked :isReq:required value="Saturday">Saturday
+    <br>
+    <input type=checkbox name=#{nameAttr} id=#{idAttr}-sun *{otherAttrs} :elem Sunday days:checked :isReq:required value="Sunday">Sunday

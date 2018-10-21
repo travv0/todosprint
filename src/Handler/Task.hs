@@ -21,10 +21,11 @@ import           Data.Time
 repeatIntervalField :: Field Handler RepeatInterval
 repeatIntervalField = Field
   { fieldParse   = \rawVals _ -> case rawVals of
-    (i : u : rf : xs)
-      | not $ null xs -> return $ Right $ Just $ OnWeekdays
+    (rt : i : u : rf : xs)
+      | rt == "DayOfWeek" && not (null xs) -> return $ Right $ Just $ OnWeekdays
         (map (read . unpack) xs)
-        (read $ unpack rf)
+        CompletionDate
+      | rt == "DayOfWeek" -> return $ Right Nothing
       | isNothing ((readMaybe $ unpack i) :: Maybe Int) -> return
       $  Right Nothing
       | u == "Days" -> return $ Right $ Just $ Days (read $ unpack i)
@@ -75,7 +76,7 @@ taskForm userId currUtcTime mtask =
     <*> aopt (jqueryDayField def { jdsChangeYear = True })
              "Due Date"
              (taskDueDate <$> mtask)
-    <*> aopt repeatIntervalField "Repeat Every" (taskRepeat <$> mtask)
+    <*> aopt repeatIntervalField "Repeat" (taskRepeat <$> mtask)
     <*> pure False
     <*> pure userId
     <*> pure Nothing

@@ -1,0 +1,9 @@
+function showIntervals() {
+	$(".intervals").removeClass("hidden");
+	$(".daysOfWeek").addClass("hidden");
+}
+
+function showDaysOfWeek() {
+	$(".daysOfWeek").removeClass("hidden");
+	$(".intervals").addClass("hidden");
+}
