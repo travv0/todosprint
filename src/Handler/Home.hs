@@ -30,6 +30,10 @@ taskList tasks postponedTasks detailed estimatedToc = do
         ""
         (formatTime defaultTimeLocale "Estimated Completion Time: %l:%M %p")
         estimatedToc
+  tasksDeps <- handlerToWidget $ sequence $ map
+    (\t -> (<) 1 <$> (L.length <$> taskAndDependencies t))
+    tasks
+  let tasksHasDeps = zip tasks tasksDeps
   $(widgetFile "tasks")
 
 getHomeR :: Handler Html
