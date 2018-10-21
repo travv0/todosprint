@@ -23,18 +23,52 @@ import qualified Data.Text                     as T
 
 taskList :: [Entity Task] -> [Entity Task] -> Bool -> Maybe TimeOfDay -> Widget
 taskList tasks postponedTasks detailed estimatedToc = do
-  (Entity _ user) <- requireAuth
-  currUtcTime     <- liftIO getCurrentTime
-  let userTz = userTimeZone user
+  (Entity userId user) <- requireAuth
+  currUtcTime          <- liftIO getCurrentTime
+  let mUserTz = userTimeZone user
   let formattedEstimatedToc = maybe
         ""
         (formatTime defaultTimeLocale "Estimated Completion Time: %l:%M %p")
         estimatedToc
 
+  utcTime <- liftIO getCurrentTime
+  let today = localDay $ fromMaybe (utcToLocalTime utc utcTime) $ utcToUserTime
+        utcTime
+        user
+  allTasks <- handlerToWidget $ runDB $ getTasks userId []
+
+  let userTz = fromMaybe utc $ userTimeZone user
+
+  -- get current time in user's time zone
+  currentTime <- liftIO $ utctDayTime <$> getCurrentTime
+  let currentTime'            = timeToTimeOfDay currentTime
+  let (dayAdj, currentTime'') = utcToLocalTimeOfDay userTz currentTime'
+  let curTime                 = timeOfDayToTime currentTime''
+
+  let mUserDueTime            = userDueTime user
+
+  -- get due time in user's time zone
+  let dTime = case mUserDueTime of
+        Just dt -> do
+          let dt'       = timeToTimeOfDay $ utctDayTime dt
+          let (_, dt'') = utcToLocalTimeOfDay userTz dt'
+          timeOfDayToTime dt''
+        Nothing -> currentTime
+
+  -- use those to calulate how many minutes are left
+  let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
+        (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
+  let mins = (todHour timeOfDay * 60) + todMin timeOfDay
+
+  deps <- handlerToWidget $ runDB (selectList [] [])
+
+  let todaysTasks = daysList today mins deps allTasks
+
   tasksDeps <- handlerToWidget $ sequence $ map
     (\t ->
       (<) 1
-        <$> (L.length <$> (L.intersect <$> taskAndDependencies t <*> pure tasks)
+        <$> (   L.length
+            <$> (L.intersect <$> taskAndDependencies t <*> pure todaysTasks)
             )
     )
     tasks
