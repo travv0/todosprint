@@ -30,8 +30,13 @@ taskList tasks postponedTasks detailed estimatedToc = do
         ""
         (formatTime defaultTimeLocale "Estimated Completion Time: %l:%M %p")
         estimatedToc
+
   tasksDeps <- handlerToWidget $ sequence $ map
-    (\t -> (<) 1 <$> (L.length <$> taskAndDependencies t))
+    (\t ->
+      (<) 1
+        <$> (L.length <$> (L.intersect <$> taskAndDependencies t <*> pure tasks)
+            )
+    )
     tasks
   let tasksHasDeps = zip tasks tasksDeps
   $(widgetFile "tasks")
