@@ -156,6 +156,12 @@ taskAndDependencies task = do
   more <- sequence $ map taskAndDependencies $ L.concat dependencyEntities
   return $ L.nub $ task : L.concat more
 
+getResetDueTimeR :: Handler Html
+getResetDueTimeR = do
+  (Entity userId user) <- requireAuth
+  runDB $ update userId [UserDueTime =. Nothing]
+  redirect TodayR
+
 getTodayR :: Handler Html
 getTodayR = do
   setUltDestCurrent
@@ -220,7 +226,7 @@ getTodayR = do
 
       postponedTasks <- postponedTaskList utcTime tasks
       defaultLayout $ do
-        setTimeWidget widget enctype tzOffsetId
+        $(widgetFile "work-message")
         taskList tasks postponedTasks False estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId Nothing

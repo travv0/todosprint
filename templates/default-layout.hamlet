@@ -44,5 +44,5 @@ $else
 <!-- Footer -->
 <footer .footer>
     <div .container>
-        <p .text-muted>
+        <p .text-muted.copyright>
             #{appCopyright $ appSettings master}

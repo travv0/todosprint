@@ -1,6 +1,7 @@
 <div .row>
 $if null tasks
-    no tasks
+    <h3>
+        You're done for the day!
 $else
     <table .taskList>
         $forall task <- tasks

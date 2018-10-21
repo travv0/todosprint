@@ -71,3 +71,7 @@ border: 1px solid #eee;
 label {
     margin-bottom: 0px;
 }
+
+.copyright {
+    padding-top: 20px;
+}

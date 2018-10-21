@@ -28,4 +28,4 @@
 
 /time-zone TimeZoneR POST
 
-
+/reset-time ResetDueTimeR GET

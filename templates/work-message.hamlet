@@ -1,0 +1,16 @@
+<div .workMsgDiv>
+  <span .workMsg>
+    $if null tasks
+      $maybe tod <- mLocalTod
+        You worked until #{formatTime defaultTimeLocale "%l:%M %p" $ snd tod}
+      $nothing
+
+    $else
+      $maybe tod <- mLocalTod
+        You're working until #{formatTime defaultTimeLocale "%l:%M %p" $ snd tod}
+      $nothing
+
+    \ (#
+    <a href=@{ResetDueTimeR}>#
+      change#
+    )
