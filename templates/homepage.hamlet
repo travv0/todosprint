@@ -1,6 +1,1 @@
-<div .container>
-    <div .bs-docs-section>
-        <div .row>
-            <div .col-lg-12>
-                <p>
-                    ^{taskList tasks postponedTasks True Nothing}
+^{taskList tasks postponedTasks True Nothing}
