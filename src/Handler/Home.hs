@@ -20,11 +20,15 @@ import qualified Data.Maybe                    as M
 import           Text.Julius                    ( RawJS(..) )
 import           Control.Monad
 
-taskList :: [Entity Task] -> [Entity Task] -> Bool -> Widget
-taskList tasks postponedTasks detailed = do
+taskList :: [Entity Task] -> [Entity Task] -> Bool -> Maybe TimeOfDay -> Widget
+taskList tasks postponedTasks detailed estimatedToc = do
   (Entity _ user) <- requireAuth
   currUtcTime     <- liftIO getCurrentTime
   let userTz = userTimeZone user
+  let formattedEstimatedToc = maybe
+        ""
+        (formatTime defaultTimeLocale "Estimated Completion Time: %l:%M %p")
+        estimatedToc
   $(widgetFile "tasks")
 
 getHomeR :: Handler Html
@@ -216,11 +220,11 @@ getTodayR = do
 
       postponedTasks <- postponedTaskList utcTime tasks
       defaultLayout $ do
-        setTimeWidget widget enctype tzOffsetId estimatedToc
-        taskList tasks postponedTasks False
+        setTimeWidget widget enctype tzOffsetId
+        taskList tasks postponedTasks False estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId Nothing
-      defaultLayout $ setTimeWidget widget enctype tzOffsetId Nothing
+      defaultLayout $ setTimeWidget widget enctype tzOffsetId
 
 estimateTimeOfCompletion :: [Entity Task] -> TimeOfDay -> TimeOfDay
 estimateTimeOfCompletion tasks tod = TimeOfDay hours mins (todSec tod)
@@ -235,12 +239,8 @@ formatPostponeTime userTz (Entity _ task) = case taskPostponeTime task of
   Nothing   -> ""
   where userTime time = utcToLocalTime userTz time
 
-setTimeWidget :: Widget -> Enctype -> Text -> Maybe TimeOfDay -> Widget
-setTimeWidget widget enctype tzOffsetId estimatedToc = do
-  let formattedEstimatedToc = maybe
-        ""
-        (formatTime defaultTimeLocale "Estimated Completion Time: %l:%M %p")
-        estimatedToc
+setTimeWidget :: Widget -> Enctype -> Text -> Widget
+setTimeWidget widget enctype tzOffsetId = do
   $(widgetFile "set-time")
 
 postTodayR :: Handler Html
@@ -477,7 +477,7 @@ getTodayDepsR taskId = do
             [] -> redirect TodayR
             _  -> do
               postponedTasks <- postponedTaskList utcTime tasks
-              defaultLayout $ taskList tasks postponedTasks False
+              defaultLayout $ taskList tasks postponedTasks False Nothing
         Nothing -> redirect TodayR
     Nothing -> redirect TodayR
 

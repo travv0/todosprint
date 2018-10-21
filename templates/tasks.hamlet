@@ -50,3 +50,6 @@ $else
 
                     <a .manageIcon href=@{DeleteTaskR $ entityKey task} title="Delete task">
                         <span class="glyphicon glyphicon-remove" aria-hidden="true">
+    <div .row.tocRow>
+        <span .estimatedToc>
+            #{formattedEstimatedToc}
