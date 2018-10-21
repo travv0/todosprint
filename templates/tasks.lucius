@@ -46,6 +46,11 @@ h3 {
     margin-bottom: -1px;
 }
 
+.tasksDiv {
+    margin-left: -1px;
+    margin-right: -1px;
+}
+
 .task a {
     color: cadetblue;
 }

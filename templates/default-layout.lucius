@@ -1,3 +1,7 @@
+body {
+    overflow-x: hidden;
+}
+
 .masthead,
     .navbar {
         background-color: rgb(27, 28, 29);
