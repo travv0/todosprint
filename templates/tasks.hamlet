@@ -1,5 +1,5 @@
 $if null tasks
-    <h3>
+    <h3 .doneMessage>
         You're done for the day!
 $else
     <div .tasksDiv>
