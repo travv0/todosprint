@@ -129,7 +129,9 @@ getNewTaskR = do
       setMessage "Task created"
       redirectUltDest HomeR
     _ -> do
-      defaultLayout $(widgetFile "new-task")
+      defaultLayout $ do
+        setTitle "New Task"
+        $(widgetFile "new-task")
 
 postNewTaskR :: Handler Html
 postNewTaskR = getNewTaskR
@@ -150,7 +152,9 @@ getEditTaskR taskId = do
         Nothing -> runDB $ replace taskId t
       setMessage "Task updated"
       redirectUltDest HomeR
-    _ -> defaultLayout $(widgetFile "edit-task")
+    _ -> defaultLayout $ do
+      setTitle "Edit Task"
+      $(widgetFile "edit-task")
 
 postEditTaskR :: TaskId -> Handler Html
 postEditTaskR = getEditTaskR
@@ -171,7 +175,13 @@ getPostponeTaskR :: TaskId -> Handler Html
 getPostponeTaskR taskId = do
   (todayWidget, todayEnctype) <- generateFormPost postponeTodayForm
   (dateWidget , dateEnctype ) <- generateFormPost postponeDateForm
-  defaultLayout $(widgetFile "postpone-task")
+  mTask                       <- runDB $ get taskId
+  case mTask of
+    Just task -> defaultLayout $ do
+      setTitle $ toHtml $ "Postpone \"" ++ taskName task ++ "\""
+      [whamlet|<h3>Postpone "#{taskName task}"|]
+      $(widgetFile "postpone-task")
+    Nothing -> redirectUltDest TodayR
 
 postPostponeTodayR :: TaskId -> Handler ()
 postPostponeTodayR taskId = do

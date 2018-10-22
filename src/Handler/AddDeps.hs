@@ -43,21 +43,27 @@ getAddDepsR taskId = do
     $ Just
     $ map getTaskDepId taskDeps
 
-  case res of
-    FormSuccess ds -> do
-      case deps ds of
-        Just jds -> do
-          runDB $ do
-            deleteWhere [TaskDependencyTaskId ==. taskId]
-            mapM (\d -> insert $ TaskDependency taskId d False) jds
-        Nothing -> do
-          runDB $ deleteWhere [TaskDependencyTaskId ==. taskId]
-          setMessage "Dependencies updated"
-          redirect $ EditTaskR taskId
-      setMessage "Dependencies updated"
-      redirect $ EditTaskR taskId
-    _ -> do
-      defaultLayout $(widgetFile "add-deps")
+  mTask <- runDB $ Import.get taskId
+  case mTask of
+    Just task -> case res of
+      FormSuccess ds -> do
+        case deps ds of
+          Just jds -> do
+            runDB $ do
+              deleteWhere [TaskDependencyTaskId ==. taskId]
+              mapM (\d -> insert $ TaskDependency taskId d False) jds
+          Nothing -> do
+            runDB $ deleteWhere [TaskDependencyTaskId ==. taskId]
+            setMessage "Dependencies updated"
+            redirect $ EditTaskR taskId
+        setMessage "Dependencies updated"
+        redirect $ EditTaskR taskId
+      _ -> do
+        defaultLayout $ do
+          setTitle $ toHtml $ "Add Dependencies for \"" ++ taskName task ++ "\""
+          [whamlet|<h3>Add Dependencies for "#{taskName task}"|]
+          $(widgetFile "add-deps")
+    Nothing -> redirectUltDest TodayR
 
 postAddDepsR :: TaskId -> Handler Html
 postAddDepsR = getAddDepsR
@@ -77,21 +83,27 @@ getAddDependentsR taskId = do
     $ Just
     $ map getTaskDepId taskDeps
 
-  case res of
-    FormSuccess ds -> do
-      case deps ds of
-        Just jds -> do
-          runDB $ do
-            deleteWhere [TaskDependencyDependsOnTaskId ==. taskId]
-            mapM (\d -> insert $ TaskDependency d taskId False) jds
-        Nothing -> do
-          runDB $ deleteWhere [TaskDependencyDependsOnTaskId ==. taskId]
-          setMessage "Dependents updated"
-          redirect $ EditTaskR taskId
-      setMessage "Dependents updated"
-      redirect $ EditTaskR taskId
-    _ -> do
-      defaultLayout $(widgetFile "add-dependents")
+  mTask <- runDB $ Import.get taskId
+  case mTask of
+    Just task -> case res of
+      FormSuccess ds -> do
+        case deps ds of
+          Just jds -> do
+            runDB $ do
+              deleteWhere [TaskDependencyDependsOnTaskId ==. taskId]
+              mapM (\d -> insert $ TaskDependency d taskId False) jds
+          Nothing -> do
+            runDB $ deleteWhere [TaskDependencyDependsOnTaskId ==. taskId]
+            setMessage "Dependents updated"
+            redirect $ EditTaskR taskId
+        setMessage "Dependents updated"
+        redirect $ EditTaskR taskId
+      _ -> do
+        defaultLayout $ do
+          setTitle $ toHtml $ "Add Dependents for \"" ++ taskName task ++ "\""
+          [whamlet|<h3>Add Dependents for "#{taskName task}"|]
+          $(widgetFile "add-dependents")
+    Nothing -> redirectUltDest TodayR
 
 postAddDependentsR :: TaskId -> Handler Html
 postAddDependentsR = getAddDependentsR

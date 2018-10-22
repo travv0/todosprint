@@ -1,4 +1,4 @@
-h3 {
+.doneMessage {
     text-align: center;
 }
 

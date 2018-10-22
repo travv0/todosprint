@@ -532,7 +532,14 @@ getTodayDepsR taskId = do
             [] -> redirect TodayR
             _  -> do
               postponedTasks <- postponedTaskList utcTime tasks
-              defaultLayout $ taskList tasks postponedTasks False Nothing
+              defaultLayout $ do
+                setTitle
+                  $  toHtml
+                  $  "\""
+                  ++ taskName (entityVal task)
+                  ++ "\" Dependencies"
+                [whamlet|<h3>"#{taskName (entityVal task)}" Dependencies|]
+                taskList tasks postponedTasks False Nothing
         Nothing -> redirect TodayR
     Nothing -> redirect TodayR
 

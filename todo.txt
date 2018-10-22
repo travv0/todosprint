@@ -9,3 +9,6 @@ require due date if you select "from due date" or if you repeat by unit of time
 automatically set unset due date if repeating by days of week to next occurrence of one of those weekdays
 add search
 does stable topological sort exist???
+view history
+restore deleted tasks
+undo marking tasks complete
