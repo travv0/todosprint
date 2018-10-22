@@ -25,9 +25,7 @@ depsForm taskId tasks label taskDeps =
   renderBootstrap3
       (BootstrapHorizontalForm (ColXs 0) (ColXs 4) (ColXs 0) (ColXs 8))
     $   TaskDeps
-    <$> aopt (checkboxesFieldList tasks)
-             (bfs ((fromString label) :: Text))
-             (Just taskDeps)
+    <$> aopt (checkboxesFieldList tasks) (((fromString label))) (Just taskDeps)
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 getAddDepsR :: TaskId -> Handler Html
