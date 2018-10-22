@@ -1,6 +1,5 @@
 pre-1.0
 Make add dependencies/dependents pages look pretty
-Make sure all pages have titles and, if applicable, headings
 optimize
 refactor home/today/deps pages to avoid code reuse
 
