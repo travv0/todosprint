@@ -1,2 +1,4 @@
-<form method=post action=@{TodayR} enctype=#{enctype}>
-    ^{widget}
+<div .container>
+    <div .col-xs-12>
+        <form .form-horizontal method=post action=@{TodayR} enctype=#{enctype}>
+            ^{widget}
