@@ -1,5 +1,4 @@
 pre-1.0
-optimize
 refactor home/today/deps pages to avoid code reuse
 
 post-1.0
