@@ -1,9 +1,17 @@
 function showIntervals() {
+	$(".everyWord").removeClass("hidden");
 	$(".intervals").removeClass("hidden");
 	$(".daysOfWeek").addClass("hidden");
 }
 
 function showDaysOfWeek() {
+	$(".everyWord").removeClass("hidden");
 	$(".daysOfWeek").removeClass("hidden");
+	$(".intervals").addClass("hidden");
+}
+
+function hideRepeat() {
+	$(".everyWord").addClass("hidden");
+	$(".daysOfWeek").addClass("hidden");
 	$(".intervals").addClass("hidden");
 }

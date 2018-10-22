@@ -1,13 +1,11 @@
 pre-1.0
-require due date if you select "from due date" or if you repeat by unit of time
-automatically set unset due date if repeating by days of week to next occurrence of one of those weekdays
 Make add dependencies/dependents pages look pretty
-Handle logged-out user better
-Make login page look pretty
-Make deps page look pretty
 Make sure all pages have titles and, if applicable, headings
 optimize
+refactor home/today/deps pages to avoid code reuse
 
 post-1.0
+require due date if you select "from due date" or if you repeat by unit of time
+automatically set unset due date if repeating by days of week to next occurrence of one of those weekdays
 add search
 does stable topological sort exist???
