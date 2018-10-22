@@ -37,7 +37,8 @@ $if (Just HomeR == mcurrentRoute) || (Just TodayR == mcurrentRoute)
 $else
     <div .container>
         <div .row>
-            ^{widget}
+            <div .col-xs-12>
+                ^{widget}
 
 <!-- Footer -->
 <footer .footer>

@@ -138,7 +138,7 @@ data DueTime = DueTime
 dueTimeForm :: Text -> Maybe TimeOfDay -> Form DueTime
 dueTimeForm tzOffsetId mdt =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColSm 1) (ColSm 4) (ColSm 0) (ColSm 3))
+      (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 4))
     $   DueTime
     <$> areq timeField (bfs ("When would you like to work until?" :: Text)) mdt
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
