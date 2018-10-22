@@ -1,0 +1,4 @@
+$(function() {
+	var select = $("select[multiple]").get(0);
+	select.size = select.length;
+});
