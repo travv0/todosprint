@@ -138,8 +138,8 @@ instance Yesod App
               }
           , NavbarRight $
             MenuItem
-              { menuItemLabel = "Login"
-              , menuItemRoute = AuthR LoginR
+              { menuItemLabel = "Login with Google"
+              , menuItemRoute = AuthR Yesod.Auth.GoogleEmail2.forwardUrl
               , menuItemAccessCallback = isNothing muser
               }
           , NavbarRight $
@@ -171,7 +171,7 @@ instance Yesod App
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
     -- The page to be redirected to when authentication is required.
   authRoute :: App -> Maybe (Route App)
-  authRoute _ = Just $ AuthR LoginR
+  authRoute _ = Just $ AuthR Yesod.Auth.GoogleEmail2.forwardUrl
   isAuthorized ::
        Route App -- ^ The route the user is visiting.
     -> Bool -- ^ Whether or not this is a "write" request.
@@ -296,7 +296,7 @@ isAuthenticated :: Handler AuthResult
 isAuthenticated = do
   muid <- maybeAuthId
   return $ case muid of
-    Nothing -> Unauthorized "You must login to access this page"
+    Nothing -> AuthenticationRequired
     Just _  -> Authorized
 
 instance YesodAuthPersist App
