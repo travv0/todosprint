@@ -68,15 +68,19 @@ repeatIntervalField = Field
 taskForm :: UserId -> UTCTime -> Maybe Task -> Form Task
 taskForm userId currUtcTime mtask =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColSm 1) (ColSm 3) (ColSm 0) (ColSm 8))
+      (BootstrapHorizontalForm (ColSm 1) (ColSm 3) (ColSm 0) (ColSm 4))
     $   Task
-    <$> areq textField "Task Name" (taskName <$> mtask)
-    <*> areq intField "Duration in Minutes" (taskDuration <$> mtask)
-    <*> areq (selectField optionsEnum) "Priority" (taskPriority <$> mtask)
+    <$> areq textField (bfs ("Task Name" :: Text)) (taskName <$> mtask)
+    <*> areq intField
+             (bfs ("Duration in Minutes" :: Text))
+             (taskDuration <$> mtask)
+    <*> areq (selectField optionsEnum)
+             (bfs ("Priority" :: Text))
+             (taskPriority <$> mtask)
     <*> aopt (jqueryDayField def { jdsChangeYear = True })
-             "Due Date"
+             (bfs ("Due Date" :: Text))
              (taskDueDate <$> mtask)
-    <*> aopt repeatIntervalField "Repeat" (taskRepeat <$> mtask)
+    <*> aopt repeatIntervalField (bfs ("Repeat" :: Text)) (taskRepeat <$> mtask)
     <*> pure False
     <*> pure userId
     <*> pure Nothing
@@ -98,18 +102,18 @@ data PostponeDateInfo = PostponeDateInfo
 postponeTodayForm :: Form PostponeTodayInfo
 postponeTodayForm =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
+      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 4))
     $   PostponeTodayInfo
-    <$> areq timeField "Postpone until later today" Nothing
+    <$> areq timeField (bfs ("Postpone until later today" :: Text)) Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 postponeDateForm :: Form PostponeDateInfo
 postponeDateForm =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
+      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 4))
     $   PostponeDateInfo
     <$> areq (jqueryDayField def { jdsChangeYear = True })
-             "Postpone until future date"
+             (bfs ("Postpone until future date" :: Text))
              Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 

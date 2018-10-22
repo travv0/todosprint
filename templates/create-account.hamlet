@@ -1,2 +1,2 @@
-<form method=post action=@{CreateAccountR} enctype=#{formEnctype}>
+<form .form-horizontal method=post action=@{CreateAccountR} enctype=#{formEnctype}>
     ^{formWidget}

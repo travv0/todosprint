@@ -1,2 +1,2 @@
-<form method=post action=@{NewTaskR} enctype=#{enctype}>
+<form .form-horizontal method=post action=@{NewTaskR} enctype=#{enctype}>
     ^{widget}

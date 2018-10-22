@@ -32,7 +32,12 @@
     $maybe msg <- mmsg
       <div .alert.alert-info #message>#{msg}
 
-^{widget}
+$if (Just HomeR == mcurrentRoute) || (Just TodayR == mcurrentRoute)
+    ^{widget}
+$else
+    <div .container>
+        <div .row>
+            ^{widget}
 
 <!-- Footer -->
 <footer .footer>
