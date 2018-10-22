@@ -1,7 +1,7 @@
 $(function() {
 	$(".task").hover(
 		function() {
-			$(this).css("background-color", "#e2f2ff");
+			$(this).css("background-color", "aliceblue");
 		},
 		function () {
 			$(this).css("background-color", "white");
