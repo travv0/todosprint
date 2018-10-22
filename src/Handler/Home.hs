@@ -345,11 +345,17 @@ utcToday = utctDay <$> getCurrentTime
 reduceLoad :: Day -> Int -> [Entity Task] -> [Entity Task]
 reduceLoad date min tasks
   | timeToComplete tasks > min && not (allHighPriority tasks)
-  = reduceLoad date min $ L.tail $ L.sortBy
-    (\et1@(Entity _ t1) et2@(Entity _ t2) ->
-      lowestWeight et1 et2 <> (taskDuration t2 `compare` taskDuration t1)
-    )
-    tasks
+  = reduceLoad date min
+    $ L.tail
+    $ L.sortBy
+        (\et1@(Entity _ t1) et2@(Entity _ t2) ->
+          lowestWeight et1 et2 <> (taskDuration t2 `compare` taskDuration t1)
+        )
+    $ L.sortBy
+        (\(Entity _ t1) (Entity _ t2) ->
+          taskCreateTime t2 `compare` taskCreateTime t1
+        )
+        tasks
   | otherwise
   = tasks
  where
