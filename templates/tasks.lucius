@@ -44,6 +44,7 @@ h3 {
     border-color: darkgray;
     border-width: 1px;
     margin-bottom: -1px;
+    background-color: white;
 }
 
 .tasksDiv {

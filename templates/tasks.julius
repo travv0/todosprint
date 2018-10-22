@@ -1,10 +1,10 @@
 $(function() {
 	$(".task").hover(
 		function() {
-			$(this).css("background-color", "lightcyan");
+			$(this).css("background-color", "#e2f2ff");
 		},
 		function () {
-			$(this).css("background-color", "initial");
+			$(this).css("background-color", "white");
 		});
 
 	$(".taskDate").each(

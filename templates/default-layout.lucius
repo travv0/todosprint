@@ -1,5 +1,10 @@
 body {
     overflow-x: hidden;
+    background-color: inherit;
+}
+
+html {
+    background-color: aliceblue;
 }
 
 .masthead,

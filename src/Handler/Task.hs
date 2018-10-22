@@ -68,7 +68,7 @@ repeatIntervalField = Field
 taskForm :: UserId -> UTCTime -> Maybe Task -> Form Task
 taskForm userId currUtcTime mtask =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColSm 1) (ColSm 3) (ColSm 0) (ColSm 4))
+      (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 4))
     $   Task
     <$> areq textField (bfs ("Task Name" :: Text)) (taskName <$> mtask)
     <*> areq intField
@@ -102,7 +102,7 @@ data PostponeDateInfo = PostponeDateInfo
 postponeTodayForm :: Form PostponeTodayInfo
 postponeTodayForm =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 4))
+      (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 4))
     $   PostponeTodayInfo
     <$> areq timeField (bfs ("Postpone until later today" :: Text)) Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
@@ -110,7 +110,7 @@ postponeTodayForm =
 postponeDateForm :: Form PostponeDateInfo
 postponeDateForm =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 4))
+      (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 4))
     $   PostponeDateInfo
     <$> areq (jqueryDayField def { jdsChangeYear = True })
              (bfs ("Postpone until future date" :: Text))

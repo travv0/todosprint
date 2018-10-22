@@ -23,7 +23,7 @@ depsForm
   :: TaskId -> [(Text, TaskId)] -> String -> (Maybe [TaskId]) -> Form TaskDeps
 depsForm taskId tasks label taskDeps =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColXs 1) (ColXs 3) (ColXs 0) (ColXs 8))
+      (BootstrapHorizontalForm (ColXs 0) (ColXs 4) (ColXs 0) (ColXs 8))
     $   TaskDeps
     <$> aopt (checkboxesFieldList tasks)
              (bfs ((fromString label) :: Text))
