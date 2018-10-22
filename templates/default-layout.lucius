@@ -94,3 +94,7 @@ label {
 h3 {
     margin-bottom: 45px;
 }
+
+select[multiple] {
+    height: 375px;
+}

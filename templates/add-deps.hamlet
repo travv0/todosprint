@@ -1,3 +1,2 @@
 <form .form-horizontal method=post action=@{AddDepsR taskId} enctype=#{enctype}>
-    <div .row>
-        ^{widget}
+    ^{widget}

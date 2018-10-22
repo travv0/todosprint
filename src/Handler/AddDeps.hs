@@ -23,9 +23,11 @@ depsForm
   :: TaskId -> [(Text, TaskId)] -> String -> (Maybe [TaskId]) -> Form TaskDeps
 depsForm taskId tasks label taskDeps =
   renderBootstrap3
-      (BootstrapHorizontalForm (ColXs 0) (ColXs 4) (ColXs 0) (ColXs 8))
+      (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 4))
     $   TaskDeps
-    <$> aopt (checkboxesFieldList tasks) (((fromString label))) (Just taskDeps)
+    <$> aopt (multiSelectFieldList tasks)
+             (bfs ((fromString label) :: Text))
+             (Just taskDeps)
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 getAddDepsR :: TaskId -> Handler Html
@@ -34,7 +36,7 @@ getAddDepsR taskId = do
   let getTaskDepId (Entity tdid td) = taskDependencyDependsOnTaskId td
   userId                   <- requireAuthId
 
-  tasks                    <- runDB $ getTasks userId taskId
+  tasks                    <- runDB $ getTasks userId taskId [Asc TaskName]
   taskDeps <- runDB $ selectList [TaskDependencyTaskId ==. taskId] []
 
   ((res, widget), enctype) <-
@@ -74,7 +76,7 @@ getAddDependentsR taskId = do
   let getTaskDepId (Entity tdid td) = taskDependencyTaskId td
   userId                   <- requireAuthId
 
-  tasks                    <- runDB $ getTasks userId taskId
+  tasks                    <- runDB $ getTasks userId taskId [Asc TaskName]
   taskDeps <- runDB $ selectList [TaskDependencyDependsOnTaskId ==. taskId] []
 
   ((res, widget), enctype) <-
@@ -114,4 +116,3 @@ getTasks userId taskId = selectList
   , TaskDone ==. False
   , TaskDeleted ==. False
   ]
-  []
