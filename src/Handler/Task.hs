@@ -22,6 +22,7 @@ repeatIntervalField :: Field Handler RepeatInterval
 repeatIntervalField = Field
   { fieldParse   = \rawVals _ -> case rawVals of
     (rt : i : u : rf : xs)
+      | rt == "No" -> return $ Right Nothing
       | rt == "DayOfWeek" && not (null xs) -> return $ Right $ Just $ OnWeekdays
         (map (read . unpack) xs)
         CompletionDate

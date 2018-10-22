@@ -1,17 +1,21 @@
 <div .radio>
     <label>
-        <input type="radio" name=#{nameAttr} onchange="showIntervals()" value="Interval" :null days:checked>#
+        <input type="radio" name=#{nameAttr} onchange="hideRepeat()" value="No" :(null days) && (show n == "0"):checked>#
+        No
+<div .radio>
+    <label>
+        <input type="radio" name=#{nameAttr} onchange="showIntervals()" value="Interval" :(null days) && (show n /= "0"):checked>#
         By Interval
 <div .radio>
     <label>
-        <input type="radio" name=#{nameAttr} onchange="showDaysOfWeek()" value="DayOfWeek" :not $ null days:checked>#
+        <input type="radio" name=#{nameAttr} onchange="showDaysOfWeek()" value="DayOfWeek" :(not $ null days) && (show n == "0"):checked>#
         By Day(s) of Week
 
 <br>
-<div style="padding-bottom: 10px;">
+<div .everyWord :(null days) || (show n == "0"):.hidden>
     every
 
-<div .intervals :not $ null days:.hidden>
+<div .intervals :show n == "0":.hidden>
     <input id=#{idAttr}-count name=#{nameAttr} *{otherAttrs} type=number :isReq:required :show n /= "0":value="#{show n}"> #
     <select id=#{idAttr}-unit name=#{nameAttr} *{otherAttrs} :isReq:required>
         <option value="Days" :u == "Days":selected>days
