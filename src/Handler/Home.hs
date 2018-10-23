@@ -57,9 +57,7 @@ taskList tasks postponedTasks detailed estimatedToc = do
         (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
   let mins = (todHour timeOfDay * 60) + todMin timeOfDay
 
-  deps <- handlerToWidget $ runDB (selectList [] [])
-
-  let todaysTasks = daysList today mins deps allTasks
+  todaysTasks <- handlerToWidget $ daysList today mins allTasks
 
   tasksDeps <- handlerToWidget $ mapM
     (\t -> if M.isNothing (taskPostponeTime $ entityVal t)
@@ -97,38 +95,34 @@ getHomeR = do
     setTitle "Manage Tasks"
     $(widgetFile "homepage")
 
-sortTasks' :: [Entity Task] -> [Entity TaskDependency] -> [G.SCC (Entity Task)]
-sortTasks' tasks dependencies = G.stronglyConnComp tasksDeps
+sortTasks' :: [(Entity Task, [Entity Task])] -> [G.SCC (Entity Task, [Entity Task])]
+sortTasks' tasksAndDeps = G.stronglyConnComp tasksDeps
  where
   tasksDeps = map
-    (\etask@(Entity taskId _) ->
-      ( etask
-      , taskId
-      , map
-        (\(Entity _ td) -> (taskDependencyDependsOnTaskId td))
-        (filter (\(Entity _ td) -> (taskDependencyTaskId td == taskId))
-                dependencies
-        )
+    (\(etask@(Entity _ task), deps) ->
+      ( (etask, deps)
+      , task
+      , map (\(Entity _ dep) -> dep) deps
       )
     )
-    tasks
+    tasksAndDeps
 
-sortTasks :: [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
-sortTasks dependencies tasks =
-  concatMap G.flattenSCC $ sortTasks' tasks dependencies
+sortTasks :: [(Entity Task, [Entity Task])] -> [Entity Task]
+sortTasks tasksAndDeps =
+  map fst $ concatMap G.flattenSCC $ sortTasks' tasksAndDeps
 
 highWeight :: Integer
 highWeight = 99999
-mediumWeight = lowWeight * 2
 mediumWeight :: Integer
-lowWeight = 7
+mediumWeight = lowWeight * 2
 lowWeight :: Integer
-highOverdueMod = lowOverdueMod * 3
+lowWeight = 7
 highOverdueMod :: Integer
-mediumOverdueMod = lowOverdueMod * 2
+highOverdueMod = lowOverdueMod * 3
 mediumOverdueMod :: Integer
-lowOverdueMod = 1
+mediumOverdueMod = lowOverdueMod * 2
 lowOverdueMod :: Integer
+lowOverdueMod = 1
 weight :: Day -> Task -> Integer
 weight date task = case taskPriority task of
   High -> highWeight + case taskDueDate task of
@@ -271,11 +265,10 @@ getTodayR = do
       let mins = (todHour timeOfDay * 60) + todMin timeOfDay
 
       tasks'  <- runDB $ getTasks userId []
-      deps    <- runDB (selectList [] [])
 
       utcTime <- liftIO getCurrentTime
       let today = localDay $ utcToLocalTime userTz utcTime
-      let tasks = daysList today mins deps tasks'
+      tasks <- daysList today mins tasks'
 
       -- calculate estimated time of completion
       let estimatedToc = if null tasks
@@ -286,7 +279,7 @@ getTodayR = do
       defaultLayout $ do
         setTitle "Today's Tasks"
         $(widgetFile "work-message")
-        taskList tasks postponedTasks False estimatedToc
+        taskList tasks postponedTasks True estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
       defaultLayout $ do
@@ -403,14 +396,28 @@ fillInGaps mins allTasks reducedTasks
   getTaskFromEntity (Entity _ t) = t
 
 daysList
-  :: Day -> Int -> [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
-daysList day mins dependencies tasks =
-  ( sortTasks dependencies
-    . fillInGaps mins (dueByDay day tasks)
-    . reduceLoad day mins
-    . dueByDay day
-    )
-    tasks
+  :: Day -> Int -> [Entity Task] -> Handler [Entity Task]
+daysList day mins tasks = do
+  let todaysTasks = ( fillInGaps mins (dueByDay day tasks)
+                    . reduceLoad day mins
+                    . dueByDay day
+                    )
+                    tasks
+  tasksAndDeps <- mapM taskAndDeps todaysTasks
+  return $ sortTasks tasksAndDeps
+  where taskAndDeps task = do
+              dependencies <- runDB $ selectList
+                [TaskDependencyTaskId ==. entityKey task, TaskDependencyDeleted ==. False]
+                []
+              let tdIds =
+                    map (\(Entity _ td) -> taskDependencyDependsOnTaskId td) dependencies
+              dependencyEntities <- runDB $ mapM
+                (\tdId -> selectList
+                  [TaskId ==. tdId, TaskDeleted ==. False, TaskDone ==. False]
+                  []
+                )
+                tdIds
+              return (task, L.concat dependencyEntities)
 
 postMarkDoneR :: TaskId -> Handler Html
 postMarkDoneR taskId = do
@@ -530,17 +537,15 @@ getTodayDepsR taskId = do
               return $ (todHour todayTimeOfDay * 60) + todMin todayTimeOfDay
             Nothing -> return mins
 
-          deps     <- runDB (selectList [] [])
-
           allTasks <- runDB $ getTasks userId []
 
-          let todaysTasks = daysList today todayMins deps allTasks
+          todaysTasks <- daysList today todayMins allTasks
 
           tasks' <- taskAndDependencies task
           let tasks'' = L.delete task tasks'
 
-          let tasks =
-                daysList today mins deps $ tasks'' `L.intersect` todaysTasks
+          tasks <-
+                daysList today mins $ tasks'' `L.intersect` todaysTasks
 
           case tasks of
             [] -> redirect TodayR
