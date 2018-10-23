@@ -97,38 +97,34 @@ getHomeR = do
     setTitle "Manage Tasks"
     $(widgetFile "homepage")
 
-sortTasks' :: [Entity Task] -> [Entity TaskDependency] -> [G.SCC (Entity Task)]
-sortTasks' tasks dependencies = G.stronglyConnComp tasksDeps
+sortTasks' :: [(Entity Task, [Entity Task])] -> [G.SCC (Entity Task)]
+sortTasks' tasksAndDeps = G.stronglyConnComp tasksDeps
  where
   tasksDeps = map
-    (\etask@(Entity taskId _) ->
+    (\(etask, deps) ->
       ( etask
-      , taskId
-      , map
-        (\(Entity _ td) -> (taskDependencyDependsOnTaskId td))
-        (filter (\(Entity _ td) -> (taskDependencyTaskId td == taskId))
-                dependencies
-        )
+      , etask
+      , deps
       )
     )
-    tasks
+    tasksAndDeps
 
-sortTasks :: [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
-sortTasks dependencies tasks =
-  concatMap G.flattenSCC $ sortTasks' tasks dependencies
+sortTasks :: [(Entity Task, [Entity Task])] -> [Entity Task]
+sortTasks tasksAndDeps =
+  concatMap G.flattenSCC $ sortTasks' tasksAndDeps
 
 highWeight :: Integer
 highWeight = 99999
-mediumWeight = lowWeight * 2
 mediumWeight :: Integer
-lowWeight = 7
+mediumWeight = lowWeight * 2
 lowWeight :: Integer
-highOverdueMod = lowOverdueMod * 3
+lowWeight = 7
 highOverdueMod :: Integer
-mediumOverdueMod = lowOverdueMod * 2
+highOverdueMod = lowOverdueMod * 3
 mediumOverdueMod :: Integer
-lowOverdueMod = 1
+mediumOverdueMod = lowOverdueMod * 2
 lowOverdueMod :: Integer
+lowOverdueMod = 1
 weight :: Day -> Task -> Integer
 weight date task = case taskPriority task of
   High -> highWeight + case taskDueDate task of
@@ -403,9 +399,9 @@ fillInGaps mins allTasks reducedTasks
   getTaskFromEntity (Entity _ t) = t
 
 daysList
-  :: Day -> Int -> [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
+  :: Day -> Int -> [Entity TaskDependency] -> [Entity Task] -> Handler [Entity Task]
 daysList day mins dependencies tasks =
-  ( sortTasks dependencies
+  return $ ( sortTasks dependencies
     . fillInGaps mins (dueByDay day tasks)
     . reduceLoad day mins
     . dueByDay day
