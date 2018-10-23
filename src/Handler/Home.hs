@@ -82,16 +82,18 @@ getHomeR = do
   setUltDestCurrent
   userId <- requireAuthId
   tasks' <- runDB $ getTasks userId []
-  let tasks = sortBy
-        (\(Entity _ t1) (Entity _ t2) ->
-          taskDueDate t1
-            `compare` taskDueDate t2
-            <>        taskPriority t2
-            `compare` taskPriority t1
-            <>        taskCreateTime t1
-            `compare` taskCreateTime t2
-        )
-        tasks'
+  let (ns, js) =
+        L.partition (\(Entity _ t) -> isNothing $ taskDueDate t) $ sortBy
+          (\(Entity _ t1) (Entity _ t2) ->
+            taskDueDate t1
+              `compare` taskDueDate t2
+              <>        taskPriority t2
+              `compare` taskPriority t1
+              <>        taskCreateTime t1
+              `compare` taskCreateTime t2
+          )
+          tasks'
+  let tasks = js ++ ns
   utcTime        <- liftIO getCurrentTime
   postponedTasks <- postponedTaskList utcTime tasks
   defaultLayout $ do
