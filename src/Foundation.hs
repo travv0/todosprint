@@ -31,7 +31,6 @@ import qualified Yesod.Core.Unsafe             as Unsafe
 import           Yesod.Default.Util             ( addStaticContentExternal )
 
 import           Yesod.Form.Jquery
-import           Data.Time
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -161,8 +160,8 @@ instance Yesod App
         -- value passed to hamletToRepHtml cannot be a widget, this allows
         -- you to use normal widget features in default-layout.
     let jsUserId = case muser of
-                   Nothing -> rawJS $ show 0
-                   Just (userKey, user) -> rawJS $ show $ fromSqlKey userKey
+                   Nothing -> rawJS ("0" :: String)
+                   Just (userKey, _) -> rawJS $ show $ fromSqlKey userKey
     pc <-
       widgetToPageContent $ do
         addStylesheet $ StaticR css_bootstrap_css
@@ -229,6 +228,7 @@ instance Yesod App
   makeLogger :: App -> IO Logger
   makeLogger = return . appLogger
 
+userOwnsTask :: Key Task -> Handler AuthResult
 userOwnsTask taskId = do
   mu <- maybeAuthId
   case mu of

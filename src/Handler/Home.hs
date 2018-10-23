@@ -17,14 +17,11 @@ import qualified Data.List                     as L
 import           RepeatInterval
 import           Yesod.Form.Bootstrap3
 import qualified Data.Maybe                    as M
-import           Text.Julius                    ( RawJS(..) )
-import           Control.Monad
 import qualified Data.Text                     as T
 
 taskList :: [Entity Task] -> [Entity Task] -> Bool -> Maybe TimeOfDay -> Widget
 taskList tasks postponedTasks detailed estimatedToc = do
   (Entity userId user) <- requireAuth
-  currUtcTime          <- liftIO getCurrentTime
   let mUserTz = userTimeZone user
   let formattedEstimatedToc = maybe
         ""
@@ -64,7 +61,7 @@ taskList tasks postponedTasks detailed estimatedToc = do
 
   let todaysTasks = daysList today mins deps allTasks
 
-  tasksDeps <- handlerToWidget $ sequence $ map
+  tasksDeps <- handlerToWidget $ mapM
     (\t -> if M.isNothing (taskPostponeTime $ entityVal t)
       then return False
       else
@@ -118,14 +115,20 @@ sortTasks' tasks dependencies = G.stronglyConnComp tasksDeps
 
 sortTasks :: [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
 sortTasks dependencies tasks =
-  concat $ map G.flattenSCC $ sortTasks' tasks dependencies
+  concatMap G.flattenSCC $ sortTasks' tasks dependencies
 
+highWeight :: Integer
 highWeight = 99999
 mediumWeight = lowWeight * 2
+mediumWeight :: Integer
 lowWeight = 7
+lowWeight :: Integer
 highOverdueMod = lowOverdueMod * 3
+highOverdueMod :: Integer
 mediumOverdueMod = lowOverdueMod * 2
+mediumOverdueMod :: Integer
 lowOverdueMod = 1
+lowOverdueMod :: Integer
 weight :: Day -> Task -> Integer
 weight date task = case taskPriority task of
   High -> highWeight + case taskDueDate task of
@@ -147,8 +150,8 @@ data DueTime = DueTime
   { dueTime :: TimeOfDay
   } deriving Show
 
-dueTimeForm :: Text -> Maybe TimeOfDay -> Form DueTime
-dueTimeForm tzOffsetId mdt =
+dueTimeForm :: Maybe TimeOfDay -> Form DueTime
+dueTimeForm mdt =
   renderBootstrap3
       (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 4))
     $   DueTime
@@ -195,7 +198,7 @@ taskAndDependents task = do
       []
     )
     tdIds
-  more <- sequence $ map taskAndDependents $ L.concat dependentEntities
+  more <- mapM taskAndDependents $ L.concat dependentEntities
   return $ task : L.concat more
 
 taskAndDependencies :: Entity Task -> Handler [Entity Task]
@@ -211,12 +214,12 @@ taskAndDependencies task = do
       []
     )
     tdIds
-  more <- sequence $ map taskAndDependencies $ L.concat dependencyEntities
+  more <- mapM taskAndDependencies $ L.concat dependencyEntities
   return $ L.nub $ task : L.concat more
 
 getResetDueTimeR :: Handler Html
 getResetDueTimeR = do
-  (Entity userId user) <- requireAuth
+  (Entity userId _) <- requireAuth
   runDB $ update userId [UserDueTime =. Nothing]
   redirect TodayR
 
@@ -243,7 +246,6 @@ getTodayR = do
         if shouldUpdateTime then user' { userDueTime = Nothing } else user'
 
   let mUserDueTime = userDueTime user
-  tzOffsetId <- newIdent
   case mUserDueTime of
     Just dt -> do
       let userTz = fromMaybe utc $ userTimeZone user
@@ -251,8 +253,6 @@ getTodayR = do
       let mLocalTod = fmap
             (utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime)
             mUserDueTime
-      (widget, enctype) <- generateFormPost
-        $ dueTimeForm tzOffsetId (snd <$> mLocalTod)
 
       -- get current time in user's time zone
       currentTime <- liftIO $ utctDayTime <$> getCurrentTime
@@ -288,10 +288,10 @@ getTodayR = do
         $(widgetFile "work-message")
         taskList tasks postponedTasks False estimatedToc
     Nothing -> do
-      (widget, enctype) <- generateFormPost $ dueTimeForm tzOffsetId Nothing
+      (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
       defaultLayout $ do
         setTitle "Set Time"
-        setTimeWidget widget enctype tzOffsetId
+        setTimeWidget widget enctype
 
 estimateTimeOfCompletion :: [Entity Task] -> TimeOfDay -> TimeOfDay
 estimateTimeOfCompletion tasks tod = TimeOfDay hours mins (todSec tod)
@@ -304,17 +304,16 @@ formatPostponeTime :: TimeZone -> Entity Task -> String
 formatPostponeTime userTz (Entity _ task) = case taskPostponeTime task of
   Just time -> formatTime defaultTimeLocale "%l:%M %p" $ userTime time
   Nothing   -> ""
-  where userTime time = utcToLocalTime userTz time
+  where userTime = utcToLocalTime userTz
 
-setTimeWidget :: Widget -> Enctype -> Text -> Widget
-setTimeWidget widget enctype tzOffsetId = do
+setTimeWidget :: Widget -> Enctype -> Widget
+setTimeWidget widget enctype = 
   $(widgetFile "set-time")
 
 postTodayR :: Handler Html
 postTodayR = do
-  (Entity userId user)     <- requireAuth
-  tzOffsetId               <- newIdent
-  ((res, widget), enctype) <- runFormPost $ dueTimeForm tzOffsetId Nothing
+  (Entity _ user)     <- requireAuth
+  ((res, _widget), _enctype) <- runFormPost $ dueTimeForm Nothing
   case res of
     FormSuccess dt -> do
       userId <- requireAuthId
@@ -348,16 +347,13 @@ dueByDay day = filter (dueByOrBeforeDay day)
       Nothing  -> dd <= d
     Nothing -> True
 
-today :: IO Day
-today = localDay . zonedTimeToLocalTime <$> getZonedTime
-
 utcToday :: IO Day
 utcToday = utctDay <$> getCurrentTime
 
 reduceLoad :: Day -> Int -> [Entity Task] -> [Entity Task]
-reduceLoad date min tasks
-  | timeToComplete tasks > min && not (allHighPriority tasks)
-  = reduceLoad date min
+reduceLoad date mins tasks
+  | timeToComplete tasks > mins && not (allHighPriority tasks)
+  = reduceLoad date mins
     $ L.tail
     $ L.sortBy
         (\et1@(Entity _ t1) et2@(Entity _ t2) ->
@@ -408,10 +404,10 @@ fillInGaps mins allTasks reducedTasks
 
 daysList
   :: Day -> Int -> [Entity TaskDependency] -> [Entity Task] -> [Entity Task]
-daysList day min dependencies tasks =
+daysList day mins dependencies tasks =
   ( sortTasks dependencies
-    . fillInGaps min (dueByDay day tasks)
-    . reduceLoad day min
+    . fillInGaps mins (dueByDay day tasks)
+    . reduceLoad day mins
     . dueByDay day
     )
     tasks
@@ -422,18 +418,18 @@ postMarkDoneR taskId = do
   task    <- runDB $ get taskId
   utcTime <- liftIO getCurrentTime
   runDB $ update taskId [TaskDone =. True, TaskDoneTime =. Just utcTime]
-  (Entity userId user) <- requireAuth
+  (Entity _ user) <- requireAuth
   let userTzOffset = fromMaybe 0 $ userDueTimeOffset user
   let cdate =
         localDay $ utcToLocalTime (minutesToTimeZone userTzOffset) utcTime
-  runDB $ case task of
+  _ <- runDB $ case task of
     Just t -> case incrementDueDate cdate t of
       Just t2 -> do
         newTaskId <- insert
           $ t2 { taskPostponeDay = Nothing, taskPostponeTime = Nothing }
         deps <- selectList [TaskDependencyTaskId ==. taskId] []
         depd <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
-        mapM
+        _ <- mapM
           (\(Entity _ dep) -> insert $ TaskDependency
             newTaskId
             (taskDependencyDependsOnTaskId dep)
@@ -528,10 +524,10 @@ getTodayDepsR taskId = do
               let dTime     = timeOfDayToTime dt''
 
               -- use those to calulate how many minutes are left
-              let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
+              let todayTimeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
                     (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime
                     )
-              return $ (todHour timeOfDay * 60) + todMin timeOfDay
+              return $ (todHour todayTimeOfDay * 60) + todMin todayTimeOfDay
             Nothing -> return mins
 
           deps     <- runDB (selectList [] [])
