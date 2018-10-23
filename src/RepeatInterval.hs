@@ -42,5 +42,5 @@ data RepeatInterval
   | Months Integer RepeatFrom
   | Years Integer RepeatFrom
   | OnWeekdays [Weekday] RepeatFrom
-  deriving (Eq, Read, Show)
+  deriving (Eq, Read, Show, Ord)
 derivePersistField "RepeatInterval"
