@@ -22,3 +22,19 @@ import           RepeatInterval
 share
   [mkPersist sqlSettings, mkMigrate "migrateAll"]
   $(persistFileWith lowerCaseSettings "config/models")
+
+instance Ord Task where
+  task1 `compare` task2 =
+    taskPriority task2 `compare` taskPriority task1 <>
+    taskDueDate task1 `compare` taskDueDate task2 <>
+    taskDuration task1 `compare` taskDuration task2 <>
+    taskName task1 `compare` taskName task2 <>
+    taskRepeat task1 `compare` taskRepeat task2 <>
+    taskDone task1 `compare` taskDone task2 <>
+    taskUserId task1 `compare` taskUserId task2 <>
+    taskPostponeTime task1 `compare` taskPostponeTime task2 <>
+    taskPostponeDay task1 `compare` taskPostponeDay task2 <>
+    taskCreateTime task1 `compare` taskCreateTime task2 <>
+    taskDoneTime task1 `compare` taskDoneTime task2 <>
+    taskDeleted task1 `compare` taskDeleted task2 <>
+    taskDeleteTime task1 `compare` taskDeleteTime task2

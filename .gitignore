@@ -21,3 +21,4 @@ cabal.sandbox.config
 \#*
 scheduler.cabal
 tags
+latest.dump*
