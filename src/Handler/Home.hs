@@ -59,7 +59,7 @@ taskList tasks postponedTasks detailed estimatedToc = do
 
   deps <- handlerToWidget $ runDB (selectList [] [])
 
-  let todaysTasks = daysList today mins deps allTasks
+  todaysTasks <- handlerToWidget $ daysList today mins deps allTasks
 
   tasksDeps <- handlerToWidget $ mapM
     (\t -> if M.isNothing (taskPostponeTime $ entityVal t)
@@ -271,7 +271,7 @@ getTodayR = do
 
       utcTime <- liftIO getCurrentTime
       let today = localDay $ utcToLocalTime userTz utcTime
-      let tasks = daysList today mins deps tasks'
+      tasks <- daysList today mins deps tasks'
 
       -- calculate estimated time of completion
       let estimatedToc = if null tasks
@@ -530,12 +530,12 @@ getTodayDepsR taskId = do
 
           allTasks <- runDB $ getTasks userId []
 
-          let todaysTasks = daysList today todayMins deps allTasks
+          todaysTasks <- daysList today todayMins deps allTasks
 
           tasks' <- taskAndDependencies task
           let tasks'' = L.delete task tasks'
 
-          let tasks =
+          tasks <-
                 daysList today mins deps $ tasks'' `L.intersect` todaysTasks
 
           case tasks of
