@@ -43,7 +43,6 @@ spec = withApp $ do
       htmlNoneContain ".taskDate"     "Priority"
       htmlNoneContain ".taskDuration" "minutes"
 
-  describe "sortTasks" $ do
     it "sorts correctly without dependencies" $ do
       currTime      <- liftIO getCurrentTime
       currTimeLater <- liftIO getCurrentTime
@@ -693,3 +692,164 @@ spec = withApp $ do
         == weight today (entityVal mediumPriorityNoDueDate)
         )
         True
+
+    it "calculates time to complete tasks correctly" $ do
+      currTime <- liftIO getCurrentTime
+      let today = utctDay currTime
+
+      userEntity <- createUser "foo@gmail.com"
+      authenticateAs userEntity
+
+      highPriority <- runDB $ insertEntity $ Task "highPriority"
+                                                  30
+                                                  High
+                                                  (Just today)
+                                                  Nothing
+                                                  False
+                                                  (entityKey userEntity)
+                                                  Nothing
+                                                  Nothing
+                                                  currTime
+                                                  Nothing
+                                                  False
+                                                  Nothing
+      highPriorityOverdue <- runDB $ insertEntity $ Task
+        "highPriorityOverdue"
+        30
+        High
+        (Just $ addDays (-1) today)
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+      highPriorityWayOverdue <- runDB $ insertEntity $ Task
+        "highPriorityWayOverdue"
+        30
+        High
+        (Just $ addDays (-9) today)
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+      highPriorityNoDueDate <- runDB $ insertEntity $ Task
+        "highPriorityNoDueDate"
+        30
+        High
+        Nothing
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+
+      assertEq
+        "Time to complete 4 30-minute tasks should be 120"
+        (timeToComplete
+          [ highPriority
+          , highPriorityOverdue
+          , highPriorityNoDueDate
+          , highPriorityWayOverdue
+          ]
+        )
+        120
+
+    it "correctly filters tasks postponed by time and their dependents" $ do
+      currTime <- liftIO getCurrentTime
+      let today = utctDay currTime
+
+      userEntity <- createUser "foo@gmail.com"
+
+      authenticateAs userEntity
+
+      highPriority <- runDB $ insertEntity $ Task
+        "highPriority"
+        30
+        High
+        (Just today)
+        Nothing
+        False
+        (entityKey userEntity)
+        (Just (addUTCTime 30 currTime))
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+      highPriorityOverdue <- runDB $ insertEntity $ Task
+        "highPriorityOverdue"
+        30
+        High
+        (Just $ addDays (-1) today)
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+      highPriorityWayOverdue <- runDB $ insertEntity $ Task
+        "highPriorityWayOverdue"
+        30
+        High
+        (Just $ addDays (-9) today)
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+      highPriorityNoDueDate <- runDB $ insertEntity $ Task
+        "highPriorityNoDueDate"
+        30
+        High
+        Nothing
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+
+      runDB $ insert $ TaskDependency (entityKey highPriorityNoDueDate)
+                                      (entityKey highPriorityOverdue)
+                                      False
+      runDB $ insert $ TaskDependency (entityKey highPriorityOverdue)
+                                      (entityKey highPriority)
+                                      False
+
+      postponedTasks <- runHandler $ postponedTaskList
+        currTime
+        [ highPriority
+        , highPriorityOverdue
+        , highPriorityNoDueDate
+        , highPriorityWayOverdue
+        ]
+
+      assertEq
+        "Postponed tasks"
+        (map (taskName . entityVal) (sort postponedTasks))
+        (map (taskName . entityVal)
+             (sort [highPriority, highPriorityOverdue, highPriorityNoDueDate])
+        )
