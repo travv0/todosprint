@@ -6,6 +6,6 @@ database:
   # something like:
   #
   #   database: "_env:SQLITE_DATABASE:scheduler_test.sqlite3"
-  database: scheduler_test.sqlite3
+  database: scheduler_test
 
 auth-dummy-login: true

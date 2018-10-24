@@ -26,6 +26,7 @@ import           Text.Julius                    ( RawJS(..) )
 import qualified Data.CaseInsensitive          as CI
 import qualified Data.Text.Encoding            as TE
 import           Yesod.Auth.GoogleEmail2
+import           Yesod.Auth.Dummy
 import           Yesod.Core.Types               ( Logger )
 import qualified Yesod.Core.Unsafe             as Unsafe
 import           Yesod.Default.Util             ( addStaticContentExternal )
@@ -289,7 +290,7 @@ instance YesodAuth App where
               }
     -- You can add other plugins like Google Email, email or OAuth here
   authPlugins :: App -> [AuthPlugin App]
-  authPlugins app = [authGoogleEmail (googleClientId app) (googleClientSecret app)]
+  authPlugins app = [authGoogleEmail (googleClientId app) (googleClientSecret app), authDummy]
 
 -- | Access function to determine if a user is logged in.
 isAuthenticated :: Handler AuthResult

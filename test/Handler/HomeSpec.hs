@@ -1,35 +1,24 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Handler.HomeSpec (spec) where
+module Handler.HomeSpec
+    ( spec
+    )
+where
 
-import TestImport
+import           TestImport
 
 spec :: Spec
 spec = withApp $ do
 
-    describe "Homepage" $ do
-        it "loads the index and checks it looks right" $ do
-          get HomeR
-          statusIs 200
-          htmlAnyContain "h1" "a modern framework for blazing fast websites"
+    describe "Manage page" $ do
+        it "asserts redirect to login page from manage page for anonymous users"
+            $ do
+                  get HomeR
+                  statusIs 303
 
-          request $ do
-              setMethod "POST"
-              setUrl HomeR
-              addToken
-              fileByLabelExact "Choose a file" "test/Spec.hs" "text/plain" -- talk about self-reference
-              byLabelExact "What's on the file?" "Some Content"
+        it "asserts access to manage page for authenticated users" $ do
+            userEntity <- createUser "foo@gmail.com"
+            authenticateAs userEntity
 
-          statusIs 200
-          -- more debugging printBody
-          htmlAllContain ".upload-response" "text/plain"
-          htmlAllContain ".upload-response" "Some Content"
-
-        -- This is a simple example of using a database access in a test.  The
-        -- test will succeed for a fresh scaffolded site with an empty database,
-        -- but will fail on an existing database with a non-empty user table.
-        it "leaves the user table empty" $ do
-          get HomeR
-          statusIs 200
-          users <- runDB $ selectList ([] :: [Filter User]) []
-          assertEq "user table empty" 0 $ length users
+            get HomeR
+            statusIs 200
