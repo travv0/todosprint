@@ -279,7 +279,7 @@ getTodayR = do
       defaultLayout $ do
         setTitle "Today's Tasks"
         $(widgetFile "work-message")
-        taskList tasks postponedTasks False estimatedToc
+        taskList tasks postponedTasks True estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
       defaultLayout $ do
