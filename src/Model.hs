@@ -27,9 +27,13 @@ share
 instance Ord Task where
   task1 `compare` task2 =
     taskPriority task1 `compare` taskPriority task2 <>
-    taskDueDate task2 `compare` taskDueDate task1 <>
+    case (taskDueDate task1, taskDueDate task2) of
+      (Nothing, Nothing) -> EQ
+      (Just _, Nothing) -> GT
+      (Nothing, Just _) -> LT
+      (Just dd1, Just dd2) -> dd2 `compare` dd1
+    <> taskCreateTime task2 `compare` taskCreateTime task1 <>
     taskDuration task2 `compare` taskDuration task1 <>
-    taskCreateTime task2 `compare` taskCreateTime task1 <>
     taskName task1 `compare` taskName task2 <>
     taskRepeat task1 `compare` taskRepeat task2 <>
     taskDone task1 `compare` taskDone task2 <>
