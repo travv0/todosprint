@@ -10,6 +10,9 @@ import           Import
 import           Database.Persist.Sql
 import           Text.Read
 
+getTimeZoneR :: Handler Html
+getTimeZoneR = redirect TodayR
+
 postTimeZoneR :: Handler Value
 postTimeZoneR = do
   muserId' <- lookupPostParam "userId"
