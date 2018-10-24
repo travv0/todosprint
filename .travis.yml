@@ -6,7 +6,7 @@ services:
 
 env:
   matrix:
-    - STACK_YAML=stack.yaml
+    - GHCVER=8.4.3 STACK_YAML=stack.yaml
 # allow_failures:
 #   - GHCVER=8.4  STACK_YAML=stack-8.4.yaml
 
