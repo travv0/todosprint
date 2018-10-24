@@ -26,6 +26,6 @@
 
 /mark-done/#TaskId MarkDoneR POST
 
-/time-zone TimeZoneR POST
+/time-zone TimeZoneR GET POST
 
 /reset-time ResetDueTimeR GET
