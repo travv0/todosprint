@@ -1,5 +1,5 @@
 sudo: false
-language: haskell
+language: generic
 services:
 - postgresql
 env:
