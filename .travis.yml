@@ -23,6 +23,10 @@ script:
   # upload optimized binaries on a successful build
   - stack test --fast --no-terminal
 
+after_script:
+  - cabal install hpc-coveralls
+  - hpc-coveralls [options] [test-suite-names]
+
 cache:
   timeout: 2000
   directories:
