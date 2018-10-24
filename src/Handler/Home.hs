@@ -300,7 +300,7 @@ formatPostponeTime userTz (Entity _ task) = case taskPostponeTime task of
   where userTime = utcToLocalTime userTz
 
 setTimeWidget :: Widget -> Enctype -> Widget
-setTimeWidget widget enctype = 
+setTimeWidget widget enctype =
   $(widgetFile "set-time")
 
 postTodayR :: Handler Html
