@@ -127,13 +127,13 @@ weight :: Day -> Task -> Integer
 weight date task = case taskPriority task of
   High -> highWeight + case taskDueDate task of
     Just dd -> weightMod dd highOverdueMod
-    Nothing -> 0
+    Nothing -> -1
   Medium -> mediumWeight + case taskDueDate task of
     Just dd -> weightMod dd mediumOverdueMod
-    Nothing -> 0
+    Nothing -> -1
   Low -> lowWeight + case taskDueDate task of
     Just dd -> weightMod dd lowOverdueMod
-    Nothing -> 0
+    Nothing -> -1
   None -> 0
   where weightMod dd modifier = (date `diffDays` dd) * modifier
 
