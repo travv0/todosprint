@@ -18,6 +18,7 @@ import Yesod.Default.Config2 (useEnv, loadYamlSettings)
 import Yesod.Auth            as X
 import Yesod.Test            as X
 import Yesod.Core.Unsafe     (fakeHandlerGetLogger)
+import Foundation (unsafeHandler)
 
 runDB :: SqlPersistM a -> YesodExample App a
 runDB query = do
