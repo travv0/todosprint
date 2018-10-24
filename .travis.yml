@@ -29,7 +29,7 @@ script:
   - stack build -j2 --fast --no-terminal
   # You might want to remove --fast if you want to
   # upload optimized binaries on a successful build
-  - stack test --fast --no-terminal
+  - stack test --coverage --fast --no-terminal
 
 after_script:
   - travis_retry curl -L https://github.com/rubik/stack-hpc-coveralls/releases/download/v0.0.4.0/shc-linux-x64-8.0.1.tar.bz2 | tar -xj
