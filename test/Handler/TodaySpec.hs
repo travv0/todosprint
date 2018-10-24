@@ -45,7 +45,8 @@ spec = withApp $ do
 
   describe "sortTasks" $ do
     it "sorts correctly without dependencies" $ do
-      currTime <- liftIO getCurrentTime
+      currTime      <- liftIO getCurrentTime
+      currTimeLater <- liftIO getCurrentTime
       let today = utctDay currTime
 
       userEntity <- createUser "foo@gmail.com"
@@ -86,6 +87,20 @@ spec = withApp $ do
         30
         High
         (Just $ addDays (-9) today)
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+      highPriorityNoDueDate <- runDB $ insertEntity $ Task
+        "highPriorityNoDueDate"
+        30
+        High
+        Nothing
         Nothing
         False
         (entityKey userEntity)
@@ -136,6 +151,48 @@ spec = withApp $ do
         Nothing
         False
         Nothing
+      mediumPriorityNoDueDate <- runDB $ insertEntity $ Task
+        "mediumPriorityNoDueDate"
+        30
+        Medium
+        Nothing
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+      mediumPriorityNoDueDateShort <- runDB $ insertEntity $ Task
+        "mediumPriorityNoDueDateShort"
+        5
+        Medium
+        Nothing
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+      mediumPriorityNoDueDateShortAddedLater <- runDB $ insertEntity $ Task
+        "mediumPriorityNoDueDateShortAddedLater"
+        5
+        Medium
+        Nothing
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTimeLater
+        Nothing
+        False
+        Nothing
       lowPriority <- runDB $ insertEntity $ Task "lowPriority"
                                                  30
                                                  Low
@@ -168,6 +225,20 @@ spec = withApp $ do
         30
         Low
         (Just $ addDays (-9) today)
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+      lowPriorityNoDueDate <- runDB $ insertEntity $ Task
+        "lowPriorityNoDueDate"
+        30
+        Low
+        Nothing
         Nothing
         False
         (entityKey userEntity)
@@ -218,6 +289,20 @@ spec = withApp $ do
         Nothing
         False
         Nothing
+      nonePriorityNoDueDate <- runDB $ insertEntity $ Task
+        "nonePriorityNoDueDate"
+        30
+        None
+        Nothing
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
 
       let sortableTasks = map
             (\t -> (t, []))
@@ -233,6 +318,12 @@ spec = withApp $ do
             , nonePriority
             , nonePriorityOverdue
             , nonePriorityWayOverdue
+            , highPriorityNoDueDate
+            , mediumPriorityNoDueDate
+            , lowPriorityNoDueDate
+            , nonePriorityNoDueDate
+            , mediumPriorityNoDueDateShortAddedLater
+            , mediumPriorityNoDueDateShort
             ]
 
       assertEq
@@ -241,13 +332,19 @@ spec = withApp $ do
         [ "highPriorityWayOverdue"
         , "highPriorityOverdue"
         , "highPriority"
+        , "highPriorityNoDueDate"
         , "mediumPriorityWayOverdue"
-        , "lowPriorityWayOverdue"
         , "mediumPriorityOverdue"
         , "mediumPriority"
+        , "mediumPriorityNoDueDateShort"
+        , "mediumPriorityNoDueDate"
+        , "mediumPriorityNoDueDateShortAddedLater"
+        , "lowPriorityWayOverdue"
         , "lowPriorityOverdue"
         , "lowPriority"
+        , "lowPriorityNoDueDate"
         , "nonePriorityWayOverdue"
         , "nonePriorityOverdue"
         , "nonePriority"
+        , "nonePriorityNoDueDate"
         ]
