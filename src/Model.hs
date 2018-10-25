@@ -26,14 +26,14 @@ share
 -- reversed so it works right with topsort
 instance Ord Task where
   task1 `compare` task2 =
-    taskPriority task2 `compare` taskPriority task1 <>
+    taskPriority task1 `compare` taskPriority task2 <>
     case (taskDueDate task1, taskDueDate task2) of
       (Nothing, Nothing) -> EQ
-      (Just _, Nothing) -> LT
-      (Nothing, Just _) -> GT
-      (Just dd1, Just dd2) -> dd1 `compare` dd2
-    <> taskCreateTime task1 `compare` taskCreateTime task2 <>
-    taskDuration task1 `compare` taskDuration task2 <>
+      (Just _, Nothing) -> GT
+      (Nothing, Just _) -> LT
+      (Just dd1, Just dd2) -> dd2 `compare` dd1
+    <> taskCreateTime task2 `compare` taskCreateTime task1 <>
+    taskDuration task2 `compare` taskDuration task1 <>
     taskName task1 `compare` taskName task2 <>
     taskRepeat task1 `compare` taskRepeat task2 <>
     taskDone task1 `compare` taskDone task2 <>

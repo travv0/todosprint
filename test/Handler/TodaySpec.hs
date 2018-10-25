@@ -1,7 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE MultiWayIf #-}
-
 module Handler.TodaySpec
   ( spec
   )
@@ -613,8 +612,9 @@ spec = withApp $ do
       let sortableTasks = map
             (\t -> (t, if
                         | t == lowPriority -> [highPriority]
-                        | t == highPriority -> [mediumPriority, highPriorityWayOverdue]
+                        | t == highPriority -> [highPriorityWayOverdue, mediumPriority]
                         | t == highPriorityNoDueDate -> [highPriority]
+                        | t == highPriorityWayOverdue -> [nonePriorityOverdue]
                         | otherwise -> []))
             [ highPriority
             , highPriorityOverdue
@@ -639,11 +639,7 @@ spec = withApp $ do
       assertEq
         "Not equal: "
         (map (taskName . entityVal) (sortTasks sortableTasks))
-        [ "lowPriority"
-        , "highPriorityNoDueDate"
-        , "highPriority"
-        , "highPriorityWayOverdue"
-        , "highPriorityOverdue"
+        [ "highPriorityOverdue"
         , "mediumPriorityWayOverdue"
         , "mediumPriorityOverdue"
         , "mediumPriority"
@@ -655,6 +651,10 @@ spec = withApp $ do
         , "lowPriorityNoDueDate"
         , "nonePriorityWayOverdue"
         , "nonePriorityOverdue"
+        , "highPriorityWayOverdue"
+        , "highPriority"
+        , "lowPriority"
+        , "highPriorityNoDueDate"
         , "nonePriority"
         , "nonePriorityNoDueDate"
         ]
