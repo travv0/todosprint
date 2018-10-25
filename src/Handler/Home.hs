@@ -96,20 +96,20 @@ getHomeR = do
     $(widgetFile "homepage")
 
 sortTasks' :: [(Entity Task, [Entity Task])] -> [G.SCC (Entity Task, [Entity Task])]
-sortTasks' tasksAndDepndnts = G.stronglyConnComp tasksDependents
+sortTasks' tasksAndDeps = G.stronglyConnComp tasksDeps
  where
-  tasksDependents = map
+  tasksDeps = map
     (\(etask@(Entity _ task), deps) ->
       ( (etask, deps)
       , task
       , map (\(Entity _ dep) -> dep) deps
       )
     )
-    tasksAndDepndnts
+    tasksAndDeps
 
 sortTasks :: [(Entity Task, [Entity Task])] -> [Entity Task]
-sortTasks tasksAndDepndnts =
-  reverse $ map fst $ concatMap G.flattenSCC $ sortTasks' tasksAndDepndnts
+sortTasks tasksAndDeps =
+  map fst $ concatMap G.flattenSCC $ sortTasks' tasksAndDeps
 
 highWeight :: Integer
 highWeight = 99999
@@ -403,21 +403,21 @@ daysList day mins tasks = do
                     . dueByDay day
                     )
                     tasks
-  tasksAndDeps <- mapM taskAndDependents' todaysTasks
+  tasksAndDeps <- mapM taskAndDeps todaysTasks
   return $ sortTasks tasksAndDeps
-  where taskAndDependents' task = do
-              dependents <- runDB $ selectList
-                [TaskDependencyDependsOnTaskId ==. entityKey task, TaskDependencyDeleted ==. False]
+  where taskAndDeps task = do
+              dependencies <- runDB $ selectList
+                [TaskDependencyTaskId ==. entityKey task, TaskDependencyDeleted ==. False]
                 []
               let tdIds =
-                    map (\(Entity _ td) -> taskDependencyTaskId td) dependents
-              dependentEntities <- runDB $ mapM
+                    map (\(Entity _ td) -> taskDependencyDependsOnTaskId td) dependencies
+              dependencyEntities <- runDB $ mapM
                 (\tdId -> selectList
                   [TaskId ==. tdId, TaskDeleted ==. False, TaskDone ==. False]
                   []
                 )
                 tdIds
-              return (task, L.concat dependentEntities)
+              return (task, L.concat dependencyEntities)
 
 postMarkDoneR :: TaskId -> Handler Html
 postMarkDoneR taskId = do
