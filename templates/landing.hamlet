@@ -1,0 +1,8 @@
+<h3>Finally finish those easy-to-put-off tasks
+<p>
+    Tell ToDoSprint what time you want to work until, and it'll handle the rest.  ToDoSprint won't show you an overwhelming list of tasks, only what you can realistically get done each day.
+
+<p>
+    Just
+    <a href=@{AuthR Yesod.Auth.GoogleEmail2.forwardUrl}>login with Google
+    to get started.

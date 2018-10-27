@@ -127,7 +127,7 @@ getNewTaskR = do
     FormSuccess t -> do
       runDB $ insert t
       setMessage "Task created"
-      redirectUltDest HomeR
+      redirect NewTaskR
     _ -> do
       defaultLayout $ do
         setTitle "New Task"

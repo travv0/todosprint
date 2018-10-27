@@ -120,7 +120,7 @@ instance Yesod App
     let menuItems =
           [ NavbarLeft $
             MenuItem
-              { menuItemLabel = "Home"
+              { menuItemLabel = "Today"
               , menuItemRoute = TodayR
               , menuItemAccessCallback = isJust muser
               }
@@ -171,7 +171,7 @@ instance Yesod App
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
     -- The page to be redirected to when authentication is required.
   authRoute :: App -> Maybe (Route App)
-  authRoute _ = Just $ AuthR Yesod.Auth.GoogleEmail2.forwardUrl
+  authRoute _ = Just $ LandingR
   isAuthorized ::
        Route App -- ^ The route the user is visiting.
     -> Bool -- ^ Whether or not this is a "write" request.
@@ -181,6 +181,7 @@ instance Yesod App
   isAuthorized FaviconR _       = return Authorized
   isAuthorized RobotsR _        = return Authorized
   isAuthorized (StaticR _) _    = return Authorized
+  isAuthorized LandingR _    = return Authorized
   isAuthorized HomeR _          = isAuthenticated
   isAuthorized NewTaskR _       = isAuthenticated
   isAuthorized (EditTaskR taskId) _ = userOwnsTask taskId
@@ -256,10 +257,10 @@ instance YesodAuth App where
   type AuthId App = UserId
     -- Where to send a user after successful login
   loginDest :: App -> Route App
-  loginDest _ = HomeR
+  loginDest _ = TodayR
     -- Where to send a user after logout
   logoutDest :: App -> Route App
-  logoutDest _ = HomeR
+  logoutDest _ = LandingR
     -- Override the above two destinations when a Referer: header is present
   redirectToReferer :: App -> Bool
   redirectToReferer _ = True

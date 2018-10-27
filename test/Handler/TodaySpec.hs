@@ -14,6 +14,15 @@ import           Handler.Home
 spec :: Spec
 spec = withApp $ do
   describe "Today page" $ do
+    it "shows help message if user has no tasks" $ do
+      userEntity <- createUser "foo@gmail.com"
+      authenticateAs userEntity
+
+      get TodayR
+      statusIs 200
+
+      htmlAnyContain "p" "You don&#39;t have any tasks"
+
     it "isn't detailed task list" $ do
       currTime   <- liftIO getCurrentTime
 
@@ -610,12 +619,21 @@ spec = withApp $ do
         Nothing
 
       let sortableTasks = map
-            (\t -> (t, if
-                        | t == lowPriority -> [highPriority]
-                        | t == highPriority -> [highPriorityWayOverdue, mediumPriority]
-                        | t == highPriorityNoDueDate -> [highPriority]
-                        | t == highPriorityWayOverdue -> [nonePriorityOverdue]
-                        | otherwise -> []))
+            (\t ->
+              ( t
+              , if
+                | t == lowPriority
+                -> [highPriority]
+                | t == highPriority
+                -> [highPriorityWayOverdue, mediumPriority]
+                | t == highPriorityNoDueDate
+                -> [highPriority]
+                | t == highPriorityWayOverdue
+                -> [nonePriorityOverdue]
+                | otherwise
+                -> []
+              )
+            )
             [ highPriority
             , highPriorityOverdue
             , highPriorityWayOverdue
