@@ -7,7 +7,11 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
-/ TodayR GET POST
+/ LandingR GET
+
+/today TodayR GET POST
+/manage/ HomeR GET
+/deps/#TaskId TodayDepsR GET
 
 /new-task NewTaskR GET POST
 /edit-task/#TaskId EditTaskR GET POST
@@ -20,9 +24,6 @@
 
 /add-deps/#TaskId AddDepsR GET POST
 /add-dependents/#TaskId AddDependentsR GET POST
-
-/manage/ HomeR GET
-/deps/#TaskId TodayDepsR GET
 
 /mark-done/#TaskId MarkDoneR POST
 

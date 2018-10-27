@@ -1,4 +1,8 @@
-$if null tasks
+$if null allTasks
+    <div .container>
+        <h3>First things first
+        <p>You don't have any tasks!  Click "New Task" in the navigation menu above to get started.
+$elseif null tasks
     <h3 .doneMessage>
         You're done for the day!
 $else

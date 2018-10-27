@@ -13,6 +13,15 @@ spec :: Spec
 spec = withApp $ do
 
   describe "Manage page" $ do
+    it "shows help message if user has no tasks" $ do
+      userEntity <- createUser "foo@gmail.com"
+      authenticateAs userEntity
+
+      get TodayR
+      statusIs 200
+
+      htmlAnyContain "p" "You don&#39;t have any tasks"
+
     it "asserts redirect to login page from manage page for anonymous users"
       $ do
           get HomeR
