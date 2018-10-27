@@ -239,6 +239,8 @@ getTodayR = do
   let user =
         if shouldUpdateTime then user' { userDueTime = Nothing } else user'
 
+  tasks'  <- runDB $ getTasks userId []
+
   let mUserDueTime = userDueTime user
   case mUserDueTime of
     Just dt -> do
@@ -264,8 +266,6 @@ getTodayR = do
             (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
       let mins = (todHour timeOfDay * 60) + todMin timeOfDay
 
-      tasks'  <- runDB $ getTasks userId []
-
       utcTime <- liftIO getCurrentTime
       let today = localDay $ utcToLocalTime userTz utcTime
       tasks <- daysList today mins tasks'
@@ -283,8 +283,13 @@ getTodayR = do
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
       defaultLayout $ do
-        setTitle "Set Time"
-        setTimeWidget widget enctype
+        if null tasks'
+           then do
+             setTitle "Today's Tasks"
+             taskList [] [] False Nothing
+           else do
+             setTitle "Set Time"
+             setTimeWidget widget enctype
 
 estimateTimeOfCompletion :: [Entity Task] -> TimeOfDay -> TimeOfDay
 estimateTimeOfCompletion tasks tod = TimeOfDay hours mins (todSec tod)
