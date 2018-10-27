@@ -1,11 +1,11 @@
 # scheduler-web
-[![Build Status](https://travis-ci.org/tssund93/todosprint.svg?branch=master)](https://travis-ci.org/tssund93/todosprint)
+[![Build Status](https://travis-ci.com/tssund93/todosprint.svg?branch=master)](https://travis-ci.com/tssund93/todosprint)
 [![Coverage Status](https://coveralls.io/repos/github/tssund93/todosprint/badge.svg?branch=master)](https://coveralls.io/github/tssund93/todosprint)
 
 ## Haskell Setup
 
 1. If you haven't already, [install Stack](https://haskell-lang.org/get-started)
-	* On POSIX systems, this is usually `curl -sSL https://get.haskellstack.org/ | sh`
+    * On POSIX systems, this is usually `curl -sSL https://get.haskellstack.org/ | sh`
 2. Install the `yesod` command line tool: `stack install yesod-bin --install-ghc`
 3. Build libraries: `stack build`
 
@@ -34,8 +34,8 @@ stack test --flag scheduler:library-only --flag scheduler:dev
 * Read the [Yesod Book](https://www.yesodweb.com/book) online for free
 * Check [Stackage](http://stackage.org/) for documentation on the packages in your LTS Haskell version, or [search it using Hoogle](https://www.stackage.org/lts/hoogle?q=). Tip: Your LTS version is in your `stack.yaml` file.
 * For local documentation, use:
-	* `stack haddock --open` to generate Haddock documentation for your dependencies, and open that documentation in a browser
-	* `stack hoogle <function, module or type signature>` to generate a Hoogle database and search for your query
+    * `stack haddock --open` to generate Haddock documentation for your dependencies, and open that documentation in a browser
+    * `stack hoogle <function, module or type signature>` to generate a Hoogle database and search for your query
 * The [Yesod cookbook](https://github.com/yesodweb/yesod-cookbook) has sample code for various needs
 
 ## Getting Help
@@ -43,5 +43,5 @@ stack test --flag scheduler:library-only --flag scheduler:dev
 * Ask questions on [Stack Overflow, using the Yesod or Haskell tags](https://stackoverflow.com/questions/tagged/yesod+haskell)
 * Ask the [Yesod Google Group](https://groups.google.com/forum/#!forum/yesodweb)
 * There are several chatrooms you can ask for help:
-	* For IRC, try Freenode#yesod and Freenode#haskell
-	* [Functional Programming Slack](https://fpchat-invite.herokuapp.com/), in the #haskell, #haskell-beginners, or #yesod channels.
+    * For IRC, try Freenode#yesod and Freenode#haskell
+    * [Functional Programming Slack](https://fpchat-invite.herokuapp.com/), in the #haskell, #haskell-beginners, or #yesod channels.
