@@ -217,14 +217,31 @@ getResetDueTimeR = do
   runDB $ update userId [UserDueTime =. Nothing]
   redirect TodayR
 
+minsDiff :: TimeZone -> UTCTime -> UTCTime -> Int
+minsDiff userTz big small
+  | big < small = 0
+  | otherwise =
+    let big'            = timeToTimeOfDay $ utctDayTime big
+        (dayAdj, big'') = utcToLocalTimeOfDay userTz big'
+        bigTime                 = timeOfDayToTime big''
+
+        small'                     = timeToTimeOfDay $ utctDayTime small
+        (smallDayAdj, small'')               = utcToLocalTimeOfDay userTz small'
+        smallTime                   = timeOfDayToTime small''
+
+        timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
+          (diffTimeToPicoseconds bigTime - diffTimeToPicoseconds smallTime)
+    in
+      (todHour timeOfDay * 60) + todMin timeOfDay
+
 getTodayR :: Handler Html
 getTodayR = do
   setUltDestCurrent
   (Entity userId user') <- requireAuth
 
   -- get current day in user's time zone
-  currentDateTime       <- liftIO getCurrentTime
-  let mCurrentUserDateTime = utcToUserTime currentDateTime user'
+  utcTime       <- liftIO getCurrentTime
+  let mCurrentUserDateTime = utcToUserTime utcTime user'
 
   -- get day of due time in user's time zone
   let mDueDateTime         = userDueTime user'
@@ -239,51 +256,63 @@ getTodayR = do
   let user =
         if shouldUpdateTime then user' { userDueTime = Nothing } else user'
 
-  tasks'  <- runDB $ getTasks userId []
+  allTasks  <- runDB $ getTasks userId []
+  todaysTasksHandler "Today's Tasks" user (userDueTime user) allTasks Nothing
+
+todaysList :: Entity User -> Handler [Entity Task]
+todaysList euser = do
+  let (Entity userId user) = euser
+  utcTime       <- liftIO getCurrentTime
+  allTasks  <- runDB $ getTasks userId []
 
   let mUserDueTime = userDueTime user
   case mUserDueTime of
     Just dt -> do
       let userTz = fromMaybe utc $ userTimeZone user
 
-      let mLocalTod = fmap
-            (utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime)
-            mUserDueTime
+      let mins = minsDiff userTz dt utcTime
 
-      -- get current time in user's time zone
-      currentTime <- liftIO $ utctDayTime <$> getCurrentTime
-      let currentTime'            = timeToTimeOfDay currentTime
-      let (dayAdj, currentTime'') = utcToLocalTimeOfDay userTz currentTime'
-      let curTime                 = timeOfDayToTime currentTime''
+      let localTime = utcToLocalTime userTz utcTime
+      let today = localDay localTime
+      daysList today mins allTasks
+    Nothing -> return []
 
-      -- get due time in user's time zone
-      let dt'                     = timeToTimeOfDay $ utctDayTime dt
-      let (_, dt'')               = utcToLocalTimeOfDay userTz dt'
-      let dTime                   = timeOfDayToTime dt''
+todaysTasksHandler :: Text -> User -> Maybe UTCTime -> [Entity Task] -> Maybe TaskId -> Handler Html
+todaysTasksHandler title user mDueTime tasks mtaskId = do
+  utcTime       <- liftIO getCurrentTime
 
-      -- use those to calulate how many minutes are left
-      let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
-            (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
-      let mins = (todHour timeOfDay * 60) + todMin timeOfDay
+  case mDueTime of
+    Just dt -> do
+      let userTz = fromMaybe utc $ userTimeZone user
 
-      utcTime <- liftIO getCurrentTime
-      let today = localDay $ utcToLocalTime userTz utcTime
-      tasks <- daysList today mins tasks'
+      let localDt =
+            (utcToLocalTimeOfDay userTz . timeToTimeOfDay . utctDayTime) dt
 
-      -- calculate estimated time of completion
-      let estimatedToc = if null tasks
+      let mins = minsDiff userTz dt utcTime
+
+      let localTime = utcToLocalTime userTz utcTime
+      let today = localDay localTime
+      let localTod = localTimeOfDay localTime
+      reducedTasks <- daysList today mins tasks
+
+      let estimatedToc = if null reducedTasks
             then Nothing
-            else Just $ estimateTimeOfCompletion tasks currentTime''
+            else Just $ estimateTimeOfCompletion reducedTasks localTod
 
-      postponedTasks <- postponedTaskList utcTime tasks
-      defaultLayout $ do
-        setTitle "Today's Tasks"
-        $(widgetFile "work-message")
-        taskList tasks postponedTasks False estimatedToc
+      postponedTasks <- postponedTaskList utcTime reducedTasks
+      if isJust mtaskId && null reducedTasks
+        then redirect TodayR
+        else
+          defaultLayout $ do
+            setTitle $ toHtml title
+            [whamlet|$if isJust mtaskId
+                        <h3>#{title}|]
+            $(widgetFile "work-message")
+            taskList reducedTasks postponedTasks False estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
       defaultLayout $ do
-        if null tasks'
+        if null tasks
            then do
              setTitle "Today's Tasks"
              taskList [] [] False Nothing
@@ -502,69 +531,18 @@ getTodayDepsR taskId = do
 
   case mTask of
     Just task -> do
-      utcTime <- liftIO getCurrentTime
-      let today =
-            localDay $ fromMaybe (utcToLocalTime utc utcTime) $ utcToUserTime
-              utcTime
+      todaysTasks <- todaysList $ Entity userId user
+
+      tasks' <- taskAndDependencies task
+      let tasks'' = L.delete task tasks'
+
+      todaysTasksHandler ("\""
+                          ++ taskName (entityVal task)
+                          ++ "\" Dependencies")
               user
-      let userTz = fromMaybe utc $ userTimeZone user
-
-      case taskPostponeTime $ entityVal task of
-        Just ppt -> do
-          -- get current time in user's time zone
-          currentTime <- liftIO $ utctDayTime <$> getCurrentTime
-          let currentTime'            = timeToTimeOfDay currentTime
-          let (dayAdj, currentTime'') = utcToLocalTimeOfDay userTz currentTime'
-          let curTime                 = timeOfDayToTime currentTime''
-
-          -- get due time in user's time zone
-          let ppt'                    = timeToTimeOfDay $ utctDayTime ppt
-          let (_, ppt'')              = utcToLocalTimeOfDay userTz ppt'
-          let ppTime                  = timeOfDayToTime ppt''
-
-          -- use those to calulate how many minutes are left
-          let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
-                (diffTimeToPicoseconds ppTime - diffTimeToPicoseconds curTime)
-          let mins         = (todHour timeOfDay * 60) + todMin timeOfDay
-
-          let mUserDueTime = userDueTime user
-          todayMins <- case mUserDueTime of
-            Just dt -> do
-               -- get due time in user's time zone
-              let dt'       = timeToTimeOfDay $ utctDayTime dt
-              let (_, dt'') = utcToLocalTimeOfDay userTz dt'
-              let dTime     = timeOfDayToTime dt''
-
-              -- use those to calulate how many minutes are left
-              let todayTimeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
-                    (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime
-                    )
-              return $ (todHour todayTimeOfDay * 60) + todMin todayTimeOfDay
-            Nothing -> return mins
-
-          allTasks <- runDB $ getTasks userId []
-
-          todaysTasks <- daysList today todayMins allTasks
-
-          tasks' <- taskAndDependencies task
-          let tasks'' = L.delete task tasks'
-
-          tasks <-
-                daysList today mins $ tasks'' `L.intersect` todaysTasks
-
-          case tasks of
-            [] -> redirect TodayR
-            _  -> do
-              postponedTasks <- postponedTaskList utcTime tasks
-              defaultLayout $ do
-                setTitle
-                  $  toHtml
-                  $  "\""
-                  ++ taskName (entityVal task)
-                  ++ "\" Dependencies"
-                [whamlet|<h3>"#{taskName (entityVal task)}" Dependencies|]
-                taskList tasks postponedTasks False Nothing
-        Nothing -> redirect TodayR
+              (taskPostponeTime $ entityVal task)
+              (tasks'' `L.intersect` todaysTasks)
+              (Just $ entityKey task)
     Nothing -> redirect TodayR
 
 getTasks userId =
