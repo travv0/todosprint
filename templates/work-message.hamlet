@@ -1,16 +1,10 @@
 <div .workMsgDiv>
   <span .workMsg>
     $if null tasks
-      $maybe tod <- mLocalTod
-        You worked until #{formatTime defaultTimeLocale "%l:%M %p" $ snd tod}
-      $nothing
-
+      You worked until #{formatTime defaultTimeLocale "%l:%M %p" $ snd localDt}
     $else
-      $maybe tod <- mLocalTod
-        You're working until #{formatTime defaultTimeLocale "%l:%M %p" $ snd tod}
-      $nothing
-
+      You're working until #{formatTime defaultTimeLocale "%l:%M %p" $ snd localDt}
     \ (#
-    <a href=@{ResetDueTimeR}>#
+    <a :isNothing mtaskId:href=@{ResetDueTimeR} :isJust mtaskId:href=@{PostponeTaskR $ M.fromJust mtaskId}>#
       change#
     )
