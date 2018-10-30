@@ -35,38 +35,24 @@ taskList tasks postponedTasks detailed estimatedToc = do
   allTasks <- handlerToWidget $ runDB $ getTasks userId []
 
   let userTz = fromMaybe utc $ userTimeZone user
-
-  -- get current time in user's time zone
-  currentTime <- liftIO $ utctDayTime <$> getCurrentTime
-  let currentTime'            = timeToTimeOfDay currentTime
-  let (dayAdj, currentTime'') = utcToLocalTimeOfDay userTz currentTime'
-  let curTime                 = timeOfDayToTime currentTime''
-
-  let mUserDueTime            = userDueTime user
-
-  -- get due time in user's time zone
-  let dTime = case mUserDueTime of
-        Just dt -> do
-          let dt'       = timeToTimeOfDay $ utctDayTime dt
-          let (_, dt'') = utcToLocalTimeOfDay userTz dt'
-          timeOfDayToTime dt''
-        Nothing -> currentTime
-
-  -- use those to calulate how many minutes are left
-  let timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
-        (diffTimeToPicoseconds dTime - diffTimeToPicoseconds curTime)
-  let mins = (todHour timeOfDay * 60) + todMin timeOfDay
-
-  todaysTasks <- handlerToWidget $ daysList today mins allTasks
+  todaysTasks <- handlerToWidget $ todaysList $ Entity userId user
 
   tasksDeps <- handlerToWidget $ mapM
     (\t -> if M.isNothing (taskPostponeTime $ entityVal t)
       then return False
       else
-        (<) 1
-          <$> (   L.length
-              <$> (L.intersect <$> taskAndDependencies t <*> pure todaysTasks)
-              )
+        case taskPostponeTime (entityVal t) of
+          Just ppt ->
+            let tad = taskAndDependencies t in
+            (<) 0
+              <$> (   L.length
+                  <$> (L.intersect <$> tad <*> do
+                          tad' <- L.delete t <$> tad
+                          let mins = minsDiff userTz ppt utcTime
+                          daysList today mins (tad' `L.intersect` todaysTasks)
+                      )
+                  )
+          Nothing -> return False
     )
     tasks
   let tasksHasDeps = zip tasks tasksDeps

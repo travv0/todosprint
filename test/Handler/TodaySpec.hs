@@ -53,6 +53,98 @@ spec = withApp $ do
       htmlNoneContain ".taskDate"     "Priority"
       htmlNoneContain ".taskDuration" "minutes"
 
+    it "doesn't show dependencies link when not enough time to work on dependencies" $ do
+      currTime      <- liftIO getCurrentTime
+      let today = utctDay currTime
+
+      userEntity <- createUser "foo@gmail.com"
+      runDB $ update (entityKey userEntity)
+                     [UserDueTime =. Just (addUTCTime 150 currTime)]
+
+      authenticateAs userEntity
+
+      highPriority <- runDB $ insertEntity $ Task "highPriority"
+                                                  1
+                                                  High
+                                                  (Just today)
+                                                  Nothing
+                                                  False
+                                                  (entityKey userEntity)
+                                                  (Just (addUTCTime 59 currTime))
+                                                  Nothing
+                                                  currTime
+                                                  Nothing
+                                                  False
+                                                  Nothing
+      mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
+                                                    1
+                                                    Medium
+                                                    (Just today)
+                                                    Nothing
+                                                    False
+                                                    (entityKey userEntity)
+                                                    Nothing
+                                                    Nothing
+                                                    currTime
+                                                    Nothing
+                                                    False
+                                                    Nothing
+
+      runDB $ insert $ TaskDependency (entityKey highPriority)
+                                      (entityKey mediumPriority)
+                                      False
+
+      get TodayR
+      statusIs 200
+
+      htmlNoneContain ".taskDate" "glyphicon-th-list"
+
+    it "shows dependencies link when enough time to work on dependencies" $ do
+      currTime      <- liftIO getCurrentTime
+      let today = utctDay currTime
+
+      userEntity <- createUser "foo@gmail.com"
+      runDB $ update (entityKey userEntity)
+                     [UserDueTime =. Just (addUTCTime 150 currTime)]
+
+      authenticateAs userEntity
+
+      highPriority <- runDB $ insertEntity $ Task "highPriority"
+                                                  1
+                                                  High
+                                                  (Just today)
+                                                  Nothing
+                                                  False
+                                                  (entityKey userEntity)
+                                                  (Just (addUTCTime 90 currTime))
+                                                  Nothing
+                                                  currTime
+                                                  Nothing
+                                                  False
+                                                  Nothing
+      mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
+                                                    1
+                                                    Medium
+                                                    (Just today)
+                                                    Nothing
+                                                    False
+                                                    (entityKey userEntity)
+                                                    Nothing
+                                                    Nothing
+                                                    currTime
+                                                    Nothing
+                                                    False
+                                                    Nothing
+
+      runDB $ insert $ TaskDependency (entityKey highPriority)
+                                      (entityKey mediumPriority)
+                                      False
+
+      get TodayR
+      statusIs 200
+
+      htmlAnyContain ".taskDate" "glyphicon-th-list"
+
     it "sorts correctly without dependencies" $ do
       currTime      <- liftIO getCurrentTime
       currTimeLater <- liftIO getCurrentTime
