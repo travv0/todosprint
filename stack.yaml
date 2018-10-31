@@ -43,7 +43,6 @@ packages:
 extra-deps:
 
 nix:
-  enable: true
   packages: [zlib.dev, zlib.out, postgresql]
   pure: false
 
