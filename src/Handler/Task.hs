@@ -72,6 +72,7 @@ startTimeField :: Field Handler UTCTime
 startTimeField = Field
   { fieldParse   = \rawVals _ -> do
       case rawVals of
+        []   -> return $ Right Nothing
         [""] -> return $ Right Nothing
         _ -> do
           (Entity _ user) <- requireAuth
