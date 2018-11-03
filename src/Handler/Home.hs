@@ -20,7 +20,7 @@ import qualified Data.Maybe                    as M
 import qualified Data.Text                     as T
 
 taskList :: [Entity Task] -> [Entity Task] -> Bool -> Maybe TimeOfDay -> Widget
-taskList tasks postponedTasks detailed estimatedToc = do
+taskList tasks postponedTasks todayPage estimatedToc = do
   (Entity userId user) <- requireAuth
   let mUserTz = userTimeZone user
   let formattedEstimatedToc = maybe
@@ -56,7 +56,18 @@ taskList tasks postponedTasks detailed estimatedToc = do
     )
     tasks
   let tasksHasDeps = zip tasks tasksDeps
-  $(widgetFile "tasks")
+
+  if todayPage
+     then do
+       let timedTasks = sortBy (\((Entity _ t1), _) ((Entity _ t2), _) ->
+                         taskPostponeTime t1 `compare` taskPostponeTime t2)
+                            $ filter (\((Entity _ t), _) ->
+                                        isJust $ taskPostponeTime t)
+                                     tasksHasDeps
+       $(widgetFile "tasks-timed")
+       $(widgetFile "tasks")
+     else
+       $(widgetFile "tasks")
 
 getHomeR :: Handler Html
 getHomeR = do
@@ -294,14 +305,14 @@ todaysTasksHandler title user mDueTime tasks mtaskId = do
             [whamlet|$if isJust mtaskId
                         <h3>#{title}|]
             $(widgetFile "work-message")
-            taskList reducedTasks postponedTasks False estimatedToc
+            taskList reducedTasks postponedTasks True estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
       defaultLayout $ do
         if null tasks
            then do
              setTitle "Today's Tasks"
-             taskList [] [] False Nothing
+             taskList [] [] True Nothing
            else do
              setTitle "Set Time"
              setTimeWidget widget enctype
@@ -453,7 +464,11 @@ postMarkDoneR taskId = do
     Just t -> case incrementDueDate cdate t of
       Just t2 -> do
         newTaskId <- insert
-          $ t2 { taskPostponeDay = Nothing, taskPostponeTime = Nothing }
+          $ t2 { taskPostponeDay = Nothing,
+                 taskPostponeTime = if taskPostponeTimeRepeat t
+                                    then newPostponeTime t2
+                                    else Nothing
+               }
         deps <- selectList [TaskDependencyTaskId ==. taskId] []
         depd <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
         _ <- mapM
@@ -471,6 +486,12 @@ postMarkDoneR taskId = do
       Nothing -> redirectUltDest HomeR
     Nothing -> redirectUltDest HomeR
   redirectUltDest HomeR
+  where newPostponeTime newTask = do
+          case taskDueDate newTask of
+            Nothing -> Nothing
+            Just dd -> do
+              oldPpt <- taskPostponeTime newTask
+              Just $ UTCTime dd (utctDayTime oldPpt)
 
 incrementDueDate :: Day -> Task -> Maybe Task
 incrementDueDate cdate task = case taskDueDate task of
