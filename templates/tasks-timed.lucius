@@ -1,0 +1,5 @@
+.startTime {
+    font-weight: bold;
+    display: inline-block;
+    width: 70px;
+}

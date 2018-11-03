@@ -1,0 +1,30 @@
+$if not $ null timedTasks
+    <div .tasksDiv>
+        <h4 .taskListHeader>Today's Agenda
+        <table .taskList.timedList>
+            $forall (task, hasDeps) <- timedTasks
+                <tr .task>
+                    <td .taskCheckbox>
+                        <form action=@{MarkDoneR $ entityKey task} method=post>
+                            <a href="javascript:;" title="Complete task" onclick="parentNode.submit();">
+                                <span class="glyphicon glyphicon-unchecked" aria-hidden="true">
+                    <td .taskInfo #task-#{show $ fromSqlKey $ entityKey task}>
+                        <span .taskNameAndDuration>
+                            <span .taskName>
+                                $if localDay (M.fromJust (utcToUserTime (fromMaybe utcTime (taskPostponeTime $ entityVal task)) user)) >= today
+                                    $maybe tz <- mUserTz
+                                        <span .startTime>#{formatPostponeTime tz task}
+                                    $nothing
+                                $else
+                                    <span .startTime>Overdue
+                                #{taskName $ entityVal task}
+                    <td .taskManagement>
+                        $if hasDeps
+                            <a .manageIcon href=@{TodayDepsR $ entityKey task}>
+                                <span class="glyphicon glyphicon-th-list">
+                        <a .manageIcon href=@{EditTaskR $ entityKey task} title="Edit task">
+                            <span class="glyphicon glyphicon-pencil" aria-hidden="true">
+
+                        <a .manageIcon href=@{PostponeTaskR $ entityKey task} title="Postpone task">
+                            <span class="glyphicon glyphicon-calendar" aria-hidden="true">
+    <br>
