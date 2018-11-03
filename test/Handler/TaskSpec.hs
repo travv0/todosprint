@@ -9,6 +9,8 @@ import           TestImport
 import           Data.Aeson
 import           Priority
 import           Data.Time
+import qualified Data.List as L
+import           RepeatInterval
 
 spec :: Spec
 spec = withApp $ do
@@ -17,27 +19,45 @@ spec = withApp $ do
     it "successfully adds tasks" $ do
       userEntity <- createUser "foo@gmail.com"
       authenticateAs userEntity
+      currTime   <- liftIO getCurrentTime
 
       get NewTaskR
       statusIs 200
 
-      authenticateAs userEntity
-
       request $ do
         setMethod "POST"
         setUrl NewTaskR
-        addPostParam "hident2" "asdf"
-        addPostParam "hident3" "4"
-        addPostParam "hident4" "4"
-        addPostParam "hident5" "2018-11-03"
-        addPostParam "hident6-startTime" "17:00"
-        addPostParam "hident7-count" "4"
-        addPostParam "hident7-unit" "Days"
-        addPostParam "hident7-from" "CompletionDate"
+        addToken
 
+        byLabelExact "Task Name" "asdf"
+        byLabelExact "Duration in Minutes" "4"
+        byLabelExact "Priority" "4"
+        byLabelExact "Due Date" "2018-11-03"
+        byLabelExact "Start Time" "17:00"
+
+      statusIs 303
       r <- getResponse
       liftIO $ putStrLn $ pack $ show r
-      statusIs 200
+
+      [Entity _ task] <- runDB $ selectList ([] :: [Filter Task]) []
+
+      assertEq
+        "Task wasn't added correctly"
+        (task {taskCreateTime = currTime})
+        $ Task "asdf"
+               4
+               High
+               (fromGregorianValid 2018 11 3)
+               (UTCTime <$> (fromGregorianValid 2018 11 3) <*> (timeOfDayToTime <$> makeTimeOfDayValid 17 0 0))
+               Nothing
+               False
+               (entityKey userEntity)
+               Nothing
+               currTime
+               Nothing
+               False
+               Nothing
+               True
 
   describe "Marking task done" $ do
     it "works for repeating task by days" $ do

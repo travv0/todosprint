@@ -96,9 +96,9 @@ startTimeField = Field
       let userTz        = fromMaybe utc $ userTimeZone user
       let userTime      = localTimeOfDay $ utcToLocalTime userTz startTime
       let formattedTime = formatTime defaultTimeLocale "%R" userTime
-      [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required value="#{formattedTime}">|]
+      [whamlet|<input type="time" id=#{idAttr} name=#{nameAttr} *{otherAttrs} :isReq:required value="#{formattedTime}">|]
     Left _ -> do
-      [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required>|]
+      [whamlet|<input type="time" id=#{idAttr} name=#{nameAttr} *{otherAttrs} :isReq:required>|]
   , fieldEnctype = UrlEncoded
   }
 
