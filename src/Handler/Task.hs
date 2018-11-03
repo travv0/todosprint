@@ -115,7 +115,11 @@ taskForm userId currUtcTime mtask =
     <*> aopt (jqueryDayField def { jdsChangeYear = True })
              (bfs ("Due Date" :: Text))
              (taskDueDate <$> mtask)
-    <*> aopt startTimeField (bfs ("Start Time" :: Text)) (taskPostponeTime <$> mtask)
+    <*> aopt startTimeField (bfs ("Start Time" :: Text)) (case mtask of
+                                                             Just task -> if taskPostponeTimeRepeat task
+                                                                          then Just (taskPostponeTime task)
+                                                                          else Nothing
+                                                             Nothing -> Nothing)
     <*> aopt repeatIntervalField (bfs ("Repeat" :: Text)) (taskRepeat <$> mtask)
     <*> pure False
     <*> pure userId
@@ -160,7 +164,7 @@ getNewTaskR = do
   ((res, widget), enctype) <- runFormPost $ taskForm userId currTime Nothing
   case res of
     FormSuccess t -> do
-      runDB $ insert t
+      runDB $ insert t { taskPostponeTimeRepeat = if isJust (taskPostponeTime t) then True else False }
       setMessage "Task created"
       redirect NewTaskR
     _ -> do
@@ -179,9 +183,13 @@ getEditTaskR taskId = do
   ((res, widget), enctype) <- runFormPost $ taskForm userId currTime $ task
   case res of
     FormSuccess t -> do
+      let repeatTime = if isJust (taskPostponeTime t) then True else False
       case task of
         Just t2 -> runDB $ replace taskId $ t
-          { taskPostponeTime = taskPostponeTime t2
+          { taskPostponeTimeRepeat = repeatTime
+          , taskPostponeTime = if not repeatTime && isJust (taskPostponeTime t2) && not (taskPostponeTimeRepeat t2)
+                               then taskPostponeTime t2
+                               else taskPostponeTime t
           , taskPostponeDay  = taskPostponeDay t2
           }
         Nothing -> runDB $ replace taskId t
