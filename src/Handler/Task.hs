@@ -17,6 +17,8 @@ import           Text.Read                      ( read
                                                 )
 import           Data.Time.LocalTime
 import           Data.Time
+import qualified Data.List as L
+import           Handler.Home
 
 repeatIntervalField :: Field Handler RepeatInterval
 repeatIntervalField = Field
@@ -66,6 +68,29 @@ repeatIntervalField = Field
   , fieldEnctype = UrlEncoded
   }
 
+startTimeField :: Field Handler UTCTime
+startTimeField = Field
+  { fieldParse   = \rawVals _ -> do
+      (Entity _ user) <- requireAuth
+      let mUserTime = parseTimeM True defaultTimeLocale "%l:%M %p" (unpack $ L.head rawVals) :: Maybe TimeOfDay
+      case mUserTime of
+        Nothing -> return $ Left "No start time"
+        Just userTime -> do
+          let userTz = fromMaybe utc $ userTimeZone user
+          let (dayAdj, utcTime) = localToUTCTimeOfDay userTz userTime
+          utcDateTime <- liftIO getCurrentTime
+          let userDateTime = utcToLocalTime userTz utcDateTime
+          return $ Right $ Just (UTCTime (addDays dayAdj (localDay userDateTime)) (timeOfDayToTime utcTime))
+  , fieldView    = \idAttr nameAttr otherAttrs eResult isReq ->
+      case eResult of
+        Right startTime -> do
+          (Entity _ user) <- requireAuth
+          let userTz = fromMaybe utc $ userTimeZone user
+          let userTime = localTimeOfDay $ utcToLocalTime userTz startTime
+          [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required value="#{show userTime}">|]
+  , fieldEnctype = UrlEncoded
+  }
+
 taskForm :: UserId -> UTCTime -> Maybe Task -> Form Task
 taskForm userId currUtcTime mtask =
   renderBootstrap3
@@ -84,12 +109,13 @@ taskForm userId currUtcTime mtask =
     <*> aopt repeatIntervalField (bfs ("Repeat" :: Text)) (taskRepeat <$> mtask)
     <*> pure False
     <*> pure userId
-    <*> pure Nothing
+    <*> aopt startTimeField (bfs ("Start Time" :: Text)) (taskPostponeTime <$> mtask)
     <*> pure Nothing
     <*> pure currUtcTime
     <*> pure Nothing
     <*> pure False
     <*> pure Nothing
+    <*> pure True
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 data PostponeTodayInfo = PostponeTodayInfo

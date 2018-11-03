@@ -26,6 +26,7 @@ Task
     doneTime UTCTime Maybe
     deleted Bool default=false
     deleteTime UTCTime Maybe
+    postponeTimeRepeat Bool default=false
     deriving Show Eq
 
 TaskDependency
