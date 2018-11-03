@@ -37,14 +37,15 @@ spec = withApp $ do
                                         None
                                         Nothing
                                         Nothing
+                                        Nothing
                                         False
                                         (entityKey userEntity)
-                                        Nothing
                                         Nothing
                                         currTime
                                         Nothing
                                         False
                                         Nothing
+                                        False
 
       get TodayR
       statusIs 200
@@ -67,28 +68,30 @@ spec = withApp $ do
                                                   1
                                                   High
                                                   (Just today)
+                                                  (Just (addUTCTime 59 currTime))
                                                   Nothing
                                                   False
                                                   (entityKey userEntity)
-                                                  (Just (addUTCTime 59 currTime))
                                                   Nothing
                                                   currTime
                                                   Nothing
                                                   False
                                                   Nothing
+                                                  False
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     1
                                                     Medium
                                                     (Just today)
                                                     Nothing
+                                                    Nothing
                                                     False
                                                     (entityKey userEntity)
-                                                    Nothing
                                                     Nothing
                                                     currTime
                                                     Nothing
                                                     False
                                                     Nothing
+                                                    False
 
       runDB $ insert $ TaskDependency (entityKey highPriority)
                                       (entityKey mediumPriority)
@@ -113,28 +116,30 @@ spec = withApp $ do
                                                   1
                                                   High
                                                   (Just today)
+                                                  (Just (addUTCTime 90 currTime))
                                                   Nothing
                                                   False
                                                   (entityKey userEntity)
-                                                  (Just (addUTCTime 90 currTime))
                                                   Nothing
                                                   currTime
                                                   Nothing
                                                   False
                                                   Nothing
+                                                  False
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     1
                                                     Medium
                                                     (Just today)
                                                     Nothing
+                                                    Nothing
                                                     False
                                                     (entityKey userEntity)
-                                                    Nothing
                                                     Nothing
                                                     currTime
                                                     Nothing
                                                     False
                                                     Nothing
+                                                    False
 
       runDB $ insert $ TaskDependency (entityKey highPriority)
                                       (entityKey mediumPriority)
@@ -161,249 +166,267 @@ spec = withApp $ do
                                                   High
                                                   (Just today)
                                                   Nothing
+                                                  Nothing
                                                   False
                                                   (entityKey userEntity)
-                                                  Nothing
                                                   Nothing
                                                   currTime
                                                   Nothing
                                                   False
                                                   Nothing
+                                                  False
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
         High
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
         High
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
         High
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     30
                                                     Medium
                                                     (Just today)
                                                     Nothing
+                                                    Nothing
                                                     False
                                                     (entityKey userEntity)
-                                                    Nothing
                                                     Nothing
                                                     currTime
                                                     Nothing
                                                     False
                                                     Nothing
+                                                    False
       mediumPriorityOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityOverdue"
         30
         Medium
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityWayOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityWayOverdue"
         30
         Medium
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityNoDueDate <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDate"
         30
         Medium
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityNoDueDateShort <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShort"
         5
         Medium
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityNoDueDateShortAddedLater <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShortAddedLater"
         5
         Medium
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTimeLater
         Nothing
         False
         Nothing
+        False
       lowPriority <- runDB $ insertEntity $ Task "lowPriority"
                                                  30
                                                  Low
                                                  (Just today)
                                                  Nothing
+                                                 Nothing
                                                  False
                                                  (entityKey userEntity)
-                                                 Nothing
                                                  Nothing
                                                  currTime
                                                  Nothing
                                                  False
                                                  Nothing
+                                                 False
       lowPriorityOverdue <- runDB $ insertEntity $ Task
         "lowPriorityOverdue"
         30
         Low
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       lowPriorityWayOverdue <- runDB $ insertEntity $ Task
         "lowPriorityWayOverdue"
         30
         Low
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       lowPriorityNoDueDate <- runDB $ insertEntity $ Task
         "lowPriorityNoDueDate"
         30
         Low
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       nonePriority <- runDB $ insertEntity $ Task "nonePriority"
                                                   30
                                                   None
                                                   (Just today)
                                                   Nothing
+                                                  Nothing
                                                   False
                                                   (entityKey userEntity)
-                                                  Nothing
                                                   Nothing
                                                   currTime
                                                   Nothing
                                                   False
                                                   Nothing
+                                                  False
       nonePriorityOverdue <- runDB $ insertEntity $ Task
         "nonePriorityOverdue"
         30
         None
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       nonePriorityWayOverdue <- runDB $ insertEntity $ Task
         "nonePriorityWayOverdue"
         30
         None
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       nonePriorityNoDueDate <- runDB $ insertEntity $ Task
         "nonePriorityNoDueDate"
         30
         None
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
 
       let sortableTasks = map
             (\t -> (t, []))
@@ -466,249 +489,267 @@ spec = withApp $ do
                                                   High
                                                   (Just today)
                                                   Nothing
+                                                  Nothing
                                                   False
                                                   (entityKey userEntity)
-                                                  Nothing
                                                   Nothing
                                                   currTime
                                                   Nothing
                                                   False
                                                   Nothing
+                                                  False
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
         High
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
         High
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
         High
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     30
                                                     Medium
                                                     (Just today)
                                                     Nothing
+                                                    Nothing
                                                     False
                                                     (entityKey userEntity)
-                                                    Nothing
                                                     Nothing
                                                     currTime
                                                     Nothing
                                                     False
                                                     Nothing
+                                                    False
       mediumPriorityOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityOverdue"
         30
         Medium
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityWayOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityWayOverdue"
         30
         Medium
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityNoDueDate <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDate"
         30
         Medium
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityNoDueDateShort <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShort"
         5
         Medium
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityNoDueDateShortAddedLater <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShortAddedLater"
         5
         Medium
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTimeLater
         Nothing
         False
         Nothing
+        False
       lowPriority <- runDB $ insertEntity $ Task "lowPriority"
                                                  30
                                                  Low
                                                  (Just today)
                                                  Nothing
+                                                 Nothing
                                                  False
                                                  (entityKey userEntity)
-                                                 Nothing
                                                  Nothing
                                                  currTime
                                                  Nothing
                                                  False
                                                  Nothing
+                                                 False
       lowPriorityOverdue <- runDB $ insertEntity $ Task
         "lowPriorityOverdue"
         30
         Low
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       lowPriorityWayOverdue <- runDB $ insertEntity $ Task
         "lowPriorityWayOverdue"
         30
         Low
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       lowPriorityNoDueDate <- runDB $ insertEntity $ Task
         "lowPriorityNoDueDate"
         30
         Low
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       nonePriority <- runDB $ insertEntity $ Task "nonePriority"
                                                   30
                                                   None
                                                   (Just today)
                                                   Nothing
+                                                  Nothing
                                                   False
                                                   (entityKey userEntity)
-                                                  Nothing
                                                   Nothing
                                                   currTime
                                                   Nothing
                                                   False
                                                   Nothing
+                                                  False
       nonePriorityOverdue <- runDB $ insertEntity $ Task
         "nonePriorityOverdue"
         30
         None
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       nonePriorityWayOverdue <- runDB $ insertEntity $ Task
         "nonePriorityWayOverdue"
         30
         None
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       nonePriorityNoDueDate <- runDB $ insertEntity $ Task
         "nonePriorityNoDueDate"
         30
         None
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
 
       let sortableTasks = map
             (\t ->
@@ -785,249 +826,267 @@ spec = withApp $ do
                                                   High
                                                   (Just today)
                                                   Nothing
+                                                  Nothing
                                                   False
                                                   (entityKey userEntity)
-                                                  Nothing
                                                   Nothing
                                                   currTime
                                                   Nothing
                                                   False
                                                   Nothing
+                                                  False
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
         High
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
         High
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
         High
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     30
                                                     Medium
                                                     (Just today)
                                                     Nothing
+                                                    Nothing
                                                     False
                                                     (entityKey userEntity)
-                                                    Nothing
                                                     Nothing
                                                     currTime
                                                     Nothing
                                                     False
                                                     Nothing
+                                                    False
       mediumPriorityOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityOverdue"
         30
         Medium
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityWayOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityWayOverdue"
         30
         Medium
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityNoDueDate <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDate"
         30
         Medium
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityNoDueDateShort <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShort"
         5
         Medium
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       mediumPriorityNoDueDateShortAddedLater <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShortAddedLater"
         5
         Medium
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTimeLater
         Nothing
         False
         Nothing
+        False
       lowPriority <- runDB $ insertEntity $ Task "lowPriority"
                                                  30
                                                  Low
                                                  (Just today)
                                                  Nothing
+                                                 Nothing
                                                  False
                                                  (entityKey userEntity)
-                                                 Nothing
                                                  Nothing
                                                  currTime
                                                  Nothing
                                                  False
                                                  Nothing
+                                                 False
       lowPriorityOverdue <- runDB $ insertEntity $ Task
         "lowPriorityOverdue"
         30
         Low
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       lowPriorityWayOverdue <- runDB $ insertEntity $ Task
         "lowPriorityWayOverdue"
         30
         Low
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       lowPriorityNoDueDate <- runDB $ insertEntity $ Task
         "lowPriorityNoDueDate"
         30
         Low
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       nonePriority <- runDB $ insertEntity $ Task "nonePriority"
                                                   30
                                                   None
                                                   (Just today)
                                                   Nothing
+                                                  Nothing
                                                   False
                                                   (entityKey userEntity)
-                                                  Nothing
                                                   Nothing
                                                   currTime
                                                   Nothing
                                                   False
                                                   Nothing
+                                                  False
       nonePriorityOverdue <- runDB $ insertEntity $ Task
         "nonePriorityOverdue"
         30
         None
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       nonePriorityWayOverdue <- runDB $ insertEntity $ Task
         "nonePriorityWayOverdue"
         30
         None
         (Just $ addDays (-900) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       nonePriorityNoDueDate <- runDB $ insertEntity $ Task
         "nonePriorityNoDueDate"
         30
         None
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
 
       assertEq
         "High priority should have higher weight than medium"
@@ -1126,56 +1185,60 @@ spec = withApp $ do
                                                   High
                                                   (Just today)
                                                   Nothing
+                                                  Nothing
                                                   False
                                                   (entityKey userEntity)
-                                                  Nothing
                                                   Nothing
                                                   currTime
                                                   Nothing
                                                   False
                                                   Nothing
+                                                  False
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
         High
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
         High
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
         High
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
 
       assertEq
         "Time to complete 4 30-minute tasks should be 120"
@@ -1201,57 +1264,61 @@ spec = withApp $ do
         30
         High
         (Just today)
+        (Just (addUTCTime 30 currTime))
         Nothing
         False
         (entityKey userEntity)
-        (Just (addUTCTime 30 currTime))
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
         High
         (Just $ addDays (-1) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
         High
         (Just $ addDays (-9) today)
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
         High
         Nothing
         Nothing
+        Nothing
         False
         (entityKey userEntity)
-        Nothing
         Nothing
         currTime
         Nothing
         False
         Nothing
+        False
 
       runDB $ insert $ TaskDependency (entityKey highPriorityNoDueDate)
                                       (entityKey highPriorityOverdue)
