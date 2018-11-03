@@ -15,7 +15,7 @@
 }
 
 .postponed {
-    color: lightgrey;
+    display: none;
 }
 
 .taskList .taskCheckbox {
