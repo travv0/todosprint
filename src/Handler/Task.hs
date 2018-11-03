@@ -17,7 +17,7 @@ import           Text.Read                      ( read
                                                 )
 import           Data.Time.LocalTime
 import           Data.Time
-import qualified Data.List as L
+import qualified Data.List                     as L
 import           Handler.Home
 
 repeatIntervalField :: Field Handler RepeatInterval
@@ -71,32 +71,34 @@ repeatIntervalField = Field
 startTimeField :: Field Handler UTCTime
 startTimeField = Field
   { fieldParse   = \rawVals _ -> do
-      case rawVals of
-        []   -> return $ Right Nothing
-        [""] -> return $ Right Nothing
-        _ -> do
-          (Entity _ user) <- requireAuth
-          let mUserTime = parseTimeM True defaultTimeLocale "%R" (unpack $ L.head rawVals) :: Maybe TimeOfDay
-          case mUserTime of
-            Nothing -> return $ Left "No start time"
-            Just userTime -> do
-              let userTz = fromMaybe utc $ userTimeZone user
-              let (dayAdj, utcTime) = localToUTCTimeOfDay userTz userTime
-              utcDateTime <- liftIO getCurrentTime
-              let userDateTime = utcToLocalTime userTz utcDateTime
-              return $ Right $ Just (UTCTime (addDays dayAdj (localDay userDateTime)) (timeOfDayToTime utcTime))
-
-  , fieldView    = \idAttr nameAttr otherAttrs eResult isReq ->
-      case eResult of
-        Right startTime -> do
-          (Entity _ user) <- requireAuth
-          let userTz = fromMaybe utc $ userTimeZone user
-          let userTime = localTimeOfDay $ utcToLocalTime userTz startTime
-          let formattedTime = formatTime defaultTimeLocale "%R" userTime
-          [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required value="#{formattedTime}">|]
-        Left _ -> do
-          [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required>|]
-
+    case rawVals of
+      []   -> return $ Right Nothing
+      [""] -> return $ Right Nothing
+      _    -> do
+        (Entity _ user) <- requireAuth
+        let mUserTime =
+              parseTimeM True defaultTimeLocale "%R" (unpack $ L.head rawVals) :: Maybe
+                  TimeOfDay
+        case mUserTime of
+          Nothing       -> return $ Left "No start time"
+          Just userTime -> do
+            let userTz            = fromMaybe utc $ userTimeZone user
+            let (dayAdj, utcTime) = localToUTCTimeOfDay userTz userTime
+            utcDateTime <- liftIO getCurrentTime
+            let userDateTime = utcToLocalTime userTz utcDateTime
+            return $ Right $ Just
+              (UTCTime (addDays dayAdj (localDay userDateTime))
+                       (timeOfDayToTime utcTime)
+              )
+  , fieldView    = \idAttr nameAttr otherAttrs eResult isReq -> case eResult of
+    Right startTime -> do
+      (Entity _ user) <- requireAuth
+      let userTz        = fromMaybe utc $ userTimeZone user
+      let userTime      = localTimeOfDay $ utcToLocalTime userTz startTime
+      let formattedTime = formatTime defaultTimeLocale "%R" userTime
+      [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required value="#{formattedTime}">|]
+    Left _ -> do
+      [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required>|]
   , fieldEnctype = UrlEncoded
   }
 
@@ -115,11 +117,15 @@ taskForm userId currUtcTime mtask =
     <*> aopt (jqueryDayField def { jdsChangeYear = True })
              (bfs ("Due Date" :: Text))
              (taskDueDate <$> mtask)
-    <*> aopt startTimeField (bfs ("Start Time" :: Text)) (case mtask of
-                                                             Just task -> if taskPostponeTimeRepeat task
-                                                                          then Just (taskPostponeTime task)
-                                                                          else Nothing
-                                                             Nothing -> Nothing)
+    <*> aopt
+          startTimeField
+          (bfs ("Start Time" :: Text))
+          (case mtask of
+            Just task -> if taskPostponeTimeRepeat task
+              then Just (taskPostponeTime task)
+              else Nothing
+            Nothing -> Nothing
+          )
     <*> aopt repeatIntervalField (bfs ("Repeat" :: Text)) (taskRepeat <$> mtask)
     <*> pure False
     <*> pure userId
@@ -164,7 +170,11 @@ getNewTaskR = do
   ((res, widget), enctype) <- runFormPost $ taskForm userId currTime Nothing
   case res of
     FormSuccess t -> do
-      runDB $ insert t { taskPostponeTimeRepeat = if isJust (taskPostponeTime t) then True else False }
+      runDB $ insert t
+        { taskPostponeTimeRepeat = if isJust (taskPostponeTime t)
+                                     then True
+                                     else False
+        }
       setMessage "Task created"
       redirect NewTaskR
     _ -> do
@@ -187,10 +197,14 @@ getEditTaskR taskId = do
       case task of
         Just t2 -> runDB $ replace taskId $ t
           { taskPostponeTimeRepeat = repeatTime
-          , taskPostponeTime = if not repeatTime && isJust (taskPostponeTime t2) && not (taskPostponeTimeRepeat t2)
-                               then taskPostponeTime t2
-                               else taskPostponeTime t
-          , taskPostponeDay  = taskPostponeDay t2
+          , taskPostponeTime       = if not repeatTime
+                                        && isJust (taskPostponeTime t2)
+                                        && not (taskPostponeTimeRepeat t2)
+                                     then
+                                       taskPostponeTime t2
+                                     else
+                                       taskPostponeTime t
+          , taskPostponeDay        = taskPostponeDay t2
           }
         Nothing -> runDB $ replace taskId t
       setMessage "Task updated"
