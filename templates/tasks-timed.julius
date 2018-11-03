@@ -1,0 +1,18 @@
+$(function () {
+	function redifyTimes() {
+		$(".timedList .startTime").each(function() {
+
+			var now = new Date();
+
+			if ($(this).text() === "Overdue" || now > new Date(
+				Date.parse((now.getMonth() + 1) + '/' + now.getDate() + '/'
+					+ now.getFullYear() + ' ' + $(this).text()))
+			) {
+				$(this).css('color', 'red');
+			}
+		});
+	}
+
+	redifyTimes();
+	setInterval(redifyTimes, 1000 * 60);
+});
