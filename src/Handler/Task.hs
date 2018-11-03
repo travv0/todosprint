@@ -92,7 +92,8 @@ startTimeField = Field
           (Entity _ user) <- requireAuth
           let userTz = fromMaybe utc $ userTimeZone user
           let userTime = localTimeOfDay $ utcToLocalTime userTz startTime
-          [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required value="#{show userTime}">|]
+          let formattedTime = formatTime defaultTimeLocale "%R" userTime
+          [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required value="#{formattedTime}">|]
         Left _ -> do
           [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required>|]
 
