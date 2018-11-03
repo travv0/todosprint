@@ -17,10 +17,10 @@ Task
     duration Int
     priority Priority
     dueDate Day Maybe
+    postponeTime UTCTime Maybe
     repeat RepeatInterval Maybe
     done Bool
     userId UserId
-    postponeTime UTCTime Maybe
     postponeDay Day Maybe
     createTime UTCTime default=CURRENT_TIMESTAMP
     doneTime UTCTime Maybe

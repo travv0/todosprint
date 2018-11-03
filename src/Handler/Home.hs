@@ -464,7 +464,11 @@ postMarkDoneR taskId = do
     Just t -> case incrementDueDate cdate t of
       Just t2 -> do
         newTaskId <- insert
-          $ t2 { taskPostponeDay = Nothing, taskPostponeTime = Nothing }
+          $ t2 { taskPostponeDay = Nothing,
+                 taskPostponeTime = if taskPostponeTimeRepeat t
+                                    then newPostponeTime t2
+                                    else Nothing
+               }
         deps <- selectList [TaskDependencyTaskId ==. taskId] []
         depd <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
         _ <- mapM
@@ -482,6 +486,12 @@ postMarkDoneR taskId = do
       Nothing -> redirectUltDest HomeR
     Nothing -> redirectUltDest HomeR
   redirectUltDest HomeR
+  where newPostponeTime newTask = do
+          case taskDueDate newTask of
+            Nothing -> Nothing
+            Just dd -> do
+              oldPpt <- taskPostponeTime newTask
+              Just $ UTCTime dd (utctDayTime oldPpt)
 
 incrementDueDate :: Day -> Task -> Maybe Task
 incrementDueDate cdate task = case taskDueDate task of

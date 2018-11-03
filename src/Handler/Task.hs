@@ -72,7 +72,7 @@ startTimeField :: Field Handler UTCTime
 startTimeField = Field
   { fieldParse   = \rawVals _ -> do
       (Entity _ user) <- requireAuth
-      let mUserTime = parseTimeM True defaultTimeLocale "%l:%M %p" (unpack $ L.head rawVals) :: Maybe TimeOfDay
+      let mUserTime = parseTimeM True defaultTimeLocale "%R" (unpack $ L.head rawVals) :: Maybe TimeOfDay
       case mUserTime of
         Nothing -> return $ Left "No start time"
         Just userTime -> do
@@ -88,6 +88,8 @@ startTimeField = Field
           let userTz = fromMaybe utc $ userTimeZone user
           let userTime = localTimeOfDay $ utcToLocalTime userTz startTime
           [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required value="#{show userTime}">|]
+        Left _ -> do
+          [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required>|]
   , fieldEnctype = UrlEncoded
   }
 
@@ -106,10 +108,10 @@ taskForm userId currUtcTime mtask =
     <*> aopt (jqueryDayField def { jdsChangeYear = True })
              (bfs ("Due Date" :: Text))
              (taskDueDate <$> mtask)
+    <*> aopt startTimeField (bfs ("Start Time" :: Text)) (taskPostponeTime <$> mtask)
     <*> aopt repeatIntervalField (bfs ("Repeat" :: Text)) (taskRepeat <$> mtask)
     <*> pure False
     <*> pure userId
-    <*> aopt startTimeField (bfs ("Start Time" :: Text)) (taskPostponeTime <$> mtask)
     <*> pure Nothing
     <*> pure currUtcTime
     <*> pure Nothing
