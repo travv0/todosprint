@@ -7,7 +7,8 @@ $elseif null tasks
         You're done for the day!
 $else
     <div .tasksDiv>
-        <h4 .taskListHeader>Today's To-Dos
+        $if todayPage
+            <h4 .taskListHeader>Today's To-Dos
         <table .taskList>
             $forall (task, hasDeps) <- tasksHasDeps
                 <tr .task :elem task postponedTasks:class="postponed">
@@ -19,12 +20,12 @@ $else
                         <span .taskNameAndDuration>
                             <span .taskName>
                                 #{taskName $ entityVal task}
-                            $if not todayPage
+                            $if detailed
                                 <br>
                                 <span .taskDuration>
                                     #{show $ taskDuration $ entityVal task} minutes
                         <span .taskDate>
-                            $if not todayPage
+                            $if detailed
                                 $if isJust $ taskRepeat $ entityVal task
                                     <span class="glyphicon glyphicon-repeat modIcon">
                                 $maybe dd <- taskDueDate $ entityVal task
@@ -41,12 +42,12 @@ $else
                                     (#{formatPostponeTime tz task})
                                 $nothing
                                     (#{formatPostponeTime utc task})
-                            $if not todayPage && (isJust $ taskPostponeDay $ entityVal task)
+                            $if detailed && (isJust $ taskPostponeDay $ entityVal task)
                                 <br>
                                 <a href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
                                     <span class="glyphicon glyphicon-remove modIcon" aria-hidden="true">
                                 (#{show $ M.fromJust $ taskPostponeDay $ entityVal task})
-                            $if not todayPage
+                            $if detailed
                                 <br>
                                 Priority: #{show $ taskPriority $ entityVal task}
                     <td .taskManagement>
