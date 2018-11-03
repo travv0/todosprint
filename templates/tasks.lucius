@@ -29,9 +29,9 @@
 }
 
 .taskManagement {
-    width: 100px;
-    min-width: 100px;
-    text-align: center;
+    width: 110px;
+    min-width: 110px;
+    text-align: right;
     vertical-align: middle;
 }
 
@@ -96,7 +96,7 @@
     padding: 10px;
 }
 
-.taskList {
+.taskList, .taskListHeader {
     max-width: 600px;
     margin-left:auto;
     margin-right:auto;
