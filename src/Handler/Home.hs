@@ -19,8 +19,8 @@ import           Yesod.Form.Bootstrap3
 import qualified Data.Maybe                    as M
 import qualified Data.Text                     as T
 
-taskList :: [Entity Task] -> [Entity Task] -> Bool -> Maybe TimeOfDay -> Widget
-taskList tasks postponedTasks todayPage estimatedToc = do
+taskList :: [Entity Task] -> [Entity Task] -> Bool -> Bool -> Maybe TimeOfDay -> Widget
+taskList tasks postponedTasks todayPage detailed estimatedToc = do
   (Entity userId user) <- requireAuth
   let mUserTz = userTimeZone user
   let formattedEstimatedToc = maybe
@@ -64,6 +64,7 @@ taskList tasks postponedTasks todayPage estimatedToc = do
                             $ filter (\((Entity _ t), _) ->
                                         isJust $ taskPostponeTime t)
                                      tasksHasDeps
+
        $(widgetFile "tasks-timed")
        $(widgetFile "tasks")
      else
@@ -254,7 +255,7 @@ getTodayR = do
         if shouldUpdateTime then user' { userDueTime = Nothing } else user'
 
   allTasks  <- runDB $ getTasks userId []
-  todaysTasksHandler "Today's Tasks" user (userDueTime user) allTasks Nothing
+  todaysTasksHandler "Today's Tasks" user (userDueTime user) allTasks Nothing True
 
 todaysList :: Entity User -> Handler [Entity Task]
 todaysList euser = do
@@ -274,8 +275,8 @@ todaysList euser = do
       daysList today mins allTasks
     Nothing -> return []
 
-todaysTasksHandler :: Text -> User -> Maybe UTCTime -> [Entity Task] -> Maybe TaskId -> Handler Html
-todaysTasksHandler title user mDueTime tasks mtaskId = do
+todaysTasksHandler :: Text -> User -> Maybe UTCTime -> [Entity Task] -> Maybe TaskId -> Bool -> Handler Html
+todaysTasksHandler title user mDueTime tasks mtaskId todayPage = do
   utcTime       <- liftIO getCurrentTime
 
   case mDueTime of
@@ -305,14 +306,14 @@ todaysTasksHandler title user mDueTime tasks mtaskId = do
             [whamlet|$if isJust mtaskId
                         <h3>#{title}|]
             $(widgetFile "work-message")
-            taskList reducedTasks postponedTasks True estimatedToc
+            taskList reducedTasks postponedTasks todayPage False estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
       defaultLayout $ do
         if null tasks
            then do
              setTitle "Today's Tasks"
-             taskList [] [] True Nothing
+             taskList [] [] todayPage False Nothing
            else do
              setTitle "Set Time"
              setTimeWidget widget enctype
@@ -550,6 +551,7 @@ getTodayDepsR taskId = do
               (taskPostponeTime $ entityVal task)
               (tasks'' `L.intersect` todaysTasks)
               (Just $ entityKey task)
+              False
     Nothing -> redirect TodayR
 
 getTasks userId =
