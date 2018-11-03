@@ -71,16 +71,20 @@ repeatIntervalField = Field
 startTimeField :: Field Handler UTCTime
 startTimeField = Field
   { fieldParse   = \rawVals _ -> do
-      (Entity _ user) <- requireAuth
-      let mUserTime = parseTimeM True defaultTimeLocale "%R" (unpack $ L.head rawVals) :: Maybe TimeOfDay
-      case mUserTime of
-        Nothing -> return $ Left "No start time"
-        Just userTime -> do
-          let userTz = fromMaybe utc $ userTimeZone user
-          let (dayAdj, utcTime) = localToUTCTimeOfDay userTz userTime
-          utcDateTime <- liftIO getCurrentTime
-          let userDateTime = utcToLocalTime userTz utcDateTime
-          return $ Right $ Just (UTCTime (addDays dayAdj (localDay userDateTime)) (timeOfDayToTime utcTime))
+      case rawVals of
+        [""] -> return $ Right Nothing
+        _ -> do
+          (Entity _ user) <- requireAuth
+          let mUserTime = parseTimeM True defaultTimeLocale "%R" (unpack $ L.head rawVals) :: Maybe TimeOfDay
+          case mUserTime of
+            Nothing -> return $ Left "No start time"
+            Just userTime -> do
+              let userTz = fromMaybe utc $ userTimeZone user
+              let (dayAdj, utcTime) = localToUTCTimeOfDay userTz userTime
+              utcDateTime <- liftIO getCurrentTime
+              let userDateTime = utcToLocalTime userTz utcDateTime
+              return $ Right $ Just (UTCTime (addDays dayAdj (localDay userDateTime)) (timeOfDayToTime utcTime))
+
   , fieldView    = \idAttr nameAttr otherAttrs eResult isReq ->
       case eResult of
         Right startTime -> do
@@ -90,6 +94,7 @@ startTimeField = Field
           [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required value="#{show userTime}">|]
         Left _ -> do
           [whamlet|<input type="time" id=#{idAttr}-startTime name=#{nameAttr} *{otherAttrs} :isReq:required>|]
+
   , fieldEnctype = UrlEncoded
   }
 

@@ -98,6 +98,8 @@ spec = withApp $ do
                                       False
 
       get TodayR
+      r <- getResponse
+      liftIO $ putStrLn $ pack $ show r
       statusIs 200
 
       htmlNoneContain ".taskDate" "glyphicon-th-list"

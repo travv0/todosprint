@@ -11,7 +11,7 @@ $if not $ null timedTasks
                     <td .taskInfo #task-#{show $ fromSqlKey $ entityKey task}>
                         <span .taskNameAndDuration>
                             <span .taskName>
-                                $if localDay (M.fromJust (utcToUserTime (fromMaybe utcTime (taskPostponeTime $ entityVal task)) user)) >= today
+                                $if localDay (M.fromMaybe (utcToLocalTime utc (fromMaybe utcTime (taskPostponeTime $ entityVal task))) (utcToUserTime (fromMaybe utcTime (taskPostponeTime $ entityVal task)) user)) >= today
                                     $maybe tz <- mUserTz
                                         <span .startTime>#{formatPostponeTime tz task}
                                     $nothing
