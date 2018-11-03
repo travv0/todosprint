@@ -7,7 +7,8 @@ $elseif null tasks
         You're done for the day!
 $else
     <div .tasksDiv>
-        <h4 .taskListHeader>Today's To-Dos
+        $if todayPage
+            <h4 .taskListHeader>Today's To-Dos
         <table .taskList>
             $forall (task, hasDeps) <- tasksHasDeps
                 <tr .task :elem task postponedTasks:class="postponed">
