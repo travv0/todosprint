@@ -13,6 +13,57 @@ import           Handler.Home
 
 spec :: Spec
 spec = withApp $ do
+  describe "Dependencies page" $ do
+    it "isn't detailed task list" $ do
+      currTime <- liftIO getCurrentTime
+      let today = utctDay currTime
+
+      userEntity <- createUser "foo@gmail.com"
+      runDB $ update (entityKey userEntity)
+                     [UserDueTime =. Just (addUTCTime 1 currTime)]
+
+      authenticateAs userEntity
+
+      testTask <- runDB $ insert $ Task
+        "Test"
+        1
+        High
+        Nothing
+        (UTCTime today <$> (timeOfDayToTime <$> makeTimeOfDayValid 17 0 0))
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+        False
+      testTask2 <- runDB $ insert $ Task "Test"
+                                         1
+                                         High
+                                         Nothing
+                                         Nothing
+                                         Nothing
+                                         False
+                                         (entityKey userEntity)
+                                         Nothing
+                                         currTime
+                                         Nothing
+                                         False
+                                         Nothing
+                                         False
+
+      _taskDep <- runDB $ insert $ TaskDependency testTask testTask2 False
+
+      get $ TodayDepsR testTask
+      statusIs 200
+      printBody
+
+      htmlCount ".task" 1
+      htmlNoneContain ".taskDate"     "Priority"
+      htmlNoneContain ".taskDuration" "minutes"
+
   describe "Today page" $ do
     it "shows help message if user has no tasks" $ do
       userEntity <- createUser "foo@gmail.com"
@@ -32,20 +83,20 @@ spec = withApp $ do
 
       authenticateAs userEntity
 
-      testTask <- runDB $ insert $ Task "Test"
-                                        1
-                                        None
-                                        Nothing
-                                        Nothing
-                                        Nothing
-                                        False
-                                        (entityKey userEntity)
-                                        Nothing
-                                        currTime
-                                        Nothing
-                                        False
-                                        Nothing
-                                        False
+      _testTask <- runDB $ insert $ Task "Test"
+                                         1
+                                         None
+                                         Nothing
+                                         Nothing
+                                         Nothing
+                                         False
+                                         (entityKey userEntity)
+                                         Nothing
+                                         currTime
+                                         Nothing
+                                         False
+                                         Nothing
+                                         False
 
       get TodayR
       statusIs 200
@@ -54,58 +105,61 @@ spec = withApp $ do
       htmlNoneContain ".taskDate"     "Priority"
       htmlNoneContain ".taskDuration" "minutes"
 
-    it "doesn't show dependencies link when not enough time to work on dependencies" $ do
-      currTime      <- liftIO getCurrentTime
-      let today = utctDay currTime
+    it
+        "doesn't show dependencies link when not enough time to work on dependencies"
+      $ do
+          currTime <- liftIO getCurrentTime
+          let today = utctDay currTime
 
-      userEntity <- createUser "foo@gmail.com"
-      runDB $ update (entityKey userEntity)
-                     [UserDueTime =. Just (addUTCTime 150 currTime)]
+          userEntity <- createUser "foo@gmail.com"
+          runDB $ update (entityKey userEntity)
+                         [UserDueTime =. Just (addUTCTime 150 currTime)]
 
-      authenticateAs userEntity
+          authenticateAs userEntity
 
-      highPriority <- runDB $ insertEntity $ Task "highPriority"
-                                                  1
-                                                  High
-                                                  (Just today)
-                                                  (Just (addUTCTime 59 currTime))
-                                                  Nothing
+          highPriority <- runDB $ insertEntity $ Task
+            "highPriority"
+            1
+            High
+            (Just today)
+            (Just (addUTCTime 59 currTime))
+            Nothing
+            False
+            (entityKey userEntity)
+            Nothing
+            currTime
+            Nothing
+            False
+            Nothing
+            False
+          mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
+                                                        1
+                                                        Medium
+                                                        (Just today)
+                                                        Nothing
+                                                        Nothing
+                                                        False
+                                                        (entityKey userEntity)
+                                                        Nothing
+                                                        currTime
+                                                        Nothing
+                                                        False
+                                                        Nothing
+                                                        False
+
+          _dep <- runDB $ insert $ TaskDependency (entityKey highPriority)
+                                                  (entityKey mediumPriority)
                                                   False
-                                                  (entityKey userEntity)
-                                                  Nothing
-                                                  currTime
-                                                  Nothing
-                                                  False
-                                                  Nothing
-                                                  False
-      mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
-                                                    1
-                                                    Medium
-                                                    (Just today)
-                                                    Nothing
-                                                    Nothing
-                                                    False
-                                                    (entityKey userEntity)
-                                                    Nothing
-                                                    currTime
-                                                    Nothing
-                                                    False
-                                                    Nothing
-                                                    False
 
-      runDB $ insert $ TaskDependency (entityKey highPriority)
-                                      (entityKey mediumPriority)
-                                      False
+          get TodayR
+          r <- getResponse
+          liftIO $ putStrLn $ pack $ show r
+          statusIs 200
 
-      get TodayR
-      r <- getResponse
-      liftIO $ putStrLn $ pack $ show r
-      statusIs 200
-
-      htmlNoneContain ".taskDate" "glyphicon-th-list"
+          htmlNoneContain ".taskDate" "glyphicon-th-list"
 
     it "shows dependencies link when enough time to work on dependencies" $ do
-      currTime      <- liftIO getCurrentTime
+      currTime <- liftIO getCurrentTime
       let today = utctDay currTime
 
       userEntity <- createUser "foo@gmail.com"
@@ -114,20 +168,21 @@ spec = withApp $ do
 
       authenticateAs userEntity
 
-      highPriority <- runDB $ insertEntity $ Task "highPriority"
-                                                  1
-                                                  High
-                                                  (Just today)
-                                                  (Just (addUTCTime 90 currTime))
-                                                  Nothing
-                                                  False
-                                                  (entityKey userEntity)
-                                                  Nothing
-                                                  currTime
-                                                  Nothing
-                                                  False
-                                                  Nothing
-                                                  False
+      highPriority <- runDB $ insertEntity $ Task
+        "highPriority"
+        1
+        High
+        (Just today)
+        (Just (addUTCTime 90 currTime))
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        currTime
+        Nothing
+        False
+        Nothing
+        False
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     1
                                                     Medium
@@ -143,9 +198,9 @@ spec = withApp $ do
                                                     Nothing
                                                     False
 
-      runDB $ insert $ TaskDependency (entityKey highPriority)
-                                      (entityKey mediumPriority)
-                                      False
+      _dep <- runDB $ insert $ TaskDependency (entityKey highPriority)
+                                              (entityKey mediumPriority)
+                                              False
 
       get TodayR
       statusIs 200
@@ -896,21 +951,6 @@ spec = withApp $ do
                                                     False
                                                     Nothing
                                                     False
-      mediumPriorityOverdue <- runDB $ insertEntity $ Task
-        "mediumPriorityOverdue"
-        30
-        Medium
-        (Just $ addDays (-1) today)
-        Nothing
-        Nothing
-        False
-        (entityKey userEntity)
-        Nothing
-        currTime
-        Nothing
-        False
-        Nothing
-        False
       mediumPriorityWayOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityWayOverdue"
         30
@@ -985,21 +1025,6 @@ spec = withApp $ do
                                                  False
                                                  Nothing
                                                  False
-      lowPriorityOverdue <- runDB $ insertEntity $ Task
-        "lowPriorityOverdue"
-        30
-        Low
-        (Just $ addDays (-1) today)
-        Nothing
-        Nothing
-        False
-        (entityKey userEntity)
-        Nothing
-        currTime
-        Nothing
-        False
-        Nothing
-        False
       lowPriorityWayOverdue <- runDB $ insertEntity $ Task
         "lowPriorityWayOverdue"
         30
@@ -1322,12 +1347,12 @@ spec = withApp $ do
         Nothing
         False
 
-      runDB $ insert $ TaskDependency (entityKey highPriorityNoDueDate)
-                                      (entityKey highPriorityOverdue)
-                                      False
-      runDB $ insert $ TaskDependency (entityKey highPriorityOverdue)
-                                      (entityKey highPriority)
-                                      False
+      _ <- runDB $ insert $ TaskDependency (entityKey highPriorityNoDueDate)
+                                           (entityKey highPriorityOverdue)
+                                           False
+      _ <- runDB $ insert $ TaskDependency (entityKey highPriorityOverdue)
+                                           (entityKey highPriority)
+                                           False
 
       postponedTasks <- runHandler $ postponedTaskList
         currTime
