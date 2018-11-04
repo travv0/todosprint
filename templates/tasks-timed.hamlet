@@ -17,8 +17,12 @@ $if not $ null timedTasks
                                     $nothing
                                 $else
                                     <span .startTime>Overdue
+                                <br>
                                 #{taskName $ entityVal task}
                     <td .taskManagement>
+                        $if not $ taskPostponeTimeRepeat $ entityVal task
+                            <a href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
+                                <span class="glyphicon glyphicon-circle-arrow-down modIcon" aria-hidden="true">
                         $if hasDeps
                             <a .manageIcon href=@{TodayDepsR $ entityKey task}>
                                 <span class="glyphicon glyphicon-th-list">
@@ -27,4 +31,6 @@ $if not $ null timedTasks
 
                         <a .manageIcon href=@{PostponeTaskR $ entityKey task} title="Postpone task">
                             <span class="glyphicon glyphicon-calendar" aria-hidden="true">
+                        <a .manageIcon href="javascript: confirmThenDelete('#{T.replace "'" "\\'" $ taskName $ entityVal task }', '@{DeleteTaskR $ entityKey task}')" title="Delete task">
+                            <span class="glyphicon glyphicon-remove" aria-hidden="true">
     <br>
