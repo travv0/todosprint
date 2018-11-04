@@ -15,8 +15,7 @@ data TaskDeps = TaskDeps
   { deps :: Maybe [TaskId] }
   deriving Show
 
-depsForm
-  :: [(Text, TaskId)] -> String -> (Maybe [TaskId]) -> Form TaskDeps
+depsForm :: [(Text, TaskId)] -> String -> (Maybe [TaskId]) -> Form TaskDeps
 depsForm tasks label taskDeps =
   renderBootstrap3
       (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 4))
@@ -36,10 +35,9 @@ getAddDepsR taskId = do
   taskDeps <- runDB $ selectList [TaskDependencyTaskId ==. taskId] []
 
   ((res, widget), enctype) <-
-    runFormPost
-    $ depsForm (map optionify tasks) "Dependencies"
-    $ Just
-    $ map getTaskDepId taskDeps
+    runFormPost $ depsForm (map optionify tasks) "Dependencies" $ Just $ map
+      getTaskDepId
+      taskDeps
 
   mTask <- runDB $ Import.get taskId
   case mTask of
@@ -76,10 +74,9 @@ getAddDependentsR taskId = do
   taskDeps <- runDB $ selectList [TaskDependencyDependsOnTaskId ==. taskId] []
 
   ((res, widget), enctype) <-
-    runFormPost
-    $ depsForm (map optionify tasks) "Dependents"
-    $ Just
-    $ map getTaskDepId taskDeps
+    runFormPost $ depsForm (map optionify tasks) "Dependents" $ Just $ map
+      getTaskDepId
+      taskDeps
 
   mTask <- runDB $ Import.get taskId
   case mTask of
@@ -106,8 +103,12 @@ getAddDependentsR taskId = do
 postAddDependentsR :: TaskId -> Handler Html
 postAddDependentsR = getAddDependentsR
 
-getTasks :: (PersistQueryRead backend, MonadIO m, BaseBackend backend ~ SqlBackend) =>
-            Key User -> Key Task -> [SelectOpt Task] -> ReaderT backend m [Entity Task]
+getTasks
+  :: (PersistQueryRead backend, MonadIO m, BaseBackend backend ~ SqlBackend)
+  => Key User
+  -> Key Task
+  -> [SelectOpt Task]
+  -> ReaderT backend m [Entity Task]
 getTasks userId taskId = selectList
   [ TaskUserId ==. userId
   , TaskId !=. taskId

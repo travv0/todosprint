@@ -174,7 +174,7 @@ getNewTaskR = do
         { taskPostponeTimeRepeat = if isJust (taskPostponeTime t)
                                      then True
                                      else False
-        , taskPostponeTime = fixTaskPostponeTime user t
+        , taskPostponeTime       = fixTaskPostponeTime user t
         }
       setMessage "Task created"
       redirect NewTaskR
@@ -203,7 +203,8 @@ getEditTaskR taskId = do
                                         && not (taskPostponeTimeRepeat t2)
                                      then
                                        taskPostponeTime t2
-                                     else fixTaskPostponeTime user t
+                                     else
+                                       fixTaskPostponeTime user t
           , taskPostponeDay        = taskPostponeDay t2
           }
         Nothing -> runDB $ replace taskId t
@@ -242,7 +243,7 @@ getPostponeTaskR taskId = do
 
 postPostponeTodayR :: TaskId -> Handler ()
 postPostponeTodayR taskId = do
-  (Entity _ user)          <- requireAuth
+  (Entity _ user)            <- requireAuth
   ((res, _widget), _enctype) <- runFormPost postponeTodayForm
   case res of
     FormSuccess t -> do
