@@ -8,13 +8,18 @@ where
 import           TestImport
 import           Priority
 import           Data.Time
+import           Common
+import           Data.Maybe                    as M
 
 spec :: Spec
 spec = withApp $ do
 
   describe "New task page" $ do
     it "successfully adds tasks" $ do
-      userEntity <- createUser "foo@gmail.com"
+      userEntity' <- createUser "foo@gmail.com"
+      runDB $ update (entityKey userEntity') [UserDueTimeOffset =. Just (-300)]
+      mUserEntity <- runDB $ getEntity (entityKey userEntity')
+      let userEntity = M.fromJust mUserEntity
       authenticateAs userEntity
       currTime <- liftIO getCurrentTime
 
@@ -29,8 +34,8 @@ spec = withApp $ do
         byLabelExact "Task Name"           "asdf"
         byLabelExact "Duration in Minutes" "4"
         byLabelExact "Priority"            "4"
-        byLabelExact "Due Date"            "2018-11-03"
-        byLabelExact "Start Time"          "17:00"
+        byLabelExact "Due Date"            "2008-11-03"
+        byLabelExact "Start Time"          "23:00"
 
       statusIs 303
       r <- getResponse
@@ -38,16 +43,20 @@ spec = withApp $ do
 
       [Entity _ task] <- runDB $ selectList ([] :: [Filter Task]) []
 
+      let userTz = userTimeZoneOrUtc (entityVal userEntity)
+
       assertEq "Task wasn't added correctly"
                (task { taskCreateTime = currTime })
         $ Task
             "asdf"
             4
             High
-            (fromGregorianValid 2018 11 3)
-            (   UTCTime
-            <$> (fromGregorianValid 2018 11 3)
-            <*> (timeOfDayToTime <$> makeTimeOfDayValid 17 0 0)
+            (fromGregorianValid 2008 11 3)
+            (   localTimeToUTC userTz
+            <$> (   LocalTime
+                <$> fromGregorianValid 2008 11 3
+                <*> makeTimeOfDayValid 23 0 0
+                )
             )
             Nothing
             False
