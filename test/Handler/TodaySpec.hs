@@ -156,7 +156,7 @@ spec = withApp $ do
           liftIO $ putStrLn $ pack $ show r
           statusIs 200
 
-          htmlNoneContain ".taskDate" "glyphicon-th-list"
+          htmlNoneContain ".taskManagement" "glyphicon-th-list"
 
     it "shows dependencies link when enough time to work on dependencies" $ do
       currTime <- liftIO getCurrentTime
@@ -205,7 +205,7 @@ spec = withApp $ do
       get TodayR
       statusIs 200
 
-      htmlAnyContain ".taskDate" "glyphicon-th-list"
+      htmlAnyContain ".taskManagement" "glyphicon-th-list"
 
     it "sorts correctly without dependencies" $ do
       currTime      <- liftIO getCurrentTime
