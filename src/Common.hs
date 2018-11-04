@@ -10,7 +10,7 @@ fixTaskPostponeTime u t = case taskDueDate t of
   Just localDd -> do
     let userTz = userTimeZoneOrUtc u
     utcPpt <- timeToTimeOfDay <$> utctDayTime <$> taskPostponeTime t
-    let (_dayAdj, localPpt) = utcToLocalTimeOfDay userTz utcPpt
+    let (dayAdj, localPpt) = utcToLocalTimeOfDay userTz utcPpt
     Just $ localTimeToUTC userTz (LocalTime localDd localPpt)
 
 userTimeZone :: User -> Maybe TimeZone
