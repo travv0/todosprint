@@ -18,6 +18,7 @@ import           RepeatInterval
 import           Yesod.Form.Bootstrap3
 import qualified Data.Maybe                    as M
 import qualified Data.Text                     as T
+import           Common
 
 taskList :: [Entity Task] -> [Entity Task] -> Bool -> Bool -> Maybe TimeOfDay -> Widget
 taskList tasks postponedTasks todayPage detailed estimatedToc = do
@@ -87,8 +88,6 @@ getHomeR = do
           )
           tasks'
   let tasks = js ++ ns
-  utcTime        <- liftIO getCurrentTime
-  postponedTasks <- postponedTaskList utcTime tasks
   defaultLayout $ do
     setTitle "Manage Tasks"
     $(widgetFile "homepage")
@@ -149,14 +148,6 @@ dueTimeForm mdt =
     $   DueTime
     <$> areq timeField (bfs ("When would you like to work until?" :: Text)) mdt
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
-
-userTimeZone :: User -> Maybe TimeZone
-userTimeZone user = fmap minutesToTimeZone $ userDueTimeOffset user
-
-utcToUserTime :: UTCTime -> User -> Maybe LocalTime
-utcToUserTime time user = do
-  userTz <- userTimeZone user
-  return $ utcToLocalTime userTz time
 
 postponedTaskList :: UTCTime -> [Entity Task] -> Handler [Entity Task]
 postponedTaskList currUtcTime tasks = tasksAndDependents
@@ -220,11 +211,11 @@ minsDiff userTz big small
   | big < small = 0
   | otherwise =
     let big'            = timeToTimeOfDay $ utctDayTime big
-        (dayAdj, big'') = utcToLocalTimeOfDay userTz big'
+        (_dayAdj, big'') = utcToLocalTimeOfDay userTz big'
         bigTime                 = timeOfDayToTime big''
 
         small'                     = timeToTimeOfDay $ utctDayTime small
-        (smallDayAdj, small'')               = utcToLocalTimeOfDay userTz small'
+        (_smallDayAdj, small'')               = utcToLocalTimeOfDay userTz small'
         smallTime                   = timeOfDayToTime small''
 
         timeOfDay = timeToTimeOfDay $ picosecondsToDiffTime
@@ -467,7 +458,7 @@ postMarkDoneR taskId = do
         newTaskId <- insert
           $ t2 { taskPostponeDay = Nothing,
                  taskPostponeTime = if taskPostponeTimeRepeat t
-                                    then newPostponeTime t2
+                                    then fixTaskPostponeTime user t2
                                     else Nothing
                }
         deps <- selectList [TaskDependencyTaskId ==. taskId] []
@@ -487,12 +478,6 @@ postMarkDoneR taskId = do
       Nothing -> redirectUltDest HomeR
     Nothing -> redirectUltDest HomeR
   redirectUltDest HomeR
-  where newPostponeTime newTask = do
-          case taskDueDate newTask of
-            Nothing -> Nothing
-            Just dd -> do
-              oldPpt <- taskPostponeTime newTask
-              Just $ UTCTime dd (utctDayTime oldPpt)
 
 incrementDueDate :: Day -> Task -> Maybe Task
 incrementDueDate cdate task = case taskDueDate task of
@@ -554,5 +539,7 @@ getTodayDepsR taskId = do
               False
     Nothing -> redirect TodayR
 
+getTasks :: (PersistQueryRead backend, MonadIO m, BaseBackend backend ~ SqlBackend) =>
+            Key User -> [SelectOpt Task] -> ReaderT backend m [Entity Task]
 getTasks userId =
   selectList [TaskUserId ==. userId, TaskDone ==. False, TaskDeleted ==. False]

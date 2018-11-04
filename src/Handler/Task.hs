@@ -18,7 +18,7 @@ import           Text.Read                      ( read
 import           Data.Time.LocalTime
 import           Data.Time
 import qualified Data.List                     as L
-import           Handler.Home
+import           Common
 
 repeatIntervalField :: Field Handler RepeatInterval
 repeatIntervalField = Field
@@ -44,26 +44,26 @@ repeatIntervalField = Field
   , fieldView    = \idAttr nameAttr otherAttrs eResult isReq -> case eResult of
     Right (Days n ri) -> do
       let days = []
-      let u    = "Days"
+      let u    = "Days" :: String
       $(widgetFile "repeat-interval")
     Right (Weeks n ri) -> do
       let days = []
-      let u    = "Weeks"
+      let u    = "Weeks" :: String
       $(widgetFile "repeat-interval")
     Right (Months n ri) -> do
       let days = []
-      let u    = "Months"
+      let u    = "Months" :: String
       $(widgetFile "repeat-interval")
     Right (Years n ri) -> do
       let days = []
-      let u    = "Years"
+      let u    = "Years" :: String
       $(widgetFile "repeat-interval")
     Right (OnWeekdays days ri) -> do
-      let n = 0
-      let u = ""
+      let n = 0 :: Integer
+      let u = "" :: String
       $(widgetFile "repeat-interval")
     Left _ -> do
-      let (n, ri, days, u) = (0, CompletionDate, [], "")
+      let (n, ri, days, u) = (0 :: Integer, CompletionDate, [], "" :: String)
       $(widgetFile "repeat-interval")
   , fieldEnctype = UrlEncoded
   }
@@ -165,15 +165,16 @@ postponeDateForm =
 
 getNewTaskR :: Handler Html
 getNewTaskR = do
-  userId                   <- requireAuthId
+  Entity userId user       <- requireAuth
   currTime                 <- liftIO getCurrentTime
   ((res, widget), enctype) <- runFormPost $ taskForm userId currTime Nothing
   case res of
     FormSuccess t -> do
-      runDB $ insert t
+      _ <- runDB $ insert t
         { taskPostponeTimeRepeat = if isJust (taskPostponeTime t)
                                      then True
                                      else False
+        , taskPostponeTime = fixTaskPostponeTime user t
         }
       setMessage "Task created"
       redirect NewTaskR
@@ -187,7 +188,7 @@ postNewTaskR = getNewTaskR
 
 getEditTaskR :: TaskId -> Handler Html
 getEditTaskR taskId = do
-  userId                   <- requireAuthId
+  Entity userId user       <- requireAuth
   task                     <- runDB $ get taskId
   currTime                 <- liftIO getCurrentTime
   ((res, widget), enctype) <- runFormPost $ taskForm userId currTime $ task
@@ -202,8 +203,7 @@ getEditTaskR taskId = do
                                         && not (taskPostponeTimeRepeat t2)
                                      then
                                        taskPostponeTime t2
-                                     else
-                                       taskPostponeTime t
+                                     else fixTaskPostponeTime user t
           , taskPostponeDay        = taskPostponeDay t2
           }
         Nothing -> runDB $ replace taskId t
@@ -243,7 +243,7 @@ getPostponeTaskR taskId = do
 postPostponeTodayR :: TaskId -> Handler ()
 postPostponeTodayR taskId = do
   (Entity _ user)          <- requireAuth
-  ((res, widget), enctype) <- runFormPost postponeTodayForm
+  ((res, _widget), _enctype) <- runFormPost postponeTodayForm
   case res of
     FormSuccess t -> do
       let ppTime = pptTime t
@@ -265,7 +265,7 @@ postPostponeTodayR taskId = do
 
 postPostponeDateR :: TaskId -> Handler ()
 postPostponeDateR taskId = do
-  ((res, widget), enctype) <- runFormPost postponeDateForm
+  ((res, _widget), _enctype) <- runFormPost postponeDateForm
   case res of
     FormSuccess day -> do
       runDB $ update

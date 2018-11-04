@@ -10,18 +10,14 @@ module Handler.AddDeps where
 import           Database.Persist.Sql
 import           Yesod.Form.Bootstrap3
 import           Import
-import           Yesod.Form.Jquery
-import           Priority
-import           RepeatInterval
-import           Text.Read
 
 data TaskDeps = TaskDeps
   { deps :: Maybe [TaskId] }
   deriving Show
 
 depsForm
-  :: TaskId -> [(Text, TaskId)] -> String -> (Maybe [TaskId]) -> Form TaskDeps
-depsForm taskId tasks label taskDeps =
+  :: [(Text, TaskId)] -> String -> (Maybe [TaskId]) -> Form TaskDeps
+depsForm tasks label taskDeps =
   renderBootstrap3
       (BootstrapHorizontalForm (ColSm 0) (ColSm 4) (ColSm 0) (ColSm 4))
     $   TaskDeps
@@ -32,8 +28,8 @@ depsForm taskId tasks label taskDeps =
 
 getAddDepsR :: TaskId -> Handler Html
 getAddDepsR taskId = do
-  let optionify (Entity taskId task) = (taskName task, taskId)
-  let getTaskDepId (Entity tdid td) = taskDependencyDependsOnTaskId td
+  let optionify (Entity _taskId task) = (taskName task, taskId)
+  let getTaskDepId (Entity _tdid td) = taskDependencyDependsOnTaskId td
   userId                   <- requireAuthId
 
   tasks                    <- runDB $ getTasks userId taskId [Asc TaskName]
@@ -41,7 +37,7 @@ getAddDepsR taskId = do
 
   ((res, widget), enctype) <-
     runFormPost
-    $ depsForm taskId (map optionify tasks) "Dependencies"
+    $ depsForm (map optionify tasks) "Dependencies"
     $ Just
     $ map getTaskDepId taskDeps
 
@@ -49,7 +45,7 @@ getAddDepsR taskId = do
   case mTask of
     Just task -> case res of
       FormSuccess ds -> do
-        case deps ds of
+        _ <- case deps ds of
           Just jds -> do
             runDB $ do
               deleteWhere [TaskDependencyTaskId ==. taskId]
@@ -72,8 +68,8 @@ postAddDepsR = getAddDepsR
 
 getAddDependentsR :: TaskId -> Handler Html
 getAddDependentsR taskId = do
-  let optionify (Entity taskId task) = (taskName task, taskId)
-  let getTaskDepId (Entity tdid td) = taskDependencyTaskId td
+  let optionify (Entity _taskId task) = (taskName task, taskId)
+  let getTaskDepId (Entity _tdid td) = taskDependencyTaskId td
   userId                   <- requireAuthId
 
   tasks                    <- runDB $ getTasks userId taskId [Asc TaskName]
@@ -81,7 +77,7 @@ getAddDependentsR taskId = do
 
   ((res, widget), enctype) <-
     runFormPost
-    $ depsForm taskId (map optionify tasks) "Dependents"
+    $ depsForm (map optionify tasks) "Dependents"
     $ Just
     $ map getTaskDepId taskDeps
 
@@ -89,7 +85,7 @@ getAddDependentsR taskId = do
   case mTask of
     Just task -> case res of
       FormSuccess ds -> do
-        case deps ds of
+        _ <- case deps ds of
           Just jds -> do
             runDB $ do
               deleteWhere [TaskDependencyDependsOnTaskId ==. taskId]
@@ -110,6 +106,8 @@ getAddDependentsR taskId = do
 postAddDependentsR :: TaskId -> Handler Html
 postAddDependentsR = getAddDependentsR
 
+getTasks :: (PersistQueryRead backend, MonadIO m, BaseBackend backend ~ SqlBackend) =>
+            Key User -> Key Task -> [SelectOpt Task] -> ReaderT backend m [Entity Task]
 getTasks userId taskId = selectList
   [ TaskUserId ==. userId
   , TaskId !=. taskId
