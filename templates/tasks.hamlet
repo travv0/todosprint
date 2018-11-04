@@ -30,7 +30,7 @@ $else
                                     <span class="glyphicon glyphicon-repeat modIcon">
                                 $maybe dd <- taskDueDate $ entityVal task
                                     #{show $ dd}
-                            $if (isJust $ taskPostponeTime $ entityVal task) && elem task postponedTasks
+                            $if (isJust $ taskPostponeTime $ entityVal task)
                                 <br>
                                 $if hasDeps
                                     <a href=@{TodayDepsR $ entityKey task}>
