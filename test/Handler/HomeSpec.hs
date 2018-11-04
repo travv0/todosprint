@@ -43,20 +43,20 @@ spec = withApp $ do
 
       authenticateAs userEntity
 
-      testTask <- runDB $ insert $ Task "Test"
-                                        1
-                                        None
-                                        Nothing
-                                        Nothing
-                                        Nothing
-                                        False
-                                        (entityKey userEntity)
-                                        Nothing
-                                        currTime
-                                        Nothing
-                                        False
-                                        Nothing
-                                        False
+      _testTask <- runDB $ insert $ Task "Test"
+                                         1
+                                         None
+                                         Nothing
+                                         Nothing
+                                         Nothing
+                                         False
+                                         (entityKey userEntity)
+                                         Nothing
+                                         currTime
+                                         Nothing
+                                         False
+                                         Nothing
+                                         False
 
       get HomeR
       statusIs 200

@@ -6,11 +6,8 @@ module Handler.TaskSpec
 where
 
 import           TestImport
-import           Data.Aeson
 import           Priority
 import           Data.Time
-import qualified Data.List                     as L
-import           RepeatInterval
 
 spec :: Spec
 spec = withApp $ do
