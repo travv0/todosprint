@@ -57,12 +57,19 @@ library:
       - -Wall
       - -fwarn-tabs
       - -O0
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
       cpp-options: -DDEVELOPMENT
     else:
       ghc-options:
       - -Wall
       - -fwarn-tabs
       - -O2
+      - -Wcompat
+      - -Wincomplete-record-updates
+      - -Wincomplete-uni-patterns
+      - -Werror
 
 # Runnable executable for our application
 executables:
