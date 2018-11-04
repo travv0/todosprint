@@ -1,2 +1,9 @@
-<form .form-horizontal method=post action=@{AddDepsR taskId} enctype=#{enctype}>
+<h3>
+    Add #
+    $if dep == Dependency
+        Dependencies
+    $else
+        Dependents
+    \ for "#{taskName task}"
+<form .form-horizontal method=post action=@{depsR taskId} enctype=#{enctype}>
     ^{widget}

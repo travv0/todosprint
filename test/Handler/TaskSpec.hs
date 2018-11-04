@@ -10,9 +10,233 @@ import           Priority
 import           Data.Time
 import           Common
 import           Data.Maybe                    as M
+import qualified Data.List                     as L
 
 spec :: Spec
 spec = withApp $ do
+  describe "Add dependencies page" $ do
+    it "doesn't say dependent anywhere" $ do
+      currTime   <- liftIO getCurrentTime
+
+      userEntity <- createUser "foo@gmail.com"
+
+      authenticateAs userEntity
+
+      testTask <- runDB $ insert $ Task "Test"
+                                        1
+                                        High
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        False
+                                        (entityKey userEntity)
+                                        Nothing
+                                        currTime
+                                        Nothing
+                                        False
+                                        Nothing
+                                        False
+
+      get $ AddDepsR testTask
+      statusIs 200
+
+      bodyNotContains "dependent"
+      bodyNotContains "Dependent"
+      bodyContains "Dependenc"
+
+    it "adds dependencies correctly" $ do
+      currTime   <- liftIO getCurrentTime
+
+      userEntity <- createUser "foo@gmail.com"
+
+      authenticateAs userEntity
+
+      testTask <- runDB $ insert $ Task "Test"
+                                        1
+                                        High
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        False
+                                        (entityKey userEntity)
+                                        Nothing
+                                        currTime
+                                        Nothing
+                                        False
+                                        Nothing
+                                        False
+      depTask <- runDB $ insert $ Task "dep"
+                                       1
+                                       High
+                                       Nothing
+                                       Nothing
+                                       Nothing
+                                       False
+                                       (entityKey userEntity)
+                                       Nothing
+                                       currTime
+                                       Nothing
+                                       False
+                                       Nothing
+                                       False
+      _ <- runDB $ insert $ Task "nothing"
+                                 1
+                                 High
+                                 Nothing
+                                 Nothing
+                                 Nothing
+                                 False
+                                 (entityKey userEntity)
+                                 Nothing
+                                 currTime
+                                 Nothing
+                                 False
+                                 Nothing
+                                 False
+      _ <- runDB $ insert $ Task "nothing2"
+                                 1
+                                 High
+                                 Nothing
+                                 Nothing
+                                 Nothing
+                                 False
+                                 (entityKey userEntity)
+                                 Nothing
+                                 currTime
+                                 Nothing
+                                 False
+                                 Nothing
+                                 False
+
+      get $ AddDepsR testTask
+      statusIs 200
+
+      printBody
+
+      request $ do
+        setMethod "POST"
+        setUrl $ AddDepsR testTask
+        addToken
+        byLabelExact "Dependencies" "1"
+
+      deps <- runDB $ selectList [TaskDependencyTaskId ==. testTask] []
+      assertEq "One dependency" (length deps) 1
+      assertEq ("Correct dependency for " ++ show testTask)
+               (taskDependencyDependsOnTaskId $ entityVal $ L.head deps)
+               depTask
+
+  describe "Add dependents page" $ do
+    it "doesn't say dependency/dependencies anywhere" $ do
+      currTime   <- liftIO getCurrentTime
+
+      userEntity <- createUser "foo@gmail.com"
+
+      authenticateAs userEntity
+
+      testTask <- runDB $ insert $ Task "Test"
+                                        1
+                                        High
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        False
+                                        (entityKey userEntity)
+                                        Nothing
+                                        currTime
+                                        Nothing
+                                        False
+                                        Nothing
+                                        False
+
+      get $ AddDependentsR testTask
+      statusIs 200
+
+      printBody
+
+      bodyNotContains "dependenc"
+      bodyNotContains "Dependenc"
+      bodyContains "Dependent"
+
+    it "adds dependents correctly" $ do
+      currTime   <- liftIO getCurrentTime
+
+      userEntity <- createUser "foo@gmail.com"
+
+      authenticateAs userEntity
+
+      testTask <- runDB $ insert $ Task "Test"
+                                        1
+                                        High
+                                        Nothing
+                                        Nothing
+                                        Nothing
+                                        False
+                                        (entityKey userEntity)
+                                        Nothing
+                                        currTime
+                                        Nothing
+                                        False
+                                        Nothing
+                                        False
+      depTask <- runDB $ insert $ Task "dep"
+                                       1
+                                       High
+                                       Nothing
+                                       Nothing
+                                       Nothing
+                                       False
+                                       (entityKey userEntity)
+                                       Nothing
+                                       currTime
+                                       Nothing
+                                       False
+                                       Nothing
+                                       False
+      _ <- runDB $ insert $ Task "nothing"
+                                 1
+                                 High
+                                 Nothing
+                                 Nothing
+                                 Nothing
+                                 False
+                                 (entityKey userEntity)
+                                 Nothing
+                                 currTime
+                                 Nothing
+                                 False
+                                 Nothing
+                                 False
+      _ <- runDB $ insert $ Task "nothing2"
+                                 1
+                                 High
+                                 Nothing
+                                 Nothing
+                                 Nothing
+                                 False
+                                 (entityKey userEntity)
+                                 Nothing
+                                 currTime
+                                 Nothing
+                                 False
+                                 Nothing
+                                 False
+
+      get $ AddDependentsR testTask
+      statusIs 200
+
+      printBody
+
+      request $ do
+        setMethod "POST"
+        setUrl $ AddDependentsR testTask
+        addToken
+        byLabelExact "Dependents" "1"
+
+      deps <- runDB $ selectList [TaskDependencyDependsOnTaskId ==. testTask] []
+      assertEq "One dependency" (length deps) 1
+      assertEq ("Correct dependent for " ++ show testTask)
+               (taskDependencyTaskId $ entityVal $ L.head deps)
+               depTask
 
   describe "New task page" $ do
     it "successfully adds tasks" $ do
