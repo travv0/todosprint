@@ -23,5 +23,5 @@ postUpdateNotifiedR = do
 getServiceWorkerR :: Handler ()
 getServiceWorkerR = do
   app <- getYesod
-  let workerPath = unpack (fromMaybe "" (appRoot $ appSettings app)) </> "worker.js"
+  let workerPath = unpack (fromMaybe "" (appRoot $ appSettings app)) </> "firebase-messaging-sw.js"
   sendFile "text/javascript" workerPath

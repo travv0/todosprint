@@ -45,6 +45,12 @@ $newline never
 
     <script>
       document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
+
+    <script src="https://www.gstatic.com/firebasejs/5.5.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.5.8/firebase-messaging.js">
+    <script src="@{StaticR js_firebase_js}">
+
+    <link rel="manifest" href="/static/manifest.json">
   <body>
     ^{pageBody pc}
 
