@@ -1,18 +1,48 @@
 $(function () {
-	function redifyTimes() {
-		$(".timedList .startTime").each(function() {
+    askForNotificationPermission()
 
-			var now = new Date();
-
-			if ($(this).text() === "Overdue" || now > new Date(
-				Date.parse((now.getMonth() + 1) + '/' + now.getDate() + '/'
-					+ now.getFullYear() + ' ' + $(this).text()))
-			) {
-				$(this).css('color', 'red');
-			}
-		});
-	}
-
-	redifyTimes();
-	setInterval(redifyTimes, 1000 * 60);
+    redifyTimes();
+    notifyOverdue();
+    setInterval(redifyTimes, 1000 * 60);
+    setInterval(notifyOverdue, 1000 * 60);
 });
+
+function askForNotificationPermission() {
+    if (#{hasTimedTasks} && "Notification" in window && Notification.permission === "default") {
+        Notification.requestPermission();
+    }
+}
+
+function redifyTimes() {
+    $(".timedList .startTime").each(function() {
+        var now = new Date();
+
+        if ($(this).text() === "Overdue" || now > new Date(
+            Date.parse((now.getMonth() + 1) + '/' + now.getDate() + '/'
+                       + now.getFullYear() + ' ' + $(this).text()))
+           ) {
+            $(this).css('color', 'red');
+        }
+    });
+}
+
+function notifyOverdue() {
+    $(".timedList .startTime").each(function() {
+        var now = new Date();
+
+        if ($(this).attr("notified") !== "True" &&
+            now > new Date(
+                Date.parse((now.getMonth() + 1) + '/' + now.getDate() + '/'
+                           + now.getFullYear() + ' ' + $(this).text()))
+           ) {
+            var notification = new Notification("Time to start: " + $(this).parent().find(".tn").text());
+            $(this).attr("notified", "True");
+            $.post(
+                "@{UpdateNotifiedR}",
+                {
+                    taskId: $(this).attr("taskId")
+                }
+            );
+        }
+    });
+}

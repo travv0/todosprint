@@ -13,15 +13,16 @@ $if not $ null timedTasks
                             <span .taskName>
                                 $if localDay (M.fromMaybe (utcToLocalTime utc (fromMaybe utcTime (taskPostponeTime $ entityVal task))) (utcToUserTime (fromMaybe utcTime (taskPostponeTime $ entityVal task)) user)) >= today
                                     $maybe tz <- mUserTz
-                                        <span .startTime>#{formatPostponeTime tz task}
+                                        <span .startTime notified="#{taskNotified $ entityVal task}" taskId="#{show $ fromSqlKey $ entityKey task}">#{formatPostponeTime tz task}
                                     $nothing
                                 $else
                                     <span .startTime>Overdue
                                 <br>
-                                #{taskName $ entityVal task}
+                                <span .tn>
+                                    #{taskName $ entityVal task}
                     <td .taskManagement>
                         $if not $ taskPostponeTimeRepeat $ entityVal task
-                            <a href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
+                            <a .manageIcon href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
                                 <span class="glyphicon glyphicon-circle-arrow-down modIcon" aria-hidden="true">
                         $if hasDeps
                             <a .manageIcon href=@{TodayDepsR $ entityKey task}>

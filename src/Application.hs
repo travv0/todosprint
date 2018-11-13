@@ -45,6 +45,7 @@ import Handler.Task
 import Handler.AddDeps
 import Handler.TimeZone
 import Handler.Landing
+import Handler.UpdateNotified
 
 -- This line actually creates our YesodDispatch instance. It is the second half
 -- of the call to mkYesodData which occurs in Foundation.hs. Please see the

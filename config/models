@@ -27,6 +27,7 @@ Task
     deleted Bool default=false
     deleteTime UTCTime Maybe
     postponeTimeRepeat Bool default=false
+    notified Bool default=false
     deriving Show Eq
 
 TaskDependency

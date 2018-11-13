@@ -28,5 +28,6 @@
 /mark-done/#TaskId MarkDoneR POST
 
 /time-zone TimeZoneR GET POST
+/update-notified UpdateNotifiedR POST
 
 /reset-time ResetDueTimeR GET

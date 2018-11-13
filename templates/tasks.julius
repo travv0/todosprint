@@ -1,30 +1,30 @@
 $(function() {
-	$(".task").hover(
-		function() {
-			$(this).css("background-color", "aliceblue");
-		},
-		function () {
-			$(this).css("background-color", "white");
-		});
+  $(".task").hover(
+    function() {
+      $(this).css("background-color", "aliceblue");
+    },
+    function () {
+      $(this).css("background-color", "white");
+    });
 
-	$(".taskDate").each(
-		function() {
-			$(this).html($(this).html().replace(/^\<br.*?\>+|\<br.*?\>+$/g, ''))
-		});
+  $(".taskDate").each(
+    function() {
+      $(this).html($(this).html().replace(/^\<br.*?\>+|\<br.*?\>+$/g, ''))
+    });
 
-	$(".taskCheckbox form a span").hover(
-		function() {
-			$(this).removeClass("glyphicon-unchecked");
-			$(this).addClass("glyphicon-check");
-		},
-		function() {
-			$(this).removeClass("glyphicon-check");
-			$(this).addClass("glyphicon-unchecked");
-		});
+  $(".taskCheckbox form a span").hover(
+    function() {
+      $(this).removeClass("glyphicon-unchecked");
+      $(this).addClass("glyphicon-check");
+    },
+    function() {
+      $(this).removeClass("glyphicon-check");
+      $(this).addClass("glyphicon-unchecked");
+    });
 })
 
 function confirmThenDelete(taskName, deleteUrl) {
-	if (confirm('Would you like to delete "' + taskName + '"?')) {
-		window.location.href = deleteUrl;
-	}
+  if (confirm('Would you like to delete "' + taskName + '"?')) {
+    window.location.href = deleteUrl;
+  }
 }

@@ -19,6 +19,7 @@ import           Yesod.Form.Bootstrap3
 import qualified Data.Maybe                    as M
 import qualified Data.Text                     as T
 import           Common
+import           Text.Julius                   (rawJS)
 
 taskList :: [Entity Task] -> [Entity Task] -> Bool -> Bool -> Maybe TimeOfDay -> Widget
 taskList tasks postponedTasks todayPage detailed estimatedToc = do
@@ -65,7 +66,7 @@ taskList tasks postponedTasks todayPage detailed estimatedToc = do
                             $ filter (\((Entity _ t), _) ->
                                         isJust $ taskPostponeTime t)
                                      tasksHasDeps
-
+       let hasTimedTasks = rawJS $ not $ null timedTasks
        $(widgetFile "tasks-timed")
        $(widgetFile "tasks")
      else

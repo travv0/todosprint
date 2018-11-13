@@ -57,6 +57,7 @@ spec = withApp $ do
                                          False
                                          Nothing
                                          False
+                                         True
 
       get HomeR
       statusIs 200

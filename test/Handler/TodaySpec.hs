@@ -39,6 +39,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       testTask2 <- runDB $ insert $ Task "Test"
                                          1
                                          High
@@ -53,6 +54,7 @@ spec = withApp $ do
                                          False
                                          Nothing
                                          False
+                                         True
 
       _taskDep <- runDB $ insert $ TaskDependency testTask testTask2 False
 
@@ -97,6 +99,7 @@ spec = withApp $ do
                                          False
                                          Nothing
                                          False
+                                         True
 
       get TodayR
       statusIs 200
@@ -132,6 +135,7 @@ spec = withApp $ do
             False
             Nothing
             False
+            True
           mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                         1
                                                         Medium
@@ -146,6 +150,7 @@ spec = withApp $ do
                                                         False
                                                         Nothing
                                                         False
+                                                        True
 
           _dep <- runDB $ insert $ TaskDependency (entityKey highPriority)
                                                   (entityKey mediumPriority)
@@ -183,6 +188,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     1
                                                     Medium
@@ -197,6 +203,7 @@ spec = withApp $ do
                                                     False
                                                     Nothing
                                                     False
+                                                    True
 
       _dep <- runDB $ insert $ TaskDependency (entityKey highPriority)
                                               (entityKey mediumPriority)
@@ -232,6 +239,7 @@ spec = withApp $ do
                                                   False
                                                   Nothing
                                                   False
+                                                  True
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
@@ -247,6 +255,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
@@ -262,6 +271,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
@@ -277,6 +287,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     30
                                                     Medium
@@ -291,6 +302,7 @@ spec = withApp $ do
                                                     False
                                                     Nothing
                                                     False
+                                                    True
       mediumPriorityOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityOverdue"
         30
@@ -306,6 +318,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityWayOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityWayOverdue"
         30
@@ -321,6 +334,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityNoDueDate <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDate"
         30
@@ -336,6 +350,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityNoDueDateShort <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShort"
         5
@@ -351,6 +366,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityNoDueDateShortAddedLater <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShortAddedLater"
         5
@@ -366,6 +382,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       lowPriority <- runDB $ insertEntity $ Task "lowPriority"
                                                  30
                                                  Low
@@ -380,6 +397,7 @@ spec = withApp $ do
                                                  False
                                                  Nothing
                                                  False
+                                                 True
       lowPriorityOverdue <- runDB $ insertEntity $ Task
         "lowPriorityOverdue"
         30
@@ -395,6 +413,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       lowPriorityWayOverdue <- runDB $ insertEntity $ Task
         "lowPriorityWayOverdue"
         30
@@ -410,6 +429,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       lowPriorityNoDueDate <- runDB $ insertEntity $ Task
         "lowPriorityNoDueDate"
         30
@@ -425,6 +445,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       nonePriority <- runDB $ insertEntity $ Task "nonePriority"
                                                   30
                                                   None
@@ -439,6 +460,7 @@ spec = withApp $ do
                                                   False
                                                   Nothing
                                                   False
+                                                  True
       nonePriorityOverdue <- runDB $ insertEntity $ Task
         "nonePriorityOverdue"
         30
@@ -454,6 +476,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       nonePriorityWayOverdue <- runDB $ insertEntity $ Task
         "nonePriorityWayOverdue"
         30
@@ -469,6 +492,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       nonePriorityNoDueDate <- runDB $ insertEntity $ Task
         "nonePriorityNoDueDate"
         30
@@ -484,6 +508,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
 
       let sortableTasks = map
             (\t -> (t, []))
@@ -555,6 +580,7 @@ spec = withApp $ do
                                                   False
                                                   Nothing
                                                   False
+                                                  True
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
@@ -570,6 +596,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
@@ -585,6 +612,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
@@ -600,6 +628,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     30
                                                     Medium
@@ -614,6 +643,7 @@ spec = withApp $ do
                                                     False
                                                     Nothing
                                                     False
+                                                    True
       mediumPriorityOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityOverdue"
         30
@@ -629,6 +659,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityWayOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityWayOverdue"
         30
@@ -644,6 +675,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityNoDueDate <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDate"
         30
@@ -659,6 +691,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityNoDueDateShort <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShort"
         5
@@ -674,6 +707,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityNoDueDateShortAddedLater <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShortAddedLater"
         5
@@ -689,6 +723,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       lowPriority <- runDB $ insertEntity $ Task "lowPriority"
                                                  30
                                                  Low
@@ -703,6 +738,7 @@ spec = withApp $ do
                                                  False
                                                  Nothing
                                                  False
+                                                 True
       lowPriorityOverdue <- runDB $ insertEntity $ Task
         "lowPriorityOverdue"
         30
@@ -718,6 +754,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       lowPriorityWayOverdue <- runDB $ insertEntity $ Task
         "lowPriorityWayOverdue"
         30
@@ -733,6 +770,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       lowPriorityNoDueDate <- runDB $ insertEntity $ Task
         "lowPriorityNoDueDate"
         30
@@ -748,6 +786,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       nonePriority <- runDB $ insertEntity $ Task "nonePriority"
                                                   30
                                                   None
@@ -762,6 +801,7 @@ spec = withApp $ do
                                                   False
                                                   Nothing
                                                   False
+                                                  True
       nonePriorityOverdue <- runDB $ insertEntity $ Task
         "nonePriorityOverdue"
         30
@@ -777,6 +817,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       nonePriorityWayOverdue <- runDB $ insertEntity $ Task
         "nonePriorityWayOverdue"
         30
@@ -792,6 +833,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       nonePriorityNoDueDate <- runDB $ insertEntity $ Task
         "nonePriorityNoDueDate"
         30
@@ -807,6 +849,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
 
       let sortableTasks = map
             (\t ->
@@ -892,6 +935,7 @@ spec = withApp $ do
                                                   False
                                                   Nothing
                                                   False
+                                                  True
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
@@ -907,6 +951,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
@@ -922,6 +967,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
@@ -937,6 +983,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriority <- runDB $ insertEntity $ Task "mediumPriority"
                                                     30
                                                     Medium
@@ -951,6 +998,7 @@ spec = withApp $ do
                                                     False
                                                     Nothing
                                                     False
+                                                    True
       mediumPriorityWayOverdue <- runDB $ insertEntity $ Task
         "mediumPriorityWayOverdue"
         30
@@ -966,6 +1014,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityNoDueDate <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDate"
         30
@@ -981,6 +1030,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityNoDueDateShort <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShort"
         5
@@ -996,6 +1046,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       mediumPriorityNoDueDateShortAddedLater <- runDB $ insertEntity $ Task
         "mediumPriorityNoDueDateShortAddedLater"
         5
@@ -1011,6 +1062,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       lowPriority <- runDB $ insertEntity $ Task "lowPriority"
                                                  30
                                                  Low
@@ -1025,6 +1077,7 @@ spec = withApp $ do
                                                  False
                                                  Nothing
                                                  False
+                                                 True
       lowPriorityWayOverdue <- runDB $ insertEntity $ Task
         "lowPriorityWayOverdue"
         30
@@ -1040,6 +1093,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       lowPriorityNoDueDate <- runDB $ insertEntity $ Task
         "lowPriorityNoDueDate"
         30
@@ -1055,6 +1109,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       nonePriority <- runDB $ insertEntity $ Task "nonePriority"
                                                   30
                                                   None
@@ -1069,6 +1124,7 @@ spec = withApp $ do
                                                   False
                                                   Nothing
                                                   False
+                                                  True
       nonePriorityOverdue <- runDB $ insertEntity $ Task
         "nonePriorityOverdue"
         30
@@ -1084,6 +1140,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       nonePriorityWayOverdue <- runDB $ insertEntity $ Task
         "nonePriorityWayOverdue"
         30
@@ -1099,6 +1156,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       nonePriorityNoDueDate <- runDB $ insertEntity $ Task
         "nonePriorityNoDueDate"
         30
@@ -1114,6 +1172,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
 
       assertEq
         "High priority should have higher weight than medium"
@@ -1221,6 +1280,7 @@ spec = withApp $ do
                                                   False
                                                   Nothing
                                                   False
+                                                  True
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
@@ -1236,6 +1296,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
@@ -1251,6 +1312,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
@@ -1266,6 +1328,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
 
       assertEq
         "Time to complete 4 30-minute tasks should be 120"
@@ -1301,6 +1364,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
@@ -1316,6 +1380,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityWayOverdue <- runDB $ insertEntity $ Task
         "highPriorityWayOverdue"
         30
@@ -1331,6 +1396,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
       highPriorityNoDueDate <- runDB $ insertEntity $ Task
         "highPriorityNoDueDate"
         30
@@ -1346,6 +1412,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
 
       _ <- runDB $ insert $ TaskDependency (entityKey highPriorityNoDueDate)
                                            (entityKey highPriorityOverdue)

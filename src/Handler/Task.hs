@@ -135,6 +135,7 @@ taskForm userId currUtcTime mtask =
     <*> pure False
     <*> pure Nothing
     <*> pure True
+    <*> pure False
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 data PostponeTodayInfo = PostponeTodayInfo
@@ -206,6 +207,7 @@ getEditTaskR taskId = do
                                      else
                                        fixTaskPostponeTime user t
           , taskPostponeDay        = taskPostponeDay t2
+          , taskNotified           = if taskPostponeTime t /= taskPostponeTime t2 then False else taskNotified t2
           }
         Nothing -> runDB $ replace taskId t
       setMessage "Task updated"
@@ -260,6 +262,7 @@ postPostponeTodayR taskId = do
                         (timeOfDayToTime utcTime)
                )
         , TaskPostponeDay =. Nothing
+        , TaskNotified =. False
         ]
       redirectUltDest HomeR
     _ -> redirectUltDest HomeR
@@ -278,5 +281,5 @@ postPostponeDateR taskId = do
 getUnpostponeR :: TaskId -> Handler ()
 getUnpostponeR taskId = do
   runDB
-    $ update taskId [TaskPostponeDay =. Nothing, TaskPostponeTime =. Nothing]
+    $ update taskId [TaskPostponeDay =. Nothing, TaskPostponeTime =. Nothing, TaskNotified =. False]
   redirectUltDest HomeR

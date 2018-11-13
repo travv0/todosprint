@@ -36,6 +36,7 @@ spec = withApp $ do
                                         False
                                         Nothing
                                         False
+                                        True
 
       get $ AddDepsR testTask
       statusIs 200
@@ -65,6 +66,7 @@ spec = withApp $ do
                                         False
                                         Nothing
                                         False
+                                        True
       depTask <- runDB $ insert $ Task "dep"
                                        1
                                        High
@@ -79,6 +81,7 @@ spec = withApp $ do
                                        False
                                        Nothing
                                        False
+                                       True
       _ <- runDB $ insert $ Task "nothing"
                                  1
                                  High
@@ -93,6 +96,7 @@ spec = withApp $ do
                                  False
                                  Nothing
                                  False
+                                 True
       _ <- runDB $ insert $ Task "nothing2"
                                  1
                                  High
@@ -107,6 +111,7 @@ spec = withApp $ do
                                  False
                                  Nothing
                                  False
+                                 True
 
       get $ AddDepsR testTask
       statusIs 200
@@ -147,6 +152,7 @@ spec = withApp $ do
                                         False
                                         Nothing
                                         False
+                                        True
 
       get $ AddDependentsR testTask
       statusIs 200
@@ -178,6 +184,7 @@ spec = withApp $ do
                                         False
                                         Nothing
                                         False
+                                        True
       depTask <- runDB $ insert $ Task "dep"
                                        1
                                        High
@@ -192,6 +199,7 @@ spec = withApp $ do
                                        False
                                        Nothing
                                        False
+                                       True
       _ <- runDB $ insert $ Task "nothing"
                                  1
                                  High
@@ -206,6 +214,7 @@ spec = withApp $ do
                                  False
                                  Nothing
                                  False
+                                 True
       _ <- runDB $ insert $ Task "nothing2"
                                  1
                                  High
@@ -220,6 +229,7 @@ spec = withApp $ do
                                  False
                                  Nothing
                                  False
+                                 True
 
       get $ AddDependentsR testTask
       statusIs 200
@@ -291,6 +301,7 @@ spec = withApp $ do
             False
             Nothing
             True
+            False
 
   describe "Marking task done" $ do
     it "works for repeating task by days" $ do
@@ -315,6 +326,7 @@ spec = withApp $ do
         False
         Nothing
         False
+        True
 
       request $ do
         setMethod "POST"
