@@ -23,7 +23,7 @@ $if not $ null timedTasks
                     <td .taskManagement>
                         $if not $ taskPostponeTimeRepeat $ entityVal task
                             <a .manageIcon href=@{UnpostponeR $ entityKey task} title="Unpostpone task">
-                                <span class="glyphicon glyphicon-circle-arrow-down modIcon" aria-hidden="true">
+                                <span class="glyphicon glyphicon-circle-arrow-down" aria-hidden="true">
                         $if hasDeps
                             <a .manageIcon href=@{TodayDepsR $ entityKey task}>
                                 <span class="glyphicon glyphicon-th-list">

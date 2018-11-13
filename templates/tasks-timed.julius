@@ -35,7 +35,9 @@ function notifyOverdue() {
                 Date.parse((now.getMonth() + 1) + '/' + now.getDate() + '/'
                            + now.getFullYear() + ' ' + $(this).text()))
            ) {
-            var notification = new Notification("Time to start: " + $(this).parent().find(".tn").text());
+            var notification = new Notification(
+                "Time to start",
+                { body: $(this).text() + ": " + $(this).parent().find(".tn").text() });
             $(this).attr("notified", "True");
             $.post(
                 "@{UpdateNotifiedR}",
