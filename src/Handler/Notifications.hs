@@ -4,7 +4,7 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
-module Handler.UpdateNotified where
+module Handler.Notifications where
 
 import           Import
 import           Database.Persist.Sql
@@ -19,3 +19,9 @@ postUpdateNotifiedR = do
     Just (Just taskId) -> update (toSqlKey taskId) [TaskNotified =. True]
     _                  -> sendResponseStatus status400 ("bad" :: Text)
   returnJson [("result" :: Text, True)]
+
+getServiceWorkerR :: Handler ()
+getServiceWorkerR = do
+  app <- getYesod
+  let workerPath = unpack (fromMaybe "" (appRoot $ appSettings app)) </> "worker.js"
+  sendFile "text/javascript" workerPath

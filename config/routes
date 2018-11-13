@@ -31,3 +31,5 @@
 /update-notified UpdateNotifiedR POST
 
 /reset-time ResetDueTimeR GET
+
+/service-worker ServiceWorkerR GET
