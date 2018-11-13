@@ -16,7 +16,6 @@ postUpdateNotifiedR = do
   let mtaskId'' = fmap unpack mtaskId'
   let mtaskId = fmap (readMaybe :: String -> Maybe Int64) mtaskId''
   runDB $ case mtaskId of
-    Just (Just taskId) ->
-      update (toSqlKey taskId) [TaskNotified =. True]
-    _ -> sendResponseStatus status400 ("bad" :: Text)
+    Just (Just taskId) -> update (toSqlKey taskId) [TaskNotified =. True]
+    _                  -> sendResponseStatus status400 ("bad" :: Text)
   returnJson [("result" :: Text, True)]

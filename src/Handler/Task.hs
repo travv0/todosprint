@@ -207,7 +207,9 @@ getEditTaskR taskId = do
                                      else
                                        fixTaskPostponeTime user t
           , taskPostponeDay        = taskPostponeDay t2
-          , taskNotified           = if taskPostponeTime t /= taskPostponeTime t2 then False else taskNotified t2
+          , taskNotified = if taskPostponeTime t /= taskPostponeTime t2
+                             then False
+                             else taskNotified t2
           }
         Nothing -> runDB $ replace taskId t
       setMessage "Task updated"
@@ -280,6 +282,10 @@ postPostponeDateR taskId = do
 
 getUnpostponeR :: TaskId -> Handler ()
 getUnpostponeR taskId = do
-  runDB
-    $ update taskId [TaskPostponeDay =. Nothing, TaskPostponeTime =. Nothing, TaskNotified =. False]
+  runDB $ update
+    taskId
+    [ TaskPostponeDay =. Nothing
+    , TaskPostponeTime =. Nothing
+    , TaskNotified =. False
+    ]
   redirectUltDest HomeR
