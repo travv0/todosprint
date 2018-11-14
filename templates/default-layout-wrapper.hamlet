@@ -46,12 +46,21 @@ $newline never
     <script>
       document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
 
-    <script src="https://www.gstatic.com/firebasejs/5.5.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/5.5.8/firebase-messaging.js">
-    <script src="@{StaticR js_firebase_js}">
-
     <link rel="manifest" href="/static/manifest.json">
   <body>
+    Token:
+    <div #token>
+    <br>
+    Messages:
+    <div #messages>
+    <br>
+    token_div:
+    <div #token_div>
+    <br>
+    permission_div:
+    <div #permission_div>
+
+    <a href="#" onclick="sendMessage()">
     ^{pageBody pc}
 
     $maybe analytics <- appAnalytics $ appSettings master
@@ -65,3 +74,8 @@ $newline never
             ga('create', '#{analytics}', 'auto');
             ga('send', 'pageview');
         }
+
+
+    <script src="https://www.gstatic.com/firebasejs/5.5.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.5.8/firebase-messaging.js">
+    <script src="@{StaticR static_js_firebase_js}">

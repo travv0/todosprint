@@ -36,3 +36,7 @@ TaskDependency
     deleted Bool default=false
     TaskDepends taskId dependsOnTaskId
     deriving Show
+
+Messaging
+    userId UserId
+    token Text

@@ -23,5 +23,15 @@ postUpdateNotifiedR = do
 getServiceWorkerR :: Handler ()
 getServiceWorkerR = do
   app <- getYesod
-  let workerPath = unpack (fromMaybe "" (appRoot $ appSettings app)) </> "firebase-messaging-sw.js"
+  let workerPath = unpack (fromMaybe "" (appRoot $ appSettings app)) </> "static/js/firebase-messaging-sw.js"
   sendFile "text/javascript" workerPath
+
+postStoreTokenR :: Handler ()
+postStoreTokenR = do
+  mtoken <- lookupPostParam "token"
+  userId <- requireAuthId
+  case mtoken of
+    Just token -> do
+      _ <- runDB $ insert $ Messaging userId token
+      return ()
+    Nothing -> return ()

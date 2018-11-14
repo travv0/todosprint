@@ -12,6 +12,8 @@ firebase.initializeApp(config);
 const messaging = firebase.messaging();
 messaging.usePublicVapidKey('BDLA-h2wfNOktZcaIwU-2Ra07Lb1zcqtNSxBsXBA5wvFWDLeZQdqepVy997ipiNAACYWF4JFvE9F6e43zbVfRSQ');
 
+requestPermission();
+
 const tokenDivId = 'token_div';
 const permissionDivId = 'permission_div';
 
@@ -59,7 +61,7 @@ function showToken(currentToken) {
 function sendTokenToServer(currentToken) {
     if (!isTokenSentToServer()) {
         console.log('Sending token to server...');
-        // TODO(developer): Send the current token to your server.
+        $.post("store-token", { token: currentToken });
         setTokenSentToServer(true);
     } else {
         console.log('Token already sent to server so won\'t send it again ' +
@@ -88,12 +90,13 @@ function requestPermission() {
     console.log('Requesting permission...');
     messaging.requestPermission().then(function() {
         console.log('Notification permission granted.');
-        // TODO(developer): Retrieve an Instance ID token for use with FCM.
+        // TODO: Retrieve an Instance ID token for use with FCM.
         resetUI();
     }).catch(function(err) {
         console.log('Unable to get permission to notify.', err);
     });
 }
+
 function deleteToken() {
     messaging.getToken().then(function(currentToken) {
         messaging.deleteToken(currentToken).then(function() {

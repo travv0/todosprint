@@ -69,7 +69,7 @@ data MenuTypes
 -- This function also generates the following type synonyms:
 -- type Handler = HandlerT App IO
 -- type Widget = WidgetT App IO ()
-mkYesodData "App" $(parseRoutesFile "config/routes")
+mkYesodData "App" $(parseRoutesFileNoCheck "config/routes")
 
 -- | A convenient synonym for creating forms.
 type Form x = Html -> MForm (HandlerFor App) (FormResult x, Widget)
@@ -165,7 +165,7 @@ instance Yesod App
                    Just (userKey, _) -> rawJS $ show $ fromSqlKey userKey
     pc <-
       widgetToPageContent $ do
-        addStylesheet $ StaticR css_bootstrap_css
+        addStylesheet $ StaticR static_css_bootstrap_css
         $(widgetFile "update-tz")
         $(widgetFile "default-layout")
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
@@ -198,7 +198,7 @@ instance Yesod App
   isAuthorized ResetDueTimeR _ = isAuthenticated
   isAuthorized TimeZoneR _      = isAuthenticated
   isAuthorized UpdateNotifiedR _      = isAuthenticated
-  isAuthorized ServiceWorkerR _      = isAuthenticated
+  isAuthorized StoreTokenR _      = isAuthenticated
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
