@@ -8,8 +8,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             <a class="navbar-brand" href="@{LandingR}">
-              ToDoSprint
-
+              <img src="/static/todosprint.png">
         <div #navbar .collapse.navbar-collapse>
             <ul .nav.navbar-nav>
                 $forall MenuItem label route _ <- navbarLeftFilteredMenuItems
