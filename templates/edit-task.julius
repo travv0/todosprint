@@ -1,0 +1,21 @@
+$(function () {
+    let repeatDiv = $("div.form-group:contains(Repeat)");
+    let startTimeDiv = $("div.form-group:contains(Start Time)");
+    let dateBox = $("input[type=date]");
+    if (dateBox.val() === "") {
+        repeatDiv.addClass("hidden");
+        startTimeDiv.addClass("hidden");
+    }
+    dateBox.change(function () {
+        if ($(this).val() === "") {
+            repeatDiv.addClass("hidden");
+            startTimeDiv.addClass("hidden");
+            repeatDiv.find("input").val("");
+            startTimeDiv.find("input").val("");
+        }
+        else {
+            repeatDiv.removeClass("hidden");
+            startTimeDiv.removeClass("hidden");
+        }
+    });
+});
