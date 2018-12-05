@@ -95,3 +95,7 @@ label {
 h3 {
     margin-bottom: 45px;
 }
+
+.navbar-brand {
+    margin-top: -10px;
+}
