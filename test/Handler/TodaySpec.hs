@@ -308,8 +308,7 @@ spec = withApp $ do
         False
         Nothing
 
-      let sortableTasks = map
-            (\t -> (t, []))
+      let tasks =
             [ highPriority
             , highPriorityOverdue
             , highPriorityWayOverdue
@@ -331,19 +330,19 @@ spec = withApp $ do
             ]
 
       assertEq
-        "Not equal: "
-        (map (taskName . entityVal) (sortTasks sortableTasks))
+        "Are equal: "
+        (map (taskName . entityVal) (sortTasks today tasks))
         [ "highPriorityWayOverdue"
         , "highPriorityOverdue"
         , "highPriority"
         , "highPriorityNoDueDate"
         , "mediumPriorityWayOverdue"
         , "mediumPriorityOverdue"
+        , "lowPriorityWayOverdue"
         , "mediumPriority"
         , "mediumPriorityNoDueDateShort"
         , "mediumPriorityNoDueDate"
         , "mediumPriorityNoDueDateShortAddedLater"
-        , "lowPriorityWayOverdue"
         , "lowPriorityOverdue"
         , "lowPriority"
         , "lowPriorityNoDueDate"
