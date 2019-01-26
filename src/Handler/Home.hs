@@ -209,7 +209,13 @@ todaysTasksHandler title user mDueTime tasks mtaskId = do
             [whamlet|$if isJust mtaskId
                         <h3>#{title}|]
             $(widgetFile "work-message")
-            taskList reducedTasks Today estimatedToc
+            taskList
+              (sortBy (\(Entity _ t) (Entity _ t') ->
+                          weight today t `compare` weight today t'
+                          <> t `compare` t')
+                      reducedTasks)
+              Today
+              estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
       defaultLayout $ do
