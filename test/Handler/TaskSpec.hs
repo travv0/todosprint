@@ -8,7 +8,6 @@ where
 import           TestImport
 import           Priority
 import           Data.Time
-import           Common
 import           Data.Maybe                    as M
 
 spec :: Spec
@@ -40,8 +39,6 @@ spec = withApp $ do
       liftIO $ putStrLn $ pack $ show r
 
       [Entity _ task] <- runDB $ selectList ([] :: [Filter Task]) []
-
-      let userTz = userTimeZoneOrUtc (entityVal userEntity)
 
       assertEq "Task wasn't added correctly"
                (task { taskCreateTime = currTime })

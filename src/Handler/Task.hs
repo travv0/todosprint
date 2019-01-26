@@ -180,8 +180,8 @@ getEditTaskR taskId = do
   case res of
     FormSuccess t -> do
       case task of
-        Just t2 -> runDB $ replace taskId $ t
-          { taskPostponeDay = taskPostponeDay t2 }
+        Just t2 ->
+          runDB $ replace taskId $ t { taskPostponeDay = taskPostponeDay t2 }
         Nothing -> runDB $ replace taskId t
       setMessage "Task updated"
       redirectUltDest HomeR
@@ -215,9 +215,7 @@ postPostponeTodayR taskId = do
   ((res, _widget), _enctype) <- runFormPost postponeTodayForm
   case res of
     FormSuccess _ -> do
-      runDB $ update
-        taskId
-        [TaskPostponeDay =. Nothing]
+      runDB $ update taskId [TaskPostponeDay =. Nothing]
       redirectUltDest HomeR
     _ -> redirectUltDest HomeR
 
@@ -226,14 +224,11 @@ postPostponeDateR taskId = do
   ((res, _widget), _enctype) <- runFormPost postponeDateForm
   case res of
     FormSuccess day -> do
-      runDB $ update
-        taskId
-        [TaskPostponeDay =. Just (ppdDay day)]
+      runDB $ update taskId [TaskPostponeDay =. Just (ppdDay day)]
       redirectUltDest HomeR
     _ -> redirectUltDest HomeR
 
 getUnpostponeR :: TaskId -> Handler ()
 getUnpostponeR taskId = do
-  runDB
-    $ update taskId [TaskPostponeDay =. Nothing]
+  runDB $ update taskId [TaskPostponeDay =. Nothing]
   redirectUltDest HomeR
