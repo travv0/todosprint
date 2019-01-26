@@ -20,56 +20,22 @@ import qualified Data.Maybe                    as M
 import qualified Data.Text                     as T
 import           Common
 
-taskList :: [Entity Task] -> [Entity Task] -> Bool -> Bool -> Maybe TimeOfDay -> Widget
-taskList tasks postponedTasks todayPage detailed estimatedToc = do
+data Page = Today | Manage
+  deriving (Eq, Show)
+
+taskList :: [Entity Task] -> Page -> Maybe TimeOfDay -> Widget
+taskList tasks page estimatedToc = do
   (Entity userId user) <- requireAuth
-  let mUserTz = userTimeZone user
   let formattedEstimatedToc = maybe
         ""
         (formatTime defaultTimeLocale "Estimated Completion Time: %l:%M %p")
         estimatedToc
 
-  utcTime <- liftIO getCurrentTime
-  let today = localDay $ fromMaybe (utcToLocalTime utc utcTime) $ utcToUserTime
-        utcTime
-        user
   allTasks <- handlerToWidget $ runDB $ getTasks userId []
 
-  let userTz = fromMaybe utc $ userTimeZone user
   todaysTasks <- handlerToWidget $ todaysList $ Entity userId user
 
-  tasksDeps <- handlerToWidget $ mapM
-    (\t -> if M.isNothing (taskPostponeTime $ entityVal t)
-      then return False
-      else
-        case taskPostponeTime (entityVal t) of
-          Just ppt ->
-            let tad = taskAndDependencies t in
-            (<) 0
-              <$> (   L.length
-                  <$> (L.intersect <$> tad <*> do
-                          tad' <- L.delete t <$> tad
-                          let mins = minsDiff userTz ppt utcTime
-                          daysList today mins (tad' `L.intersect` todaysTasks)
-                      )
-                  )
-          Nothing -> return False
-    )
-    tasks
-  let tasksHasDeps = zip tasks tasksDeps
-
-  if todayPage
-     then do
-       let timedTasks = sortBy (\((Entity _ t1), _) ((Entity _ t2), _) ->
-                         taskPostponeTime t1 `compare` taskPostponeTime t2)
-                            $ filter (\((Entity _ t), _) ->
-                                        isJust $ taskPostponeTime t)
-                                     tasksHasDeps
-
-       $(widgetFile "tasks-timed")
-       $(widgetFile "tasks")
-     else
-       $(widgetFile "tasks")
+  $(widgetFile "tasks")
 
 getHomeR :: Handler Html
 getHomeR = do
@@ -90,7 +56,7 @@ getHomeR = do
   let tasks = js ++ ns
   defaultLayout $ do
     setTitle "Manage Tasks"
-    $(widgetFile "homepage")
+    $(widgetFile "manage")
 
 sortTasks' :: [(Entity Task, [Entity Task])] -> [G.SCC (Entity Task, [Entity Task])]
 sortTasks' tasksAndDeps = G.stronglyConnComp tasksDeps
@@ -149,57 +115,6 @@ dueTimeForm mdt =
     <$> areq timeField (bfs ("When would you like to work until?" :: Text)) mdt
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
-postponedTaskList :: UTCTime -> [Entity Task] -> Handler [Entity Task]
-postponedTaskList currUtcTime tasks = tasksAndDependents
-  $ filter postponed tasks
- where
-  postponed (Entity _ task) = case taskPostponeTime task of
-    Nothing     -> False
-    Just ppTime -> currUtcTime < ppTime
-
-tasksAndDependents :: [Entity Task] -> Handler [Entity Task]
-tasksAndDependents tasks = tasksAndDependents' tasks []
-
-tasksAndDependents' :: [Entity Task] -> [Entity Task] -> Handler [Entity Task]
-tasksAndDependents' []    postponedTasks = return postponedTasks
-tasksAndDependents' tasks postponedTasks = do
-  tad               <- taskAndDependents (L.head tasks)
-  newPostponedTasks <- tasksAndDependents' (L.tail tasks) tad
-  return $ postponedTasks ++ newPostponedTasks
-
-taskAndDependents :: Entity Task -> Handler [Entity Task]
-taskAndDependents task = do
-  dependents <- runDB $ selectList
-    [ TaskDependencyDependsOnTaskId ==. entityKey task
-    , TaskDependencyDeleted ==. False
-    ]
-    []
-  let tdIds = map (\(Entity _ td) -> taskDependencyTaskId td) dependents
-  dependentEntities <- runDB $ mapM
-    (\tdId -> selectList
-      [TaskId ==. tdId, TaskDeleted ==. False, TaskDone ==. False]
-      []
-    )
-    tdIds
-  more <- mapM taskAndDependents $ L.concat dependentEntities
-  return $ task : L.concat more
-
-taskAndDependencies :: Entity Task -> Handler [Entity Task]
-taskAndDependencies task = do
-  dependencies <- runDB $ selectList
-    [TaskDependencyTaskId ==. entityKey task, TaskDependencyDeleted ==. False]
-    []
-  let tdIds =
-        map (\(Entity _ td) -> taskDependencyDependsOnTaskId td) dependencies
-  dependencyEntities <- runDB $ mapM
-    (\tdId -> selectList
-      [TaskId ==. tdId, TaskDeleted ==. False, TaskDone ==. False]
-      []
-    )
-    tdIds
-  more <- mapM taskAndDependencies $ L.concat dependencyEntities
-  return $ L.nub $ task : L.concat more
-
 getResetDueTimeR :: Handler Html
 getResetDueTimeR = do
   (Entity userId _) <- requireAuth
@@ -246,7 +161,7 @@ getTodayR = do
         if shouldUpdateTime then user' { userDueTime = Nothing } else user'
 
   allTasks  <- runDB $ getTasks userId []
-  todaysTasksHandler "Today's Tasks" user (userDueTime user) allTasks Nothing True
+  todaysTasksHandler "Today's Tasks" user (userDueTime user) allTasks Nothing
 
 todaysList :: Entity User -> Handler [Entity Task]
 todaysList euser = do
@@ -266,8 +181,8 @@ todaysList euser = do
       daysList today mins allTasks
     Nothing -> return []
 
-todaysTasksHandler :: Text -> User -> Maybe UTCTime -> [Entity Task] -> Maybe TaskId -> Bool -> Handler Html
-todaysTasksHandler title user mDueTime tasks mtaskId todayPage = do
+todaysTasksHandler :: Text -> User -> Maybe UTCTime -> [Entity Task] -> Maybe TaskId -> Handler Html
+todaysTasksHandler title user mDueTime tasks mtaskId = do
   utcTime       <- liftIO getCurrentTime
 
   case mDueTime of
@@ -288,7 +203,6 @@ todaysTasksHandler title user mDueTime tasks mtaskId todayPage = do
             then Nothing
             else Just $ estimateTimeOfCompletion reducedTasks localTod
 
-      postponedTasks <- postponedTaskList utcTime reducedTasks
       if isJust mtaskId && null reducedTasks
         then redirect TodayR
         else
@@ -297,14 +211,14 @@ todaysTasksHandler title user mDueTime tasks mtaskId todayPage = do
             [whamlet|$if isJust mtaskId
                         <h3>#{title}|]
             $(widgetFile "work-message")
-            taskList reducedTasks postponedTasks todayPage False estimatedToc
+            taskList reducedTasks Today estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
       defaultLayout $ do
         if null tasks
            then do
              setTitle "Today's Tasks"
-             taskList [] [] todayPage False Nothing
+             taskList [] Today Nothing
            else do
              setTitle "Set Time"
              setTimeWidget widget enctype
@@ -315,12 +229,6 @@ estimateTimeOfCompletion tasks tod = TimeOfDay hours mins (todSec tod)
   taskMins = timeToComplete tasks
   mins     = (todMin tod + taskMins) `mod` 60
   hours    = (todHour tod + ((todMin tod + taskMins) `div` 60)) `mod` 24
-
-formatPostponeTime :: TimeZone -> Entity Task -> String
-formatPostponeTime userTz (Entity _ task) = case taskPostponeTime task of
-  Just time -> formatTime defaultTimeLocale "%l:%M %p" $ userTime time
-  Nothing   -> ""
-  where userTime = utcToLocalTime userTz
 
 setTimeWidget :: Widget -> Enctype -> Widget
 setTimeWidget widget enctype =
@@ -426,21 +334,7 @@ daysList day mins tasks = do
                     . dueByDay day
                     )
                     tasks
-  tasksAndDeps <- mapM taskAndDeps todaysTasks
-  return $ sortTasks tasksAndDeps
-  where taskAndDeps task = do
-              dependencies <- runDB $ selectList
-                [TaskDependencyTaskId ==. entityKey task, TaskDependencyDeleted ==. False]
-                []
-              let tdIds =
-                    map (\(Entity _ td) -> taskDependencyDependsOnTaskId td) dependencies
-              dependencyEntities <- runDB $ mapM
-                (\tdId -> selectList
-                  [TaskId ==. tdId, TaskDeleted ==. False, TaskDone ==. False]
-                  []
-                )
-                tdIds
-              return (task, L.concat dependencyEntities)
+  return todaysTasks
 
 postMarkDoneR :: TaskId -> Handler Html
 postMarkDoneR taskId = do
@@ -455,26 +349,7 @@ postMarkDoneR taskId = do
   _ <- runDB $ case task of
     Just t -> case incrementDueDate cdate t of
       Just t2 -> do
-        newTaskId <- insert
-          $ t2 { taskPostponeDay = Nothing,
-                 taskPostponeTime = if taskPostponeTimeRepeat t
-                                    then fixTaskPostponeTime user t2
-                                    else Nothing
-               }
-        deps <- selectList [TaskDependencyTaskId ==. taskId] []
-        depd <- selectList [TaskDependencyDependsOnTaskId ==. taskId] []
-        _ <- mapM
-          (\(Entity _ dep) -> insert $ TaskDependency
-            newTaskId
-            (taskDependencyDependsOnTaskId dep)
-            False
-          )
-          deps
-        mapM
-          (\(Entity _ dep) ->
-            insert $ TaskDependency (taskDependencyTaskId dep) newTaskId False
-          )
-          depd
+        insert $ t2 { taskPostponeDay = Nothing }
       Nothing -> redirectUltDest HomeR
     Nothing -> redirectUltDest HomeR
   redirectUltDest HomeR
@@ -514,30 +389,6 @@ incrementDueDate cdate task = case taskDueDate task of
       Just task { taskDueDate = Just (addGregorianYearsClip ivl dd) }
     Nothing -> Nothing
   Nothing -> Nothing
-
-getTodayDepsR :: TaskId -> Handler Html
-getTodayDepsR taskId = do
-  setUltDestCurrent
-
-  (Entity userId user) <- requireAuth
-  mTask                <- runDB $ getEntity taskId
-
-  case mTask of
-    Just task -> do
-      todaysTasks <- todaysList $ Entity userId user
-
-      tasks' <- taskAndDependencies task
-      let tasks'' = L.delete task tasks'
-
-      todaysTasksHandler ("\""
-                          ++ taskName (entityVal task)
-                          ++ "\" Dependencies")
-              user
-              (taskPostponeTime $ entityVal task)
-              (tasks'' `L.intersect` todaysTasks)
-              (Just $ entityKey task)
-              False
-    Nothing -> redirect TodayR
 
 getTasks :: (PersistQueryRead backend, MonadIO m, BaseBackend backend ~ SqlBackend) =>
             Key User -> [SelectOpt Task] -> ReaderT backend m [Entity Task]

@@ -42,7 +42,6 @@ import System.Environment
 import Handler.Home
 import Handler.Common
 import Handler.Task
-import Handler.AddDeps
 import Handler.TimeZone
 import Handler.Landing
 
