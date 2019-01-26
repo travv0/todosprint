@@ -155,7 +155,7 @@ postponeDateForm =
 
 getNewTaskR :: Handler Html
 getNewTaskR = do
-  Entity userId user       <- requireAuth
+  Entity userId _user      <- requireAuth
   currTime                 <- liftIO getCurrentTime
   ((res, widget), enctype) <- runFormPost $ taskForm userId currTime Nothing
   case res of
@@ -173,7 +173,7 @@ postNewTaskR = getNewTaskR
 
 getEditTaskR :: TaskId -> Handler Html
 getEditTaskR taskId = do
-  Entity userId user       <- requireAuth
+  Entity userId _user      <- requireAuth
   task                     <- runDB $ get taskId
   currTime                 <- liftIO getCurrentTime
   ((res, widget), enctype) <- runFormPost $ taskForm userId currTime $ task
@@ -201,9 +201,8 @@ getDeleteTaskR taskId = do
 
 getPostponeTaskR :: TaskId -> Handler Html
 getPostponeTaskR taskId = do
-  (todayWidget, todayEnctype) <- generateFormPost postponeTodayForm
-  (dateWidget , dateEnctype ) <- generateFormPost postponeDateForm
-  mTask                       <- runDB $ get taskId
+  (dateWidget, dateEnctype) <- generateFormPost postponeDateForm
+  mTask                     <- runDB $ get taskId
   case mTask of
     Just task -> defaultLayout $ do
       setTitle $ toHtml $ "Postpone \"" ++ taskName task ++ "\""
@@ -213,15 +212,9 @@ getPostponeTaskR taskId = do
 
 postPostponeTodayR :: TaskId -> Handler ()
 postPostponeTodayR taskId = do
-  (Entity _ user)            <- requireAuth
   ((res, _widget), _enctype) <- runFormPost postponeTodayForm
   case res of
-    FormSuccess t -> do
-      let ppTime = pptTime t
-      currUtcTime <- liftIO getCurrentTime
-      let tz = fromMaybe utc $ minutesToTimeZone <$> userDueTimeOffset user
-      let (dayAdj, utcTime) = localToUTCTimeOfDay tz ppTime
-      let userTime = utcToLocalTime tz currUtcTime
+    FormSuccess _ -> do
       runDB $ update
         taskId
         [TaskPostponeDay =. Nothing]

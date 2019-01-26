@@ -25,15 +25,13 @@ data Page = Today | Manage
 
 taskList :: [Entity Task] -> Page -> Maybe TimeOfDay -> Widget
 taskList tasks page estimatedToc = do
-  (Entity userId user) <- requireAuth
+  (Entity userId _) <- requireAuth
   let formattedEstimatedToc = maybe
         ""
         (formatTime defaultTimeLocale "Estimated Completion Time: %l:%M %p")
         estimatedToc
 
   allTasks <- handlerToWidget $ runDB $ getTasks userId []
-
-  todaysTasks <- handlerToWidget $ todaysList $ Entity userId user
 
   $(widgetFile "tasks")
 
