@@ -17,7 +17,6 @@ Task
     duration Int
     priority Priority
     dueDate Day Maybe
-    postponeTime UTCTime Maybe
     repeat RepeatInterval Maybe
     done Bool
     userId UserId
@@ -26,12 +25,4 @@ Task
     doneTime UTCTime Maybe
     deleted Bool default=false
     deleteTime UTCTime Maybe
-    postponeTimeRepeat Bool default=false
     deriving Show Eq
-
-TaskDependency
-    taskId TaskId
-    dependsOnTaskId TaskId
-    deleted Bool default=false
-    TaskDepends taskId dependsOnTaskId
-    deriving Show

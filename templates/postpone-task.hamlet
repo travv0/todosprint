@@ -1,7 +1,2 @@
-<form .form-horizontal method=post action=@{PostponeTodayR taskId} enctype=#{todayEnctype}>
-    ^{todayWidget}
-
-<hr>
-
 <form .form-horizontal method=post action=@{PostponeDateR taskId} enctype=#{dateEnctype}>
     ^{dateWidget}

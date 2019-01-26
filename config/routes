@@ -11,19 +11,14 @@
 
 /today TodayR GET POST
 /manage/ HomeR GET
-/deps/#TaskId TodayDepsR GET
 
 /new-task NewTaskR GET POST
 /edit-task/#TaskId EditTaskR GET POST
 /delete-task/#TaskId DeleteTaskR GET
 
 /postpone-task/#TaskId PostponeTaskR GET
-/postpone-today/#TaskId PostponeTodayR POST
 /postpone-date/#TaskId PostponeDateR POST
 /unpostpone/#TaskId UnpostponeR GET
-
-/add-deps/#TaskId AddDepsR GET POST
-/add-dependents/#TaskId AddDependentsR GET POST
 
 /mark-done/#TaskId MarkDoneR POST
 

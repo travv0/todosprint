@@ -117,15 +117,6 @@ taskForm userId currUtcTime mtask =
     <*> aopt (jqueryDayField def { jdsChangeYear = True })
              (bfs ("Due Date" :: Text))
              (taskDueDate <$> mtask)
-    <*> aopt
-          startTimeField
-          (bfs ("Start Time" :: Text))
-          (case mtask of
-            Just task -> if taskPostponeTimeRepeat task
-              then Just (taskPostponeTime task)
-              else Nothing
-            Nothing -> Nothing
-          )
     <*> aopt repeatIntervalField (bfs ("Repeat" :: Text)) (taskRepeat <$> mtask)
     <*> pure False
     <*> pure userId
@@ -134,7 +125,6 @@ taskForm userId currUtcTime mtask =
     <*> pure Nothing
     <*> pure False
     <*> pure Nothing
-    <*> pure True
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 data PostponeTodayInfo = PostponeTodayInfo
@@ -171,11 +161,6 @@ getNewTaskR = do
   case res of
     FormSuccess t -> do
       _ <- runDB $ insert t
-        { taskPostponeTimeRepeat = if isJust (taskPostponeTime t)
-                                     then True
-                                     else False
-        , taskPostponeTime       = fixTaskPostponeTime user t
-        }
       setMessage "Task created"
       redirect NewTaskR
     _ -> do
@@ -194,19 +179,9 @@ getEditTaskR taskId = do
   ((res, widget), enctype) <- runFormPost $ taskForm userId currTime $ task
   case res of
     FormSuccess t -> do
-      let repeatTime = if isJust (taskPostponeTime t) then True else False
       case task of
         Just t2 -> runDB $ replace taskId $ t
-          { taskPostponeTimeRepeat = repeatTime
-          , taskPostponeTime       = if not repeatTime
-                                        && isJust (taskPostponeTime t2)
-                                        && not (taskPostponeTimeRepeat t2)
-                                     then
-                                       taskPostponeTime t2
-                                     else
-                                       fixTaskPostponeTime user t
-          , taskPostponeDay        = taskPostponeDay t2
-          }
+          { taskPostponeDay = taskPostponeDay t2 }
         Nothing -> runDB $ replace taskId t
       setMessage "Task updated"
       redirectUltDest HomeR
@@ -221,11 +196,6 @@ getDeleteTaskR :: TaskId -> Handler ()
 getDeleteTaskR taskId = do
   setUltDestReferer
   currTime <- liftIO getCurrentTime
-  runDB $ updateWhere
-    (   [TaskDependencyTaskId ==. taskId]
-    ||. [TaskDependencyDependsOnTaskId ==. taskId]
-    )
-    [TaskDependencyDeleted =. True]
   runDB $ update taskId [TaskDeleted =. True, TaskDeleteTime =. Just currTime]
   redirectUltDest HomeR
 
@@ -254,13 +224,7 @@ postPostponeTodayR taskId = do
       let userTime = utcToLocalTime tz currUtcTime
       runDB $ update
         taskId
-        [ TaskPostponeTime
-          =. Just
-               (UTCTime (addDays dayAdj (localDay userTime))
-                        (timeOfDayToTime utcTime)
-               )
-        , TaskPostponeDay =. Nothing
-        ]
+        [TaskPostponeDay =. Nothing]
       redirectUltDest HomeR
     _ -> redirectUltDest HomeR
 
@@ -271,12 +235,12 @@ postPostponeDateR taskId = do
     FormSuccess day -> do
       runDB $ update
         taskId
-        [TaskPostponeDay =. Just (ppdDay day), TaskPostponeTime =. Nothing]
+        [TaskPostponeDay =. Just (ppdDay day)]
       redirectUltDest HomeR
     _ -> redirectUltDest HomeR
 
 getUnpostponeR :: TaskId -> Handler ()
 getUnpostponeR taskId = do
   runDB
-    $ update taskId [TaskPostponeDay =. Nothing, TaskPostponeTime =. Nothing]
+    $ update taskId [TaskPostponeDay =. Nothing]
   redirectUltDest HomeR
