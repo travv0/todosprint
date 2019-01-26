@@ -38,7 +38,6 @@ instance Ord Task where
     taskRepeat task1 `compare` taskRepeat task2 <>
     taskDone task1 `compare` taskDone task2 <>
     taskUserId task1 `compare` taskUserId task2 <>
-    taskPostponeTime task1 `compare` taskPostponeTime task2 <>
     taskPostponeDay task1 `compare` taskPostponeDay task2 <>
     taskDoneTime task1 `compare` taskDoneTime task2 <>
     taskDeleted task1 `compare` taskDeleted task2 <>
