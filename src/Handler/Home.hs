@@ -211,7 +211,7 @@ todaysTasksHandler title user mDueTime tasks mtaskId = do
             $(widgetFile "work-message")
             taskList
               (sortBy (\(Entity _ t) (Entity _ t') ->
-                          weight today t `compare` weight today t'
+                          weight today t' `compare` weight today t
                           <> t `compare` t')
                       reducedTasks)
               Today

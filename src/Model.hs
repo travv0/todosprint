@@ -26,19 +26,19 @@ share
 -- reversed so it works right with topsort
 instance Ord Task where
   task1 `compare` task2 =
-    taskPriority task1 `compare` taskPriority task2 <>
+    taskPriority task2 `compare` taskPriority task1 <>
     case (taskDueDate task1, taskDueDate task2) of
       (Nothing, Nothing) -> EQ
       (Just _, Nothing) -> GT
       (Nothing, Just _) -> LT
-      (Just dd1, Just dd2) -> dd2 `compare` dd1
-    <> taskCreateTime task2 `compare` taskCreateTime task1 <>
-    taskDuration task2 `compare` taskDuration task1 <>
-    taskName task1 `compare` taskName task2 <>
-    taskRepeat task1 `compare` taskRepeat task2 <>
-    taskDone task1 `compare` taskDone task2 <>
-    taskUserId task1 `compare` taskUserId task2 <>
-    taskPostponeDay task1 `compare` taskPostponeDay task2 <>
-    taskDoneTime task1 `compare` taskDoneTime task2 <>
-    taskDeleted task1 `compare` taskDeleted task2 <>
-    taskDeleteTime task1 `compare` taskDeleteTime task2
+      (Just dd1, Just dd2) -> dd1 `compare` dd2
+    <> taskCreateTime task1 `compare` taskCreateTime task2 <>
+    taskDuration task1 `compare` taskDuration task2 <>
+    taskName task2 `compare` taskName task1 <>
+    taskRepeat task2 `compare` taskRepeat task1 <>
+    taskDone task2 `compare` taskDone task1 <>
+    taskUserId task2 `compare` taskUserId task1 <>
+    taskPostponeDay task2 `compare` taskPostponeDay task1 <>
+    taskDoneTime task2 `compare` taskDoneTime task1 <>
+    taskDeleted task2 `compare` taskDeleted task1 <>
+    taskDeleteTime task2 `compare` taskDeleteTime task1
