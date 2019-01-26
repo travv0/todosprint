@@ -48,7 +48,6 @@ spec = withApp $ do
                                          None
                                          Nothing
                                          Nothing
-                                         Nothing
                                          False
                                          (entityKey userEntity)
                                          Nothing
@@ -56,7 +55,6 @@ spec = withApp $ do
                                          Nothing
                                          False
                                          Nothing
-                                         False
 
       get HomeR
       statusIs 200
