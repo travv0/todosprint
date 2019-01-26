@@ -29,8 +29,8 @@ instance Ord Task where
     taskPriority task2 `compare` taskPriority task1 <>
     case (taskDueDate task1, taskDueDate task2) of
       (Nothing, Nothing) -> EQ
-      (Just _, Nothing) -> GT
-      (Nothing, Just _) -> LT
+      (Just _, Nothing) -> LT
+      (Nothing, Just _) -> GT
       (Just dd1, Just dd2) -> dd1 `compare` dd2
     <> taskCreateTime task1 `compare` taskCreateTime task2 <>
     taskDuration task1 `compare` taskDuration task2 <>

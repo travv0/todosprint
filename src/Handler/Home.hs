@@ -9,7 +9,6 @@ module Handler.Home where
 
 import           Database.Persist.Sql
 import           Import
-import qualified Data.Graph                    as G
 import           Priority
 import           Data.Time
 import           Data.Time.Calendar.WeekDate
@@ -56,21 +55,12 @@ getHomeR = do
     setTitle "Manage Tasks"
     $(widgetFile "manage")
 
-sortTasks' :: [(Entity Task, [Entity Task])] -> [G.SCC (Entity Task, [Entity Task])]
-sortTasks' tasksAndDeps = G.stronglyConnComp tasksDeps
- where
-  tasksDeps = map
-    (\(etask@(Entity _ task), deps) ->
-      ( (etask, deps)
-      , task
-      , map (\(Entity _ dep) -> dep) deps
-      )
-    )
-    tasksAndDeps
-
-sortTasks :: [(Entity Task, [Entity Task])] -> [Entity Task]
-sortTasks tasksAndDeps =
-  map fst $ concatMap G.flattenSCC $ sortTasks' tasksAndDeps
+sortTasks :: Day -> [Entity Task] -> [Entity Task]
+sortTasks today tasks = sortBy
+  (\(Entity _ t) (Entity _ t') ->
+      weight today t' `compare` weight today t
+      <> t `compare` t')
+  tasks
 
 highWeight :: Integer
 highWeight = 99999
@@ -210,10 +200,7 @@ todaysTasksHandler title user mDueTime tasks mtaskId = do
                         <h3>#{title}|]
             $(widgetFile "work-message")
             taskList
-              (sortBy (\(Entity _ t) (Entity _ t') ->
-                          weight today t' `compare` weight today t
-                          <> t `compare` t')
-                      reducedTasks)
+              (sortTasks today reducedTasks)
               Today
               estimatedToc
     Nothing -> do
