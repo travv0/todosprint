@@ -1,6 +1,6 @@
 <div .workMsgDiv>
   <span .workMsg>
-    $if null tasks
+    $if null reducedTasks
       You worked until #{formatTime defaultTimeLocale "%l:%M %p" $ snd localDt}
     $else
       You're working until #{formatTime defaultTimeLocale "%l:%M %p" $ snd localDt}
