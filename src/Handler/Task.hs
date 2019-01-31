@@ -70,7 +70,7 @@ repeatIntervalField = Field
 
 startTimeField :: Field Handler UTCTime
 startTimeField = Field
-  { fieldParse   = \rawVals _ -> do
+  { fieldParse   = \rawVals _ ->
     case rawVals of
       []   -> return $ Right Nothing
       [""] -> return $ Right Nothing
@@ -97,7 +97,7 @@ startTimeField = Field
       let userTime      = localTimeOfDay $ utcToLocalTime userTz startTime
       let formattedTime = formatTime defaultTimeLocale "%R" userTime
       [whamlet|<input type="time" id=#{idAttr} name=#{nameAttr} *{otherAttrs} :isReq:required value="#{formattedTime}">|]
-    Left _ -> do
+    Left _ ->
       [whamlet|<input type="time" id=#{idAttr} name=#{nameAttr} *{otherAttrs} :isReq:required>|]
   , fieldEnctype = UrlEncoded
   }
@@ -127,11 +127,11 @@ taskForm userId currUtcTime mtask =
     <*> pure Nothing
     <*  bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
-data PostponeTodayInfo = PostponeTodayInfo
+newtype PostponeTodayInfo = PostponeTodayInfo
   { pptTime :: TimeOfDay }
   deriving Show
 
-data PostponeDateInfo = PostponeDateInfo
+newtype PostponeDateInfo = PostponeDateInfo
   { ppdDay :: Day }
   deriving Show
 
@@ -163,7 +163,7 @@ getNewTaskR = do
       _ <- runDB $ insert t
       setMessage "Task created"
       redirect NewTaskR
-    _ -> do
+    _ ->
       defaultLayout $ do
         setTitle "New Task"
         $(widgetFile "new-task")
@@ -176,7 +176,7 @@ getEditTaskR taskId = do
   Entity userId _user      <- requireAuth
   task                     <- runDB $ get taskId
   currTime                 <- liftIO getCurrentTime
-  ((res, widget), enctype) <- runFormPost $ taskForm userId currTime $ task
+  ((res, widget), enctype) <- runFormPost $ taskForm userId currTime task
   case res of
     FormSuccess t -> do
       case task of
@@ -209,15 +209,6 @@ getPostponeTaskR taskId = do
       [whamlet|<h3>Postpone "#{taskName task}"|]
       $(widgetFile "postpone-task")
     Nothing -> redirectUltDest TodayR
-
-postPostponeTodayR :: TaskId -> Handler ()
-postPostponeTodayR taskId = do
-  ((res, _widget), _enctype) <- runFormPost postponeTodayForm
-  case res of
-    FormSuccess _ -> do
-      runDB $ update taskId [TaskPostponeDay =. Nothing]
-      redirectUltDest HomeR
-    _ -> redirectUltDest HomeR
 
 postPostponeDateR :: TaskId -> Handler ()
 postPostponeDateR taskId = do

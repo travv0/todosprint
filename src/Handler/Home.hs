@@ -205,7 +205,7 @@ todaysTasksHandler title user mDueTime tasks mtaskId = do
               estimatedToc
     Nothing -> do
       (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
-      defaultLayout $ do
+      defaultLayout $
         if null tasks
            then do
              setTitle "Today's Tasks"
@@ -256,11 +256,11 @@ postTodayR = do
 dueByDay :: Day -> [Entity Task] -> [Entity Task]
 dueByDay day = filter (dueByOrBeforeDay day)
  where
-  dueByOrBeforeDay d (Entity _ t) = case taskDueDate t of
-    Just dd -> case taskPostponeDay t of
-      Just ppd -> dd <= d && ppd <= d
-      Nothing  -> dd <= d
-    Nothing -> True
+  dueByOrBeforeDay d (Entity _ t) = case taskPostponeDay t of
+    Just ppd -> ppd <= d
+    Nothing -> case taskDueDate t of
+      Just dd -> dd <= d
+      Nothing  -> True
 
 utcToday :: IO Day
 utcToday = utctDay <$> getCurrentTime
