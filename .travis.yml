@@ -25,7 +25,7 @@ script:
 after_script:
 - travis_retry curl -L https://github.com/rubik/stack-hpc-coveralls/releases/download/v0.0.4.0/shc-linux-x64-8.0.1.tar.bz2
   | tar -xj
-- ./shc scheduler scheduler-test
+- "./shc scheduler scheduler-test"
 cache:
   timeout: 2000
   directories:
@@ -37,7 +37,7 @@ cache:
 deploy:
   provider: heroku
   api_key:
-    secure: gDkieIJ5unQmfVoFxRfdCElPwg05iNxn5jA3eCn6f+i5Y02c9OYZyfz6pyX0S8tiqVzClNDWfs3JvcpTrYIIh/EfWfwAHWMsYebD8OLhzni2WKyaCBSzFUnCi9CLiF5fiVwJ3emBqpWQUROiXfNsz/x+jDr+9NqdzKImb5GF6C2boct4UZH58q9HoK1g8K7/OyJCz8yMkpawruXIXTBppFSU/F191I2HPthmJURQgzyiOZjjbtZP36Vt01xWexv2k6cnSSzghiPqpwVfRDm9dVLnJ2AJp17fyTC9JIAlm4PrqqPiTno5+JKgkzAoG/DeI+4Vh3rU8Q90q/KLzyxPLtMBAYPqRROKCIGAGtlivqOWvzuoAetQu+gYSsPBFoEU4JRMCR4jcZWO5h0Jrp/WRoivfVEdFA5hZObTtUCHmIOi65cV+PoPuJ8VllsXe+qcg+ezkYkmxbiyivQcGTuMr6QefIbarG6zbJXmwipw6+AY4gUOJnYyJhODwyjX6C6gtGTXM0BqGr74hjiM5FSeyT93YWGj7TiVbGkX3mZyJy3WmirsMaBoYz9Kl42dM6Ath98BMTwF+WPpTspMGR4dJBlQSsk3TIgqAWKhkJ7MzcWsygL6dfGGuUIRNSQNOiVtSpFkUPjJ8Z+AqARujX1vL3IFM7tTSTInLhV7KzavF38=
+    secure: Zm9GeJ8Z9Ql3/yiLKbzkGFlXZqnrvLkuoezGfLMVLBDUDRLRuCGl+JYPFYTotqrFT+e8fgwmrMC9Xeu8r0O7uqeanRWPGnoKAGAT3YIiY5Of4xgamgT8Qr0AREXT2AdtXQuvv7bhBqhQxH9Cx4moaA2PtYPrI/K4xZOBpt8EimJL0oQieAjRpnsJnUsYA9LDagScrEEVqZ27z2XNPfoklnuVv+aj1cbiJ628jkt9oDuzMdq2JHpPeYMd8gH5S+xHYHdwzHqCFD0tzvgklRgouDW8qmGQktrKzawfRnhi8scTcnXo9FX4ZUNhSLIlteyElpz4wCnY1QHFY+D7C+W6FiWZj/b0OQJ1j5IrV4J7xqbzD+NZ0uGw4tLj0nWlcjIOGulIOT+n7lMR0e5ee/KfnYxtBVcLUjBzJClFV4e/4NglVj7GhcNj/KvAaaKgEmmogGOBkFNcOM8Pw07C3EZVOnb+8tV1PmN/CYx5M0+Ob5LE/8XvXQ+zkNXTrwEiTWYzBMx7xaAIsppqstyOga4HodNBah+k8aePKEBaul9+HoyxyIDnUcLmIhdNMuvOnsx+zwA+AbqAb+A7WW6YPlFx1huEeNZ/l81F1jKwd/HfEVIYhjpscNtrW8/8+m3TZ0o+ub/Z8gr3q1IYGD7LHivpqI7ksQxlu3zeuyIsXKbjTk4=
   app: todosprint
   on:
     repo: tssund93/todosprint
