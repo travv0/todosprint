@@ -340,7 +340,7 @@ postMarkDoneR taskId = do
   _ <- runDB $ case task of
     Just t -> case incrementDueDate cdate t of
       Just t2 -> do
-        insert $ t2 { taskPostponeDay = Nothing }
+        insert $ t2 { taskPostponeDay = Nothing, taskCreateTime = utcTime }
       Nothing -> redirectUltDest HomeR
     Nothing -> redirectUltDest HomeR
   redirectUltDest HomeR

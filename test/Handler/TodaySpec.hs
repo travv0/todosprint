@@ -15,7 +15,7 @@ spec :: Spec
 spec = withApp $ do
   describe "Today page" $ do
     it "isn't detailed task list" $ do
-      currTime <- liftIO getCurrentTime
+      currTime   <- liftIO getCurrentTime
 
       userEntity <- createUser "foo@gmail.com"
       runDB $ update (entityKey userEntity)
@@ -23,19 +23,18 @@ spec = withApp $ do
 
       authenticateAs userEntity
 
-      _ <- runDB $ insert $ Task
-        "Test"
-        1
-        High
-        Nothing
-        Nothing
-        False
-        (entityKey userEntity)
-        Nothing
-        currTime
-        Nothing
-        False
-        Nothing
+      _ <- runDB $ insert $ Task "Test"
+                                 1
+                                 High
+                                 Nothing
+                                 Nothing
+                                 False
+                                 (entityKey userEntity)
+                                 Nothing
+                                 currTime
+                                 Nothing
+                                 False
+                                 Nothing
       _ <- runDB $ insert $ Task "Test"
                                  1
                                  High
@@ -67,8 +66,9 @@ spec = withApp $ do
       htmlAnyContain "p" "You don&#39;t have any tasks"
 
     it "sorts correctly" $ do
-      currTime      <- liftIO getCurrentTime
-      currTimeLater <- liftIO getCurrentTime
+      currTimeEarlier <- liftIO getCurrentTime
+      currTime        <- liftIO getCurrentTime
+      currTimeLater   <- liftIO getCurrentTime
       let today = utctDay currTime
 
       userEntity <- createUser "foo@gmail.com"
@@ -89,6 +89,19 @@ spec = withApp $ do
                                                   Nothing
                                                   False
                                                   Nothing
+      highPriorityCompletedEarlier <- runDB $ insertEntity $ Task
+        "highPriorityCompletedEarlier"
+        30
+        High
+        (Just today)
+        Nothing
+        False
+        (entityKey userEntity)
+        Nothing
+        currTimeEarlier
+        Nothing
+        False
+        Nothing
       highPriorityOverdue <- runDB $ insertEntity $ Task
         "highPriorityOverdue"
         30
@@ -310,6 +323,7 @@ spec = withApp $ do
 
       let tasks =
             [ highPriority
+            , highPriorityCompletedEarlier
             , highPriorityOverdue
             , highPriorityWayOverdue
             , mediumPriority
@@ -334,6 +348,7 @@ spec = withApp $ do
         (map (taskName . entityVal) (sortTasks today tasks))
         [ "highPriorityWayOverdue"
         , "highPriorityOverdue"
+        , "highPriorityCompletedEarlier"
         , "highPriority"
         , "highPriorityNoDueDate"
         , "mediumPriorityWayOverdue"
