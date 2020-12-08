@@ -1,6 +1,6 @@
 # scheduler-web
-[![Build Status](https://travis-ci.com/tssund93/todosprint.svg?branch=master)](https://travis-ci.com/tssund93/todosprint)
-[![Coverage Status](https://coveralls.io/repos/github/tssund93/todosprint/badge.svg?branch=master)](https://coveralls.io/github/tssund93/todosprint)
+[![Build Status](https://travis-ci.com/travv0/todosprint.svg?branch=master)](https://travis-ci.com/travv0/todosprint)
+[![Coverage Status](https://coveralls.io/repos/github/travv0/todosprint/badge.svg?branch=master)](https://coveralls.io/github/travv0/todosprint)
 
 ## Haskell Setup
 

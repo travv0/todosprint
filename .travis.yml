@@ -40,4 +40,4 @@ deploy:
     secure: Zm9GeJ8Z9Ql3/yiLKbzkGFlXZqnrvLkuoezGfLMVLBDUDRLRuCGl+JYPFYTotqrFT+e8fgwmrMC9Xeu8r0O7uqeanRWPGnoKAGAT3YIiY5Of4xgamgT8Qr0AREXT2AdtXQuvv7bhBqhQxH9Cx4moaA2PtYPrI/K4xZOBpt8EimJL0oQieAjRpnsJnUsYA9LDagScrEEVqZ27z2XNPfoklnuVv+aj1cbiJ628jkt9oDuzMdq2JHpPeYMd8gH5S+xHYHdwzHqCFD0tzvgklRgouDW8qmGQktrKzawfRnhi8scTcnXo9FX4ZUNhSLIlteyElpz4wCnY1QHFY+D7C+W6FiWZj/b0OQJ1j5IrV4J7xqbzD+NZ0uGw4tLj0nWlcjIOGulIOT+n7lMR0e5ee/KfnYxtBVcLUjBzJClFV4e/4NglVj7GhcNj/KvAaaKgEmmogGOBkFNcOM8Pw07C3EZVOnb+8tV1PmN/CYx5M0+Ob5LE/8XvXQ+zkNXTrwEiTWYzBMx7xaAIsppqstyOga4HodNBah+k8aePKEBaul9+HoyxyIDnUcLmIhdNMuvOnsx+zwA+AbqAb+A7WW6YPlFx1huEeNZ/l81F1jKwd/HfEVIYhjpscNtrW8/8+m3TZ0o+ub/Z8gr3q1IYGD7LHivpqI7ksQxlu3zeuyIsXKbjTk4=
   app: todosprint
   on:
-    repo: tssund93/todosprint
+    repo: travv0/todosprint
