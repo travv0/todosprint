@@ -20,8 +20,8 @@ before_script:
 script:
 - stack setup --no-terminal
 - stack update --no-terminal
-- stack build -j2 --fast --no-terminal
-- stack test --coverage --fast --no-terminal
+- stack build -j2 --fast --no-terminal --ghc-options '-Werror'
+- stack test --coverage --fast --no-terminal --ghc-options '-Werror'
 after_script:
 - travis_retry curl -L https://github.com/rubik/stack-hpc-coveralls/releases/download/v0.0.4.0/shc-linux-x64-8.0.1.tar.bz2
   | tar -xj
@@ -37,7 +37,7 @@ cache:
 deploy:
   provider: heroku
   api_key:
-    secure: kcUtCdA6oVSH07hY/NDakLDhwwcpiBmHnzP10sH8+3RsdyFCI+9rI8kum8iobzeww/uyXbvyw2XQoTCy18fEVcmsLLYL6d6DOKzDwr1Kpe5VvscDsbMMGuq/V+ESIV1Q3cBTIcCWO51vTdnGVPtZP5CckYwGUONVItM578efekg3AtoAAkaULHFrFayibL/HFAg9Vu1m/LlXgdeyi4ogXumik6y7H++4tseNSNFbFvWdQj265S5qlGisaxsx4FhyF5m49c+Ch0bfwG2TiYZVBad+Brz8ceyrrfaT5urS1r6RVEqF9JXQGCTy/7rR1/P8h4C4Ef9eeEsm2SiqODwX3Cq1qljLsWkv8U8FwLTfiKUM9jIQq4GhWADpihgw2fbhYyZRzNPwLLLjXmfH7HoFzZ0l8w6NPOPeA1M2AXjydCbzabOXJKfRCOTuwLxikSefZjzo1mmYZIr0JoRVOGrT7CT3f3L4kpRM6gidx2rCuolROqxGWlIgymzGpcVXZw39tCBhlQ48qFIkUZiatl3VtdjYjrei6q/ZKCO/B2qT6ZYEvnKRIPZIINx8F+oh0g70vsXtJNZWOQKfi1NXtqxu2X08VuPUxL9aSXjRtVPFBiPdOyIKHNb9lvAK4xqOmojTyI1GoSz5T2kCq+u+6uLiBMMuPw5S2qRDFLVVEFgKgYo=
+    secure: 1In+e6iQ/qiiMTzVGRlDIZVTpmZ6s/6oV5Pzhaj02OpjnpprEr3NzkvmwrmjuyMY+3wOghOIitn1uAc4g1mGmQoPU3xLatP9q7SkIo0YQPJbWMFI3fsuHPkrzvga91vlM9Y62JnD2zzumX+EsBVLjIEbMX3EPkp1akhnZQ0BI7iXUvUGOWUGerzEYkjggTGcO1WJoLHUI+FzJGNcFvxJp3bpnejLLmNYzF1HXH7oZWOjtxksV4nbqqRhErLxINArtfrTg7EdIM4TE63I6kEuQJGGwIsD02P2esu51MW9d3fayf+HWlDfDMAhJ0N7xe6Dr3amZIiyk7B7X5XeILTkRHF/Dk+uhJ6u4hTqhBkmWPq6aLZoSaAXvHfxwcOIlhQm2DDxyFdQYCbc9RU1TEKA/enSfM6QPvV0iqPkC1auW+XaWLLRX+xrn5cK/cT565S+Hm8GbJHVHKhZXJV5KRBU0MMD4/ko9Fi1Oxq0IJ7E9zn3ELZ2tZNwy9w261ru93Z4nM90AX8wD6AsOZh/gTuVJQqL32QCdUT9+wHPQQvMavLfJdvR3MMaNV/oZ0kO5zcpeYNupMb88YRHfhSGlj88vK2pcZi+hPcPijLX9RzsQg6uM3P84Fgd3zIil/qUSppZx1dvktnnoBn4Jwn+y3Hh1htWQgNiIJElTwlhRBxCAS0=
   app: todosprint
   on:
     repo: travv0/todosprint
