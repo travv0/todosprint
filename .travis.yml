@@ -4,10 +4,10 @@ services:
 - postgresql
 env:
   matrix:
-  - GHCVER=8.4.3 STACK_YAML=stack.yaml
+  - GHCVER=8.8.4 STACK_YAML=stack.yaml
 install:
 - mkdir -p ~/.local/bin
-- travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v1.7.1/stack-1.7.1-linux-x86_64.tar.gz
+- travis_retry curl -L https://github.com/commercialhaskell/stack/releases/download/v2.5.1/stack-2.5.1-linux-x86_64.tar.gz
   | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 - export PATH=~/.local/bin:$PATH
 - stack --no-terminal --version
