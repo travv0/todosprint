@@ -4,5 +4,5 @@
 
 <p>
     Just
-    <a href=@{AuthR Yesod.Auth.GoogleEmail2.forwardUrl}>login with Google
+    <a href=@{AuthR $ oauth2Url "google"}>login with Google
     to get started.
