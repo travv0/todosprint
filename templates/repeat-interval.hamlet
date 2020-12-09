@@ -19,10 +19,10 @@
     <div .intervals :show n == "0":.hidden>
         <input id=#{idAttr}-count name=#{nameAttr} *{otherAttrs} type=number :isReq:required :show n /= "0":value="#{show n}"> #
         <select id=#{idAttr}-unit name=#{nameAttr} *{otherAttrs} :isReq:required>
-            <option value="Days" :u == "Days":selected>days
-            <option value="Weeks" :u == "Weeks":selected>weeks
-            <option value="Months" :u == "Months":selected>months
-            <option value="Years" :u == "Years":selected>years
+            <option value="Days" :u == Days:selected>days
+            <option value="Weeks" :u == Weeks:selected>weeks
+            <option value="Months" :u == Months:selected>months
+            <option value="Years" :u == Years:selected>years
         <select id=#{idAttr}-from name=#{nameAttr} *{otherAttrs} :isReq:required>
             <option value="CompletionDate" :ri == CompletionDate:selected>from completion date
             <option value="DueDate" :ri == DueDate:selected>from due date
