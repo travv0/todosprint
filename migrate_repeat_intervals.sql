@@ -4,11 +4,14 @@ SET repeat = CASE
         OR repeat LIKE 'Weeks %'
         OR repeat LIKE 'Months %'
         OR repeat LIKE 'Years %' THEN 'ByUnitOfTime ' || repeat
-        WHEN repeat LIKE 'OnWeekdays %' THEN TRIM(
-            SUBSTRING(
-                repeat
-                from '.+ .+ '
-            )
+        WHEN repeat LIKE 'OnWeekdays %' THEN COALESCE(
+            TRIM(
+                SUBSTRING(
+                    repeat
+                    from '.+ .+ '
+                )
+            ),
+            repeat
         )
         ELSE repeat
-    END
+    END;

@@ -156,10 +156,8 @@ instance Yesod App where
                 ]
         let navbarLeftMenuItems = [x | NavbarLeft x <- menuItems]
         let navbarRightMenuItems = [x | NavbarRight x <- menuItems]
-        let navbarLeftFilteredMenuItems =
-                [x | x <- navbarLeftMenuItems, menuItemAccessCallback x]
-        let navbarRightFilteredMenuItems =
-                [x | x <- navbarRightMenuItems, menuItemAccessCallback x]
+        let navbarLeftFilteredMenuItems = filter menuItemAccessCallback navbarLeftMenuItems
+        let navbarRightFilteredMenuItems = filter menuItemAccessCallback navbarRightMenuItems
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
