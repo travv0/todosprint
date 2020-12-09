@@ -1,34 +1,40 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE NoImplicitPrelude #-}
+
 module RepeatInterval where
 
-import           Database.Persist.TH
+import ClassyPrelude
+import Database.Persist.TH
 
 data RepeatFrom = CompletionDate | DueDate deriving (Eq, Show, Read, Enum, Bounded, Ord)
 
 data Weekday
-  = Monday
-  | Tuesday
-  | Wednesday
-  | Thursday
-  | Friday
-  | Saturday
-  | Sunday
-  deriving (Eq, Read, Show, Ord, Enum, Bounded)
+    = Monday
+    | Tuesday
+    | Wednesday
+    | Thursday
+    | Friday
+    | Saturday
+    | Sunday
+    deriving (Eq, Read, Show, Ord, Enum, Bounded)
 
-prev :: forall a . (Enum a, Bounded a) => a -> a
-prev x | from x > from minBound = pred x
-       | otherwise              = maxBound
- where
-  from :: a -> Int
-  from = fromEnum
+prev :: forall a. (Enum a, Bounded a) => a -> a
+prev x
+    | from x > from minBound = pred x
+    | otherwise = maxBound
+  where
+    from :: a -> Int
+    from = fromEnum
 
-next :: forall a . (Enum a, Bounded a) => a -> a
-next x | from x < from maxBound = succ x
-       | otherwise              = minBound
- where
-  from :: a -> Int
-  from = fromEnum
+next :: forall a. (Enum a, Bounded a) => a -> a
+next x
+    | from x < from maxBound = succ x
+    | otherwise = minBound
+  where
+    from :: a -> Int
+    from = fromEnum
 
 weekdayToInt :: Weekday -> Int
 weekdayToInt wkday = fromEnum wkday `mod` 7 + 1
@@ -36,11 +42,26 @@ weekdayToInt wkday = fromEnum wkday `mod` 7 + 1
 weekdayFromInt :: Int -> Weekday
 weekdayFromInt i = toEnum ((i + 7 - 1) `mod` 7)
 
+data UnitOfTime = Days | Weeks | Months | Years
+    deriving (Eq, Read, Ord, Show)
+
 data RepeatInterval
-  = Days Integer RepeatFrom
-  | Weeks Integer RepeatFrom
-  | Months Integer RepeatFrom
-  | Years Integer RepeatFrom
-  | OnWeekdays [Weekday] RepeatFrom
-  deriving (Eq, Read, Show, Ord)
+    = ByUnitOfTime UnitOfTime Integer RepeatFrom
+    | OnWeekdays [Weekday]
+    deriving (Eq, Read, Show, Ord)
 derivePersistField "RepeatInterval"
+
+formatRepeatInterval :: RepeatInterval -> Text
+formatRepeatInterval repeatInterval =
+    case repeatInterval of
+        ByUnitOfTime unit i from ->
+            "Every " <> pack (show i) <> " "
+                <> pack (toLower (show unit))
+                <> " from "
+                <> formatRepeatFrom from
+        OnWeekdays weekdays ->
+            "Every " <> pack (intercalate ", " (map show weekdays))
+  where
+    formatRepeatFrom repeatFrom = case repeatFrom of
+        CompletionDate -> "completion date"
+        DueDate -> "due date"

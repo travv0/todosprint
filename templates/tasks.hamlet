@@ -26,8 +26,8 @@ $else
                                     #{show $ taskDuration $ entityVal task} minutes
                         <span .taskDate>
                             $if page == Manage
-                                $if isJust $ taskRepeat $ entityVal task
-                                    <span class="glyphicon glyphicon-repeat modIcon">
+                                $maybe tr <- taskRepeat $ entityVal task
+                                    <span class="glyphicon glyphicon-repeat modIcon" title="#{formatRepeatInterval tr}">
                                 $maybe dd <- taskDueDate $ entityVal task
                                     #{show $ dd}
                             $if (page == Manage) && (isJust $ taskPostponeDay $ entityVal task)

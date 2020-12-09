@@ -26,69 +26,26 @@ repeatIntervalField =
             (rt : i : u : rf : xs)
                 | rt == "No" -> return $ Right Nothing
                 | rt == "DayOfWeek" && not (null xs) ->
-                    return $
-                        Right $
-                            Just $
-                                OnWeekdays
-                                    (map (read . unpack) xs)
-                                    CompletionDate
+                    return $ Right $ Just $ OnWeekdays (map (read . unpack) xs)
                 | rt == "DayOfWeek" -> return $ Right Nothing
                 | isNothing ((readMaybe $ unpack i) :: Maybe Int) ->
-                    return $
-                        Right Nothing
-                | u == "Days" ->
-                    return $
-                        Right $
-                            Just $
-                                Days
-                                    (read $ unpack i)
-                                    (read $ unpack rf)
-                | u == "Weeks" ->
-                    return $
-                        Right $
-                            Just $
-                                Weeks
-                                    (read $ unpack i)
-                                    (read $ unpack rf)
-                | u == "Months" ->
-                    return $
-                        Right $
-                            Just $
-                                Months
-                                    (read $ unpack i)
-                                    (read $ unpack rf)
-                | u == "Years" ->
-                    return $
-                        Right $
-                            Just $
-                                Years
-                                    (read $ unpack i)
-                                    (read $ unpack rf)
+                    return $ Right Nothing
+                | Just unit <- (readMaybe (unpack u) :: Maybe UnitOfTime) ->
+                    return $ Right $ Just $ ByUnitOfTime unit (read $ unpack i) (read $ unpack rf)
                 | otherwise -> return $ Left "Invalid unit of time for repeat interval"
             _ -> return $ Right Nothing
         , fieldView = \idAttr nameAttr otherAttrs eResult isReq -> case eResult of
-            Right (Days n ri) -> do
+            Right (ByUnitOfTime unit n ri) -> do
                 let days = []
-                let u = "Days" :: String
+                    u = unit
                 $(widgetFile "repeat-interval")
-            Right (Weeks n ri) -> do
-                let days = []
-                let u = "Weeks" :: String
-                $(widgetFile "repeat-interval")
-            Right (Months n ri) -> do
-                let days = []
-                let u = "Months" :: String
-                $(widgetFile "repeat-interval")
-            Right (Years n ri) -> do
-                let days = []
-                let u = "Years" :: String
-                $(widgetFile "repeat-interval")
-            Right (OnWeekdays days ri) -> do
+            Right (OnWeekdays days) -> do
                 let n = 0 :: Integer
-                let u = "" :: String
+                    u = Days
+                    ri = CompletionDate
                 $(widgetFile "repeat-interval")
             Left _ -> do
-                let (n, ri, days, u) = (0 :: Integer, CompletionDate, [], "" :: String)
+                let (n, ri, days, u) = (0 :: Integer, CompletionDate, [], Days)
                 $(widgetFile "repeat-interval")
         , fieldEnctype = UrlEncoded
         }

@@ -8,17 +8,42 @@
 
 module Handler.Home where
 
-import Common
 import qualified Data.List as L
 import qualified Data.Maybe as M
 import qualified Data.Text as T
-import Data.Time
-import Data.Time.Calendar.WeekDate
-import Database.Persist.Sql
+import Data.Time (
+    LocalTime (localDay, localTimeOfDay),
+    TimeOfDay (..),
+    TimeZone,
+    addDays,
+    addGregorianMonthsClip,
+    addGregorianYearsClip,
+    diffDays,
+    diffTimeToPicoseconds,
+    localToUTCTimeOfDay,
+    minutesToTimeZone,
+    picosecondsToDiffTime,
+    timeOfDayToTime,
+    timeToTimeOfDay,
+    utc,
+    utcToLocalTime,
+    utcToLocalTimeOfDay,
+ )
+import Data.Time.Calendar.WeekDate (toWeekDate)
+import Database.Persist.Sql (fromSqlKey)
+import Yesod.Form.Bootstrap3 (
+    BootstrapFormLayout (BootstrapHorizontalForm),
+    BootstrapGridOptions (ColSm),
+    BootstrapSubmit,
+    bfs,
+    bootstrapSubmit,
+    renderBootstrap3,
+ )
+
+import Common
 import Import
 import Priority
 import RepeatInterval
-import Yesod.Form.Bootstrap3
 
 data Page = Today | Manage
     deriving (Eq, Show)
@@ -362,35 +387,27 @@ postMarkDoneR taskId = do
 incrementDueDate :: Day -> Task -> Maybe Task
 incrementDueDate cdate task = case taskDueDate task of
     Just dd -> case taskRepeat task of
-        Just (OnWeekdays wkdays CompletionDate) -> do
+        Just (OnWeekdays wkdays) -> do
             let (_, _, wkdayNum) = toWeekDate cdate
             let nextWkday = next $ weekdayFromInt wkdayNum
             if nextWkday `elem` wkdays
                 then Just task{taskDueDate = Just (addDays 1 cdate)}
                 else incrementDueDate (addDays 1 cdate) task
-        Just (OnWeekdays wkdays DueDate) -> do
-            let (_, _, wkdayNum) = toWeekDate dd
-            let potWkdays = map weekdayFromInt [wkdayNum + 1 .. wkdayNum + 7]
-            let matches = map (`elem` wkdays) potWkdays
-            let offset = fmap (+ 1) (True `L.elemIndex` matches)
-            case offset of
-                Nothing -> Nothing
-                Just o -> Just task{taskDueDate = Just (addDays (toInteger o) dd)}
-        Just (Days ivl CompletionDate) ->
+        Just (ByUnitOfTime Days ivl CompletionDate) ->
             Just task{taskDueDate = Just (addDays ivl cdate)}
-        Just (Weeks ivl CompletionDate) ->
+        Just (ByUnitOfTime Weeks ivl CompletionDate) ->
             Just task{taskDueDate = Just (addDays (ivl * 7) cdate)}
-        Just (Months ivl CompletionDate) ->
+        Just (ByUnitOfTime Months ivl CompletionDate) ->
             Just task{taskDueDate = Just (addGregorianMonthsClip ivl cdate)}
-        Just (Years ivl CompletionDate) ->
+        Just (ByUnitOfTime Years ivl CompletionDate) ->
             Just task{taskDueDate = Just (addGregorianYearsClip ivl cdate)}
-        Just (Days ivl DueDate) ->
+        Just (ByUnitOfTime Days ivl DueDate) ->
             Just task{taskDueDate = Just (addDays ivl dd)}
-        Just (Weeks ivl DueDate) ->
+        Just (ByUnitOfTime Weeks ivl DueDate) ->
             Just task{taskDueDate = Just (addDays (ivl * 7) dd)}
-        Just (Months ivl DueDate) ->
+        Just (ByUnitOfTime Months ivl DueDate) ->
             Just task{taskDueDate = Just (addGregorianMonthsClip ivl dd)}
-        Just (Years ivl DueDate) ->
+        Just (ByUnitOfTime Years ivl DueDate) ->
             Just task{taskDueDate = Just (addGregorianYearsClip ivl dd)}
         Nothing -> Nothing
     Nothing -> Nothing
