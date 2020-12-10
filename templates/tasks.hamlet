@@ -1,3 +1,5 @@
+<div #psTaskList>
+
 $if null allTasks
     <div .container>
         <h3>First things first

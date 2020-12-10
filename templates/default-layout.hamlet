@@ -46,3 +46,5 @@ $else
     <div .container>
         <p .text-muted.copyright>
             #{appCopyright $ appSettings master}
+
+<script src="static/ps.js">
