@@ -199,6 +199,7 @@ instance Yesod App where
     isAuthorized (MarkDoneR taskId) _ = userOwnsTask taskId
     isAuthorized ResetDueTimeR _ = isAuthenticated
     isAuthorized TimeZoneR _ = isAuthenticated
+    isAuthorized TasksR _ = isAuthenticated
 
     -- This function creates static content files in the static folder
     -- and names them based on a hash of their content. This allows
