@@ -2,6 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE NoImplicitPrelude #-}
@@ -11,13 +12,39 @@ module Handler.Task where
 import Common
 import qualified Data.List as L
 import Data.Time (addDays)
-import Data.Time.LocalTime
-import Database.Persist.Sql
+import Data.Time.LocalTime (
+    LocalTime (localDay, localTimeOfDay),
+    TimeOfDay,
+    localToUTCTimeOfDay,
+    timeOfDayToTime,
+    utc,
+    utcToLocalTime,
+ )
 import Import
-import RepeatInterval
+import RepeatInterval (
+    RepeatFrom (CompletionDate, DueDate),
+    RepeatInterval (..),
+    UnitOfTime (..),
+    Weekday (
+        Friday,
+        Monday,
+        Saturday,
+        Sunday,
+        Thursday,
+        Tuesday,
+        Wednesday
+    ),
+ )
 import Text.Read (read, readMaybe)
-import Yesod.Form.Bootstrap3
-import Yesod.Form.Jquery
+import Yesod.Form.Bootstrap3 (
+    BootstrapFormLayout (BootstrapHorizontalForm),
+    BootstrapGridOptions (ColSm),
+    BootstrapSubmit,
+    bfs,
+    bootstrapSubmit,
+    renderBootstrap3,
+ )
+import Yesod.Form.Jquery (JqueryDaySettings (jdsChangeYear), jqueryDayField)
 
 repeatIntervalField :: Field Handler RepeatInterval
 repeatIntervalField =
@@ -214,3 +241,8 @@ getUnpostponeR :: TaskId -> Handler ()
 getUnpostponeR taskId = do
     runDB $ update taskId [TaskPostponeDay =. Nothing]
     redirectUltDest HomeR
+
+getTasksR :: Handler Value
+getTasksR = do
+    (tasks :: [Entity Task]) <- runDB $ selectList [] []
+    return $ toJSON tasks

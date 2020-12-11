@@ -25,3 +25,5 @@
 /time-zone TimeZoneR GET POST
 
 /reset-time ResetDueTimeR GET
+
+/tasks TasksR GET

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -6,9 +7,13 @@
 module RepeatInterval where
 
 import ClassyPrelude
-import Database.Persist.TH
+import ClassyPrelude.Yesod
 
-data RepeatFrom = CompletionDate | DueDate deriving (Eq, Show, Read, Enum, Bounded, Ord)
+data RepeatFrom = CompletionDate | DueDate
+    deriving (Eq, Show, Read, Enum, Bounded, Ord, Generic)
+
+instance FromJSON RepeatFrom
+instance ToJSON RepeatFrom
 
 data Weekday
     = Monday
@@ -18,7 +23,10 @@ data Weekday
     | Friday
     | Saturday
     | Sunday
-    deriving (Eq, Read, Show, Ord, Enum, Bounded)
+    deriving (Eq, Read, Show, Ord, Enum, Bounded, Generic)
+
+instance FromJSON Weekday
+instance ToJSON Weekday
 
 prev :: forall a. (Enum a, Bounded a) => a -> a
 prev x
@@ -43,13 +51,19 @@ weekdayFromInt :: Int -> Weekday
 weekdayFromInt i = toEnum ((i + 7 - 1) `mod` 7)
 
 data UnitOfTime = Days | Weeks | Months | Years
-    deriving (Eq, Read, Ord, Show)
+    deriving (Eq, Read, Ord, Show, Generic)
+
+instance FromJSON UnitOfTime
+instance ToJSON UnitOfTime
 
 data RepeatInterval
     = ByUnitOfTime UnitOfTime Integer RepeatFrom
     | OnWeekdays [Weekday]
-    deriving (Eq, Read, Show, Ord)
+    deriving (Eq, Read, Show, Ord, Generic)
 derivePersistField "RepeatInterval"
+
+instance FromJSON RepeatInterval
+instance ToJSON RepeatInterval
 
 formatRepeatInterval :: RepeatInterval -> Text
 formatRepeatInterval repeatInterval =

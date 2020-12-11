@@ -1,22 +1,70 @@
 module App.TaskList where
 
 import Prelude
-import Data.Array ((..))
+import Affjax as AX
+import Affjax.ResponseFormat as AJRF
+import Data.Date (Day)
+import Data.Either (hush)
+import Data.Maybe (Maybe(..))
+import Data.Time (Time)
+import Halogen (ClassName(..))
 import Halogen as H
-import Halogen.HTML (AttrName(..))
 import Halogen.HTML as HH
-import Halogen.HTML.Properties (attr)
+import Halogen.HTML.Events as HE
+import Halogen.HTML.Properties as HP
+
+data RepeatFrom
+  = CompletionDate
+  | DueDate
+
+data UnitOfTime
+  = Days
+  | Weeks
+  | Months
+  | Years
+
+data RepeatInterval
+  = ByUnitOfTime UnitOfTime Int RepeatFrom
+  | OnWeekdays (Array Weekday)
+
+data Weekday
+  = Monday
+  | Tuesday
+  | Wednesday
+  | Thursday
+  | Friday
+  | Saturday
+  | Sunday
+
+data Priority
+  = None
+  | Low
+  | Medium
+  | High
+
+type Task
+  = { name :: String
+    , duration :: Int
+    , priority :: Priority
+    , dueDate :: Maybe Day
+    , repeat :: Maybe RepeatInterval
+    , done :: Boolean
+    , userId :: Int
+    , postponeDay :: Maybe Day
+    , createTime :: Time
+    , doneTime :: Maybe Time
+    , deleted :: Boolean
+    , deleteTime :: Maybe Time
+    }
 
 type State
-  = { count :: Int }
+  = { tasks :: Array Task }
 
 data Action
-  = Increment
-  | Decrement
-  | Reset
+  = LoadTasks
 
 reset :: forall t1. t1 -> State
-reset = \_ -> { count: 0 }
+reset = \_ -> { tasks: [] }
 
 component :: forall q i o m. H.Component HH.HTML q i o m
 component =
@@ -28,41 +76,38 @@ component =
 
 render :: forall cs m. State -> H.ComponentHTML Action cs m
 render state =
-  HH.div [ attr (AttrName "class") "tasksDiv" ]
-    [ HH.h4 [ attr (AttrName "class") "taskListHeader" ]
+  HH.div [ HP.class_ $ ClassName "tasksDiv" ]
+    [ HH.a [ HE.onClick (\_ -> Just LoadTasks) ] [ HH.text "load tasks" ]
+    , HH.h4 [ HP.class_ $ ClassName "taskListHeader" ]
         [ HH.text "Today's To-Dos" ]
-    , HH.table [ attr (AttrName "class") "taskList" ]
-        $ flip map (0 .. 3)
+    , HH.table [ HP.class_ $ ClassName "taskList" ]
+        $ flip map state.tasks
         $ \_ ->
-            HH.tr [ attr (AttrName "class") "task" ]
-              [ HH.td [ attr (AttrName "class") "taskCheckbox" ]
+            HH.tr [ HP.class_ $ ClassName "task" ]
+              [ HH.td [ HP.class_ $ ClassName "taskCheckbox" ]
                   [ HH.form
-                      [ attr (AttrName "action") "/mark-done/#"
-                      , attr (AttrName "method") "post"
+                      [ HP.action "/mark-done/#"
+                      , HP.method $ HP.POST
                       ]
                       [ HH.a
-                          [ attr (AttrName "href") "javascript:;"
-                          , attr (AttrName "title") "Complete task"
-                          , attr (AttrName "onclick") "this.parentNode.submit();"
+                          [ HP.href "javascript:;"
+                          , HP.title "Complete task"
                           ]
-                          [ HH.span
-                              [ attr (AttrName "class") "glyphicon glyphicon-unchecked"
-                              , attr (AttrName "aria-hidden") "true"
-                              ]
+                          [ HH.span [ HP.class_ $ ClassName "glyphicon glyphicon-unchecked" ]
                               []
                           ]
                       ]
                   ]
               , HH.td
-                  [ attr (AttrName "class") "taskInfo"
-                  , attr (AttrName "id") "task-#"
+                  [ HP.class_ $ ClassName "taskInfo"
+                  , HP.id_ "task-#"
                   ]
-                  [ HH.span [ attr (AttrName "class") "taskNameAndDuration" ]
-                      [ HH.span [ attr (AttrName "class") "taskName" ]
+                  [ HH.span [ HP.class_ $ ClassName "taskNameAndDuration" ]
+                      [ HH.span [ HP.class_ $ ClassName "taskName" ]
                           [ HH.text "Task Name" ]
                       ]
                   ]
-              , HH.td [ attr (AttrName "class") "taskManagement" ]
+              , HH.td [ HP.class_ $ ClassName "taskManagement" ]
                   [ manageIcon "Edit task" "pencil"
                   , manageIcon "Postpone task" "calendar"
                   , manageIcon "Delete task" "remove"
@@ -72,19 +117,19 @@ render state =
   where
   manageIcon title glyphicon =
     HH.a
-      [ attr (AttrName "class") "manageIcon"
-      , attr (AttrName "href") "#"
-      , attr (AttrName "title") title
+      [ HP.class_ $ ClassName "manageIcon"
+      , HP.href "#"
+      , HP.title title
       ]
       [ HH.span
-          [ attr (AttrName "class") $ "glyphicon glyphicon-" <> glyphicon
-          , attr (AttrName "aria-hidden") "true"
-          ]
+          [ HP.class_ $ ClassName $ "glyphicon glyphicon-" <> glyphicon ]
           []
       ]
 
 handleAction :: forall cs o m. Action → H.HalogenM State Action cs o m Unit
 handleAction = case _ of
-  Increment -> H.modify_ \st -> st { count = st.count + 1 }
-  Decrement -> H.modify_ \st -> st { count = st.count - 1 }
-  Reset -> H.modify_ reset
+  _ -> H.modify_ identity
+
+-- LoadTasks -> do
+--   tasks <- H.liftAff $ AX.get AJRF.json "/tasks"
+--   H.modify_ (_ { tasks = map _.body (hush tasks) })

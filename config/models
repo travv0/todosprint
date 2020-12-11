@@ -12,7 +12,7 @@ User json
     UniqueEmail email
     deriving Show
 
-Task
+Task json
     name Text
     duration Int
     priority Priority
