@@ -52,16 +52,13 @@ data RepeatInterval
 derivePersistField "RepeatInterval"
 
 formatRepeatInterval :: RepeatInterval -> Text
-formatRepeatInterval repeatInterval =
-    case repeatInterval of
-        ByUnitOfTime unit i from ->
-            "Every " <> pack (show i) <> " "
-                <> pack (toLower (show unit))
-                <> " from "
-                <> formatRepeatFrom from
-        OnWeekdays weekdays ->
-            "Every " <> pack (intercalate ", " (map show weekdays))
+formatRepeatInterval (ByUnitOfTime unit i from) =
+    "Every " <> pack (show i) <> " "
+        <> pack (toLower (show unit))
+        <> " from "
+        <> formatRepeatFrom from
   where
-    formatRepeatFrom repeatFrom = case repeatFrom of
-        CompletionDate -> "completion date"
-        DueDate -> "due date"
+    formatRepeatFrom CompletionDate = "completion date"
+    formatRepeatFrom DueDate = "due date"
+formatRepeatInterval (OnWeekdays weekdays) =
+    "Every " <> pack (intercalate ", " (map show weekdays))
