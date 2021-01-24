@@ -202,8 +202,7 @@ todaysList euser = do
 
             let mins = minsDiff userTz dt utcTime
 
-            let localTime = utcToLocalTime userTz utcTime
-            let today = localDay localTime
+            today <- liftIO $ getToday $ Just user
             daysList today mins allTasks
         Nothing -> return []
 
@@ -221,7 +220,7 @@ todaysTasksHandler title user mDueTime tasks mtaskId = do
             let mins = minsDiff userTz dt utcTime
 
             let localTime = utcToLocalTime userTz utcTime
-            let today = localDay localTime
+            today <- liftIO $ getToday $ Just user
             let localTod = localTimeOfDay localTime
             reducedTasks <- daysList today mins tasks
 

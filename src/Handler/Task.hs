@@ -6,6 +6,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
+{- HLINT "Redundant if" -}
+
 module Handler.Task where
 
 import Common
@@ -165,16 +167,25 @@ postNewTaskR = getNewTaskR
 
 getEditTaskR :: TaskId -> Handler Html
 getEditTaskR taskId = do
-    Entity userId _user <- requireAuth
-    task <- runDB $ get taskId
+    Entity userId user <- requireAuth
+    mtask <- runDB $ get taskId
     currTime <- liftIO getCurrentTime
-    ((res, widget), enctype) <- runFormPost $ taskForm userId currTime task
+    today <- liftIO $ getToday $ Just user
+    ((res, widget), enctype) <- runFormPost $ taskForm userId currTime mtask
     case res of
-        FormSuccess t -> do
-            case task of
-                Just t2 ->
-                    runDB $ replace taskId $ t{taskPostponeDay = taskPostponeDay t2}
-                Nothing -> runDB $ replace taskId t
+        FormSuccess newTask -> do
+            case mtask of
+                Just oldTask ->
+                    runDB $
+                        replace taskId $
+                            newTask
+                                { taskPostponeDay = taskPostponeDay oldTask
+                                , taskPinned =
+                                    if taskDueDate newTask > Just today
+                                        then False
+                                        else taskPinned oldTask
+                                }
+                Nothing -> runDB $ replace taskId newTask
             setMessage "Task updated"
             redirectUltDest HomeR
         _ -> defaultLayout $ do
@@ -217,7 +228,12 @@ postPostponeDateR taskId = do
     ((res, _widget), _enctype) <- runFormPost postponeDateForm
     case res of
         FormSuccess day -> do
-            runDB $ update taskId [TaskPostponeDay =. Just (ppdDay day)]
+            runDB $
+                update
+                    taskId
+                    [ TaskPostponeDay =. Just (ppdDay day)
+                    , TaskPinned =. False
+                    ]
             redirectUltDest HomeR
         _ -> redirectUltDest HomeR
 
