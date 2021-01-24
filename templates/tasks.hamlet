@@ -16,6 +16,9 @@ $else
                         <form action=@{MarkDoneR $ entityKey task} method=post>
                             <a href="javascript:;" title="Complete task" onclick="this.parentNode.submit();">
                                 <span class="glyphicon glyphicon-unchecked" aria-hidden="true">
+                    <td .taskPin>
+                        <a :taskPinned $ entityVal task:class="pinned" :not $ taskPinned $ entityVal task:class="unpinned" href="@{PinTaskR $ entityKey task}" :taskPinned $ entityVal task:title="Unpin task" :not $ taskPinned $ entityVal task:title="Pin task">
+                            <span class="glyphicon glyphicon-pushpin" aria-hidden="true">
                     <td .taskInfo #task-#{show $ fromSqlKey $ entityKey task}>
                         <span .taskNameAndDuration>
                             <span .taskName>

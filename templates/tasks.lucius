@@ -18,10 +18,18 @@
     color: lightgrey;
 }
 
-.taskList .taskCheckbox {
+.taskList .taskCheckbox, .taskPin {
     width: 35px;
     padding: 2px;
     padding-left: 10px;
+}
+
+.taskPin > a.unpinned {
+    color: lightgray;
+}
+
+.taskPin > a.pinned {
+    color: darkturquoise;
 }
 
 .taskCheckbox span {

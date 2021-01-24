@@ -10,5 +10,6 @@
             "username": "travis",
             "password": "password"
         }
-    ]
+    ],
+    "nixEnvSelector.nixShellConfig": "NOT_MODIFIED_ENV"
 }

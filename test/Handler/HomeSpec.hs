@@ -1,64 +1,70 @@
-{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Handler.HomeSpec
-  ( spec
-  )
-where
+{-# LANGUAGE NoImplicitPrelude #-}
 
-import           TestImport
-import           Priority
-import           Data.Time
+module Handler.HomeSpec (
+    spec,
+) where
+
+import Data.Time
+import Priority
+import TestImport
 
 spec :: Spec
 spec = withApp $ do
+    describe "Manage page" $ do
+        it "shows help message if user has no tasks" $ do
+            userEntity <- createUser "foo@gmail.com"
+            authenticateAs userEntity
 
-  describe "Manage page" $ do
-    it "shows help message if user has no tasks" $ do
-      userEntity <- createUser "foo@gmail.com"
-      authenticateAs userEntity
+            get TodayR
+            statusIs 200
 
-      get TodayR
-      statusIs 200
+            htmlAnyContain "p" "You don&#39;t have any tasks"
 
-      htmlAnyContain "p" "You don&#39;t have any tasks"
+        it "asserts redirect to login page from manage page for anonymous users" $
+            do
+                get HomeR
+                statusIs 303
 
-    it "asserts redirect to login page from manage page for anonymous users"
-      $ do
-          get HomeR
-          statusIs 303
+        it "asserts access to manage page for authenticated users" $ do
+            userEntity <- createUser "foo@gmail.com"
+            authenticateAs userEntity
 
-    it "asserts access to manage page for authenticated users" $ do
-      userEntity <- createUser "foo@gmail.com"
-      authenticateAs userEntity
+            get HomeR
+            statusIs 200
 
-      get HomeR
-      statusIs 200
+        it "has detailed task list" $ do
+            currTime <- liftIO getCurrentTime
 
-    it "has detailed task list" $ do
-      currTime   <- liftIO getCurrentTime
+            userEntity <- createUser "foo@gmail.com"
+            runDB $
+                update
+                    (entityKey userEntity)
+                    [UserDueTime =. Just (addUTCTime 90 currTime)]
 
-      userEntity <- createUser "foo@gmail.com"
-      runDB $ update (entityKey userEntity)
-                     [UserDueTime =. Just (addUTCTime 90 currTime)]
+            authenticateAs userEntity
 
-      authenticateAs userEntity
+            _testTask <-
+                runDB $
+                    insert $
+                        Task
+                            "Test"
+                            1
+                            None
+                            Nothing
+                            Nothing
+                            False
+                            (entityKey userEntity)
+                            Nothing
+                            currTime
+                            Nothing
+                            False
+                            Nothing
+                            False
 
-      _testTask <- runDB $ insert $ Task "Test"
-                                         1
-                                         None
-                                         Nothing
-                                         Nothing
-                                         False
-                                         (entityKey userEntity)
-                                         Nothing
-                                         currTime
-                                         Nothing
-                                         False
-                                         Nothing
+            get HomeR
+            statusIs 200
 
-      get HomeR
-      statusIs 200
-
-      htmlCount ".task" 1
-      htmlAllContain ".taskDate"     "Priority"
-      htmlAllContain ".taskDuration" "minutes"
+            htmlCount ".task" 1
+            htmlAllContain ".taskDate" "Priority"
+            htmlAllContain ".taskDuration" "minutes"

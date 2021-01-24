@@ -58,6 +58,7 @@ spec = withApp $ do
                     Nothing
                     False
                     Nothing
+                    False
 
     describe "Marking task done" $ do
         it "works for repeating task by days" $ do
@@ -83,6 +84,7 @@ spec = withApp $ do
                             Nothing
                             False
                             Nothing
+                            False
 
             request $ do
                 setMethod "POST"

@@ -115,6 +115,7 @@ taskForm userId currUtcTime mtask =
             <*> pure Nothing
             <*> pure False
             <*> pure Nothing
+            <*> pure False
             <* bootstrapSubmit ("Submit" :: BootstrapSubmit Text)
 
 newtype PostponeTodayInfo = PostponeTodayInfo
@@ -188,6 +189,16 @@ getDeleteTaskR taskId = do
     setUltDestReferer
     currTime <- liftIO getCurrentTime
     runDB $ update taskId [TaskDeleted =. True, TaskDeleteTime =. Just currTime]
+    redirectUltDest HomeR
+
+getPinTaskR :: TaskId -> Handler ()
+getPinTaskR taskId = do
+    setUltDestReferer
+    mTask <- runDB $ get taskId
+    case mTask of
+        Just task ->
+            runDB $ update taskId [TaskPinned =. not (taskPinned task)]
+        Nothing -> pure ()
     redirectUltDest HomeR
 
 getPostponeTaskR :: TaskId -> Handler Html

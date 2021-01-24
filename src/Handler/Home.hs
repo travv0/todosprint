@@ -104,20 +104,22 @@ mediumOverdueMod = lowOverdueMod * 2
 lowOverdueMod :: Integer
 lowOverdueMod = 1
 weight :: Day -> Task -> Integer
-weight date task = case taskPriority task of
-    High ->
-        highWeight + case taskDueDate task of
-            Just dd -> weightMod dd highOverdueMod
-            Nothing -> -1
-    Medium ->
-        mediumWeight + case taskDueDate task of
-            Just dd -> weightMod dd mediumOverdueMod
-            Nothing -> -1
-    Low ->
-        lowWeight + case taskDueDate task of
-            Just dd -> weightMod dd lowOverdueMod
-            Nothing -> -1
-    None -> 0
+weight date task
+    | taskPinned task = highWeight * 2
+    | otherwise = case taskPriority task of
+        High ->
+            highWeight + case taskDueDate task of
+                Just dd -> weightMod dd highOverdueMod
+                Nothing -> -1
+        Medium ->
+            mediumWeight + case taskDueDate task of
+                Just dd -> weightMod dd mediumOverdueMod
+                Nothing -> -1
+        Low ->
+            lowWeight + case taskDueDate task of
+                Just dd -> weightMod dd lowOverdueMod
+                Nothing -> -1
+        None -> 0
   where
     weightMod dd modifier = (date `diffDays` dd) * modifier
 
@@ -305,7 +307,7 @@ utcToday = utctDay <$> getCurrentTime
 
 reduceLoad :: Day -> Int -> [Entity Task] -> [Entity Task]
 reduceLoad date mins tasks
-    | timeToComplete tasks > mins && not (allHighPriority tasks) =
+    | timeToComplete tasks > mins && not (allHighPriorityOrPinned tasks) =
         reduceLoad date mins $
             L.tail $
                 L.sortBy
@@ -322,7 +324,10 @@ reduceLoad date mins tasks
   where
     lowestWeight (Entity _ t1) (Entity _ t2) =
         weight date t1 `compare` weight date t2
-    allHighPriority = foldr (\(Entity _ t) b -> b && taskPriority t == High) True
+    allHighPriorityOrPinned =
+        foldr
+            (\(Entity _ t) b -> b && (taskPriority t == High || taskPinned t))
+            True
 
 fillInGaps :: Int -> [Entity Task] -> [Entity Task] -> [Entity Task]
 fillInGaps mins allTasks reducedTasks
@@ -379,7 +384,12 @@ postMarkDoneR taskId = do
     _ <- runDB $ case task of
         Just t -> case incrementDueDate cdate t of
             Just t2 -> do
-                insert $ t2{taskPostponeDay = Nothing, taskCreateTime = utcTime}
+                insert $
+                    t2
+                        { taskPostponeDay = Nothing
+                        , taskCreateTime = utcTime
+                        , taskPinned = False
+                        }
             Nothing -> redirectUltDest HomeR
         Nothing -> redirectUltDest HomeR
     redirectUltDest HomeR

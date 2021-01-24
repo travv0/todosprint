@@ -25,4 +25,5 @@ Task
     doneTime UTCTime Maybe
     deleted Bool default=false
     deleteTime UTCTime Maybe
+    pinned Bool default=false
     deriving Show Eq
