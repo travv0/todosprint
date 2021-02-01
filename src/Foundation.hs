@@ -93,9 +93,8 @@ instance Yesod App where
     approot :: Approot App
     approot =
         ApprootRequest $ \app req ->
-            case appRoot $ appSettings app of
-                Nothing -> getApprootText guessApproot app req
-                Just root -> root
+            fromMaybe (getApprootText guessApproot app req) $
+                appRoot $ appSettings app
 
     -- Store session data on the client in encrypted cookies,
     -- default session idle timeout is 120 minutes
@@ -197,6 +196,7 @@ instance Yesod App where
     isAuthorized (PostponeDateR taskId) _ = userOwnsTask taskId
     isAuthorized (UnpostponeR taskId) _ = userOwnsTask taskId
     isAuthorized TodayR _ = isAuthenticated
+    isAuthorized HistoryR _ = isAuthenticated
     isAuthorized (MarkDoneR taskId) _ = userOwnsTask taskId
     isAuthorized ResetDueTimeR _ = isAuthenticated
     isAuthorized TimeZoneR _ = isAuthenticated

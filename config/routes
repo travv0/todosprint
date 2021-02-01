@@ -11,6 +11,7 @@
 
 /today TodayR GET POST
 /manage/ HomeR GET
+/history/ HistoryR GET
 
 /new-task NewTaskR GET POST
 /edit-task/#TaskId EditTaskR GET POST

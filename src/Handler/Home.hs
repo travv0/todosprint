@@ -83,6 +83,21 @@ getHomeR = do
         setTitle "Manage Tasks"
         $(widgetFile "manage")
 
+getHistoryR :: Handler Html
+getHistoryR = do
+    setUltDestCurrent
+    userId <- requireAuthId
+    tasks' <- runDB $ getCompletedTasks userId []
+    let tasks =
+            sortBy
+                ( \(Entity _ t1) (Entity _ t2) ->
+                    taskDoneTime t2 `compare` taskDoneTime t1
+                )
+                tasks'
+    defaultLayout $ do
+        setTitle "History"
+        $(widgetFile "manage")
+
 sortTasks :: Day -> [Entity Task] -> [Entity Task]
 sortTasks today =
     sortBy
@@ -428,3 +443,11 @@ getTasks ::
     ReaderT backend m [Entity Task]
 getTasks userId =
     selectList [TaskUserId ==. userId, TaskDone ==. False, TaskDeleted ==. False]
+
+getCompletedTasks ::
+    (PersistQueryRead backend, MonadIO m, BaseBackend backend ~ SqlBackend) =>
+    Key User ->
+    [SelectOpt Task] ->
+    ReaderT backend m [Entity Task]
+getCompletedTasks userId =
+    selectList [TaskUserId ==. userId, TaskDone ==. True, TaskDeleted ==. False]
