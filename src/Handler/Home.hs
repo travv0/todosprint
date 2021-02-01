@@ -185,7 +185,7 @@ getTodayR = do
             if shouldUpdateTime then user'{userDueTime = Nothing} else user'
 
     allTasks <- runDB $ getTasks userId []
-    todaysTasksHandler "Today's Tasks" user (userDueTime user) allTasks Nothing
+    todaysTasksHandler "Today's Tasks" user (userDueTime user) allTasks
 
 todaysList :: Entity User -> Handler [Entity Task]
 todaysList euser = do
@@ -205,8 +205,8 @@ todaysList euser = do
             daysList today mins allTasks
         Nothing -> return []
 
-todaysTasksHandler :: Text -> User -> Maybe UTCTime -> [Entity Task] -> Maybe TaskId -> Handler Html
-todaysTasksHandler title user mDueTime tasks mtaskId = do
+todaysTasksHandler :: Text -> User -> Maybe UTCTime -> [Entity Task] -> Handler Html
+todaysTasksHandler title user mDueTime tasks = do
     utcTime <- liftIO getCurrentTime
 
     case mDueTime of
@@ -228,17 +228,13 @@ todaysTasksHandler title user mDueTime tasks mtaskId = do
                         then Nothing
                         else Just $ estimateTimeOfCompletion reducedTasks localTod
 
-            if isJust mtaskId && null reducedTasks
-                then redirect TodayR
-                else defaultLayout $ do
-                    setTitle $ toHtml title
-                    [whamlet|$if isJust mtaskId
-                        <h3>#{title}|]
-                    $(widgetFile "work-message")
-                    taskList
-                        (sortTasks today reducedTasks)
-                        Today
-                        estimatedToc
+            defaultLayout $ do
+                setTitle $ toHtml title
+                $(widgetFile "work-message")
+                taskList
+                    (sortTasks today reducedTasks)
+                    Today
+                    estimatedToc
         Nothing -> do
             (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
             defaultLayout $
@@ -269,7 +265,7 @@ postTodayR = do
         FormSuccess dt -> do
             userId <- requireAuthId
 
-            let tzOffsetMins = fromMaybe 0 $ userDueTimeOffset user
+            let tzOffsetMins = fromMaybe 0 $ userDueTimeOffset user 
             let userTz = minutesToTimeZone tzOffsetMins
             utcTime <- liftIO getCurrentTime
             let userTime = utcToLocalTime userTz utcTime

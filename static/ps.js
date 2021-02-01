@@ -11159,18 +11159,18 @@ var PS = {};
               return Halogen_HTML_Elements.a([ Halogen_HTML_Properties.class_("manageIcon"), Halogen_HTML_Properties.href("#"), Halogen_HTML_Properties.title(title) ])([ Halogen_HTML_Elements.span([ Halogen_HTML_Properties.class_(Halogen_HTML_Core.ClassName("glyphicon glyphicon-" + glyphicon)) ])([  ]) ]);
           };
       };
-      return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("tasksDiv") ])([ Halogen_HTML_Elements.a([ Halogen_HTML_Events.onClick(function ($101) {
-          return Data_Maybe.Just.create(LoadTasks.create(Web_UIEvent_MouseEvent.toEvent($101)));
+      return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("tasksDiv") ])([ Halogen_HTML_Elements.a([ Halogen_HTML_Events.onClick(function ($100) {
+          return Data_Maybe.Just.create(LoadTasks.create(Web_UIEvent_MouseEvent.toEvent($100)));
       }) ])([ Halogen_HTML_Core.text("load tasks") ]), Halogen_HTML_Elements.h4([ Halogen_HTML_Properties.class_("taskListHeader") ])([ Halogen_HTML_Core.text("Today's To-Dos") ]), Halogen_HTML_Elements.table([ Halogen_HTML_Properties.class_("taskList") ])((function () {
           if (state.tasks instanceof Data_Maybe.Nothing) {
               return [ Halogen_HTML_Core.text("No tasks") ];
           };
           if (state.tasks instanceof Data_Maybe.Just) {
-              return Data_Functor.map(Data_Functor.functorArray)(function (v) {
-                  return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.class_("task") ])([ Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("taskCheckbox") ])([ Halogen_HTML_Elements.form([ Halogen_HTML_Properties.action("/mark-done/#"), Halogen_HTML_Properties.method(DOM_HTML_Indexed_FormMethod.POST.value) ])([ Halogen_HTML_Elements.a([ Halogen_HTML_Properties.href("javascript:;"), Halogen_HTML_Properties.title("Complete task") ])([ Halogen_HTML_Elements.span([ Halogen_HTML_Properties.class_("glyphicon glyphicon-unchecked") ])([  ]) ]) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("taskInfo"), Halogen_HTML_Properties.id_("task-#") ])([ Halogen_HTML_Elements.span([ Halogen_HTML_Properties.class_("taskNameAndDuration") ])([ Halogen_HTML_Elements.span([ Halogen_HTML_Properties.class_("taskName") ])([ Halogen_HTML_Core.text("Task Name") ]) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("taskManagement") ])([ manageIcon("Edit task")("pencil"), manageIcon("Postpone task")("calendar"), manageIcon("Delete task")("remove") ]) ]);
+              return Data_Functor.map(Data_Functor.functorArray)(function (task) {
+                  return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.class_("task") ])([ Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("taskCheckbox") ])([ Halogen_HTML_Elements.form([ Halogen_HTML_Properties.action("/mark-done/" + Data_Show.show(Data_Show.showInt)(task.id)), Halogen_HTML_Properties.method(DOM_HTML_Indexed_FormMethod.POST.value) ])([ Halogen_HTML_Elements.a([ Halogen_HTML_Properties.href("javascript:;"), Halogen_HTML_Properties.title("Complete task") ])([ Halogen_HTML_Elements.span([ Halogen_HTML_Properties.class_("glyphicon glyphicon-unchecked") ])([  ]) ]) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("taskInfo"), Halogen_HTML_Properties.id_("task-" + Data_Show.show(Data_Show.showInt)(task.id)) ])([ Halogen_HTML_Elements.span([ Halogen_HTML_Properties.class_("taskNameAndDuration") ])([ Halogen_HTML_Elements.span([ Halogen_HTML_Properties.class_("taskName") ])([ Halogen_HTML_Core.text(task.name) ]) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("taskManagement") ])([ manageIcon("Edit task")("pencil"), manageIcon("Postpone task")("calendar"), manageIcon("Delete task")("remove") ]) ]);
               })(state.tasks.value0);
           };
-          throw new Error("Failed pattern match at App.TaskList (line 184, column 53 - line 220, column 18): " + [ state.tasks.constructor.name ]);
+          throw new Error("Failed pattern match at App.TaskList (line 183, column 53 - line 219, column 18): " + [ state.tasks.constructor.name ]);
       })()) ]);
   };
   var genericWeekday = new Data_Generic_Rep.Generic(function (x) {
@@ -11195,7 +11195,7 @@ var PS = {};
       if (x instanceof Sunday) {
           return new Data_Generic_Rep.Inr(new Data_Generic_Rep.Inr(new Data_Generic_Rep.Inr(new Data_Generic_Rep.Inr(new Data_Generic_Rep.Inr(new Data_Generic_Rep.Inr(Data_Generic_Rep.NoArguments.value))))));
       };
-      throw new Error("Failed pattern match at App.TaskList (line 150, column 1 - line 150, column 52): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 149, column 1 - line 149, column 52): " + [ x.constructor.name ]);
   }, function (x) {
       if (x instanceof Data_Generic_Rep.Inl) {
           return Monday.value;
@@ -11218,7 +11218,7 @@ var PS = {};
       if (x instanceof Data_Generic_Rep.Inr && (x.value0 instanceof Data_Generic_Rep.Inr && (x.value0.value0 instanceof Data_Generic_Rep.Inr && (x.value0.value0.value0 instanceof Data_Generic_Rep.Inr && (x.value0.value0.value0.value0 instanceof Data_Generic_Rep.Inr && x.value0.value0.value0.value0.value0 instanceof Data_Generic_Rep.Inr))))) {
           return Sunday.value;
       };
-      throw new Error("Failed pattern match at App.TaskList (line 150, column 1 - line 150, column 52): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 149, column 1 - line 149, column 52): " + [ x.constructor.name ]);
   });
   var showWeekday = new Data_Show.Show(Data_Generic_Rep_Show.genericShow(genericWeekday)(Data_Generic_Rep_Show.genericShowSum(Data_Generic_Rep_Show.genericShowConstructor(Data_Generic_Rep_Show.genericShowArgsNoArguments)(new Data_Symbol.IsSymbol(function () {
       return "Monday";
@@ -11248,7 +11248,7 @@ var PS = {};
       if (x instanceof Years) {
           return new Data_Generic_Rep.Inr(new Data_Generic_Rep.Inr(new Data_Generic_Rep.Inr(Data_Generic_Rep.NoArguments.value)));
       };
-      throw new Error("Failed pattern match at App.TaskList (line 134, column 1 - line 134, column 58): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 133, column 1 - line 133, column 58): " + [ x.constructor.name ]);
   }, function (x) {
       if (x instanceof Data_Generic_Rep.Inl) {
           return Days.value;
@@ -11262,7 +11262,7 @@ var PS = {};
       if (x instanceof Data_Generic_Rep.Inr && (x.value0 instanceof Data_Generic_Rep.Inr && x.value0.value0 instanceof Data_Generic_Rep.Inr)) {
           return Years.value;
       };
-      throw new Error("Failed pattern match at App.TaskList (line 134, column 1 - line 134, column 58): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 133, column 1 - line 133, column 58): " + [ x.constructor.name ]);
   });
   var showUnitOfTime = new Data_Show.Show(Data_Generic_Rep_Show.genericShow(genericUnitOfTime)(Data_Generic_Rep_Show.genericShowSum(Data_Generic_Rep_Show.genericShowConstructor(Data_Generic_Rep_Show.genericShowArgsNoArguments)(new Data_Symbol.IsSymbol(function () {
       return "Days";
@@ -11287,7 +11287,7 @@ var PS = {};
       if (x instanceof OnWeekdays) {
           return new Data_Generic_Rep.Inr(x.value0);
       };
-      throw new Error("Failed pattern match at App.TaskList (line 126, column 1 - line 126, column 66): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 125, column 1 - line 125, column 66): " + [ x.constructor.name ]);
   }, function (x) {
       if (x instanceof Data_Generic_Rep.Inl) {
           return new ByUnitOfTime(x.value0.value0, x.value0.value1.value0, x.value0.value1.value1);
@@ -11295,7 +11295,7 @@ var PS = {};
       if (x instanceof Data_Generic_Rep.Inr) {
           return new OnWeekdays(x.value0);
       };
-      throw new Error("Failed pattern match at App.TaskList (line 126, column 1 - line 126, column 66): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 125, column 1 - line 125, column 66): " + [ x.constructor.name ]);
   });
   var genericRepeatFrom = new Data_Generic_Rep.Generic(function (x) {
       if (x instanceof CompletionDate) {
@@ -11304,7 +11304,7 @@ var PS = {};
       if (x instanceof DueDate) {
           return new Data_Generic_Rep.Inr(Data_Generic_Rep.NoArguments.value);
       };
-      throw new Error("Failed pattern match at App.TaskList (line 142, column 1 - line 142, column 58): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 141, column 1 - line 141, column 58): " + [ x.constructor.name ]);
   }, function (x) {
       if (x instanceof Data_Generic_Rep.Inl) {
           return CompletionDate.value;
@@ -11312,7 +11312,7 @@ var PS = {};
       if (x instanceof Data_Generic_Rep.Inr) {
           return DueDate.value;
       };
-      throw new Error("Failed pattern match at App.TaskList (line 142, column 1 - line 142, column 58): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 141, column 1 - line 141, column 58): " + [ x.constructor.name ]);
   });
   var showRepeatFrom = new Data_Show.Show(Data_Generic_Rep_Show.genericShow(genericRepeatFrom)(Data_Generic_Rep_Show.genericShowSum(Data_Generic_Rep_Show.genericShowConstructor(Data_Generic_Rep_Show.genericShowArgsNoArguments)(new Data_Symbol.IsSymbol(function () {
       return "CompletionDate";
@@ -11337,7 +11337,7 @@ var PS = {};
       if (x instanceof High) {
           return new Data_Generic_Rep.Inr(new Data_Generic_Rep.Inr(new Data_Generic_Rep.Inr(Data_Generic_Rep.NoArguments.value)));
       };
-      throw new Error("Failed pattern match at App.TaskList (line 112, column 1 - line 112, column 54): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 111, column 1 - line 111, column 54): " + [ x.constructor.name ]);
   }, function (x) {
       if (x instanceof Data_Generic_Rep.Inl) {
           return None.value;
@@ -11351,7 +11351,7 @@ var PS = {};
       if (x instanceof Data_Generic_Rep.Inr && (x.value0 instanceof Data_Generic_Rep.Inr && x.value0.value0 instanceof Data_Generic_Rep.Inr)) {
           return High.value;
       };
-      throw new Error("Failed pattern match at App.TaskList (line 112, column 1 - line 112, column 54): " + [ x.constructor.name ]);
+      throw new Error("Failed pattern match at App.TaskList (line 111, column 1 - line 111, column 54): " + [ x.constructor.name ]);
   });
   var showPriority = new Data_Show.Show(Data_Generic_Rep_Show.genericShow(genericPriority)(Data_Generic_Rep_Show.genericShowSum(Data_Generic_Rep_Show.genericShowConstructor(Data_Generic_Rep_Show.genericShowArgsNoArguments)(new Data_Symbol.IsSymbol(function () {
       return "None";
@@ -11408,7 +11408,7 @@ var PS = {};
               if (v instanceof Data_Either.Left) {
                   return new Data_Either.Left(new Data_Argonaut_Decode_Error.TypeMismatch(v.value0));
               };
-              throw new Error("Failed pattern match at App.TaskList (line 69, column 9 - line 71, column 46): " + [ v.constructor.name ]);
+              throw new Error("Failed pattern match at App.TaskList (line 67, column 9 - line 69, column 46): " + [ v.constructor.name ]);
           })(Data_Formatter_DateTime.unformatDateTime("YYYY-MM-DDTHH:mm:ss")((function (v) {
               return v.before;
           })(Data_Function.flip(Data_String_CodePoints.splitAt)(s)(Data_Maybe.fromMaybe(Data_String_CodePoints.length(s))(Data_String_CodePoints.indexOf(".")(s))))));
@@ -11417,8 +11417,8 @@ var PS = {};
   })());
   var decodeJsonDate = new Data_Argonaut_Decode_Class.DecodeJson((function () {
       var fromString = (function () {
-          var $102 = Data_Formatter_DateTime.unformatDateTime("YYYY-MM-DD");
-          return function ($103) {
+          var $101 = Data_Formatter_DateTime.unformatDateTime("YYYY-MM-DD");
+          return function ($102) {
               return (function (v) {
                   if (v instanceof Data_Either.Right) {
                       return Data_Either.Right.create($$Date(Data_DateTime.date(v.value0)));
@@ -11426,8 +11426,8 @@ var PS = {};
                   if (v instanceof Data_Either.Left) {
                       return new Data_Either.Left(new Data_Argonaut_Decode_Error.TypeMismatch(v.value0));
                   };
-                  throw new Error("Failed pattern match at App.TaskList (line 90, column 7 - line 92, column 44): " + [ v.constructor.name ]);
-              })($102($103));
+                  throw new Error("Failed pattern match at App.TaskList (line 88, column 7 - line 90, column 44): " + [ v.constructor.name ]);
+              })($101($102));
           };
       })();
       return Control_Bind.composeKleisliFlipped(Data_Either.bindEither)(fromString)(Data_Argonaut_Decode_Class.decodeJson(Data_Argonaut_Decode_Class.decodeJsonString));
@@ -11437,7 +11437,7 @@ var PS = {};
           return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Effect_Class.liftEffect(Halogen_Query_HalogenM.monadEffectHalogenM(dictMonadAff.MonadEffect0()))(Web_Event_Event.preventDefault(v.value0)))(function () {
               return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Effect_Aff_Class.liftAff(Halogen_Query_HalogenM.monadAffHalogenM(dictMonadAff))(Affjax.get(Affjax_ResponseFormat.json)("/tasks")))(function (tasksRequest) {
                   var json = Data_Functor.map(Data_Maybe.functorMaybe)((function () {
-                      var $104 = Data_Argonaut_Decode_Class.decodeJson(Data_Argonaut_Decode_Class.decodeArray(Data_Argonaut_Decode_Class.decodeRecord(Data_Argonaut_Decode_Class.gDecodeJsonCons(decodeJsonDateTime)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonDateTime))(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonBoolean)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonBoolean)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonDateTime))(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonDate))(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonInt)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonString)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonDate))(Data_Argonaut_Decode_Class.gDecodeJsonCons(decodeJsonPriority)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonRepeatInterval))(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonInt)(Data_Argonaut_Decode_Class.gDecodeJsonNil)(new Data_Symbol.IsSymbol(function () {
+                      var $103 = Data_Argonaut_Decode_Class.decodeJson(Data_Argonaut_Decode_Class.decodeArray(Data_Argonaut_Decode_Class.decodeRecord(Data_Argonaut_Decode_Class.gDecodeJsonCons(decodeJsonDateTime)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonDateTime))(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonBoolean)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonBoolean)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonDateTime))(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonDate))(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonInt)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonInt)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonString)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonDate))(Data_Argonaut_Decode_Class.gDecodeJsonCons(decodeJsonPriority)(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonMaybe(decodeJsonRepeatInterval))(Data_Argonaut_Decode_Class.gDecodeJsonCons(Data_Argonaut_Decode_Class.decodeJsonInt)(Data_Argonaut_Decode_Class.gDecodeJsonNil)(new Data_Symbol.IsSymbol(function () {
                           return "userId";
                       }))()())(new Data_Symbol.IsSymbol(function () {
                           return "repeat";
@@ -11447,6 +11447,8 @@ var PS = {};
                           return "postponeDay";
                       }))()())(new Data_Symbol.IsSymbol(function () {
                           return "name";
+                      }))()())(new Data_Symbol.IsSymbol(function () {
+                          return "id";
                       }))()())(new Data_Symbol.IsSymbol(function () {
                           return "duration";
                       }))()())(new Data_Symbol.IsSymbol(function () {
@@ -11462,10 +11464,10 @@ var PS = {};
                       }))()())(new Data_Symbol.IsSymbol(function () {
                           return "createTime";
                       }))()())()));
-                      return function ($105) {
-                          return $104((function (v1) {
+                      return function ($104) {
+                          return $103((function (v1) {
                               return v1.body;
-                          })($105));
+                          })($104));
                       };
                   })())(Data_Either.hush(tasksRequest));
                   return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Effect_Class.liftEffect(Halogen_Query_HalogenM.monadEffectHalogenM(dictMonadAff.MonadEffect0()))(Effect_Console.log(Data_Show.show(Data_Maybe.showMaybe(Data_Either.showEither(Data_Argonaut_Decode_Error.showJsonDecodeError)(Data_Show.showArray(Data_Show.showRecord()(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
@@ -11483,6 +11485,8 @@ var PS = {};
                   }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
                       return "duration";
                   }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
+                      return "id";
+                  }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
                       return "name";
                   }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
                       return "postponeDay";
@@ -11492,7 +11496,7 @@ var PS = {};
                       return "repeat";
                   }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
                       return "userId";
-                  }))(Data_Show.showRecordFieldsNil)(Data_Show.showInt))(Data_Maybe.showMaybe(showRepeatInterval)))(showPriority))(Data_Maybe.showMaybe(showDate)))(Data_Show.showString))(Data_Show.showInt))(Data_Maybe.showMaybe(showDate)))(Data_Maybe.showMaybe(showDateTime)))(Data_Show.showBoolean))(Data_Show.showBoolean))(Data_Maybe.showMaybe(showDateTime)))(showDateTime))))))(json))))(function () {
+                  }))(Data_Show.showRecordFieldsNil)(Data_Show.showInt))(Data_Maybe.showMaybe(showRepeatInterval)))(showPriority))(Data_Maybe.showMaybe(showDate)))(Data_Show.showString))(Data_Show.showInt))(Data_Show.showInt))(Data_Maybe.showMaybe(showDate)))(Data_Maybe.showMaybe(showDateTime)))(Data_Show.showBoolean))(Data_Show.showBoolean))(Data_Maybe.showMaybe(showDateTime)))(showDateTime))))))(json))))(function () {
                       var tasks = Control_Bind.join(Data_Maybe.bindMaybe)(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Either.hush)(json));
                       return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Effect_Class.liftEffect(Halogen_Query_HalogenM.monadEffectHalogenM(dictMonadAff.MonadEffect0()))(Effect_Console.log(Data_Show.show(Data_Maybe.showMaybe(Data_Show.showArray(Data_Show.showRecord()(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
                           return "createTime";
@@ -11509,6 +11513,8 @@ var PS = {};
                       }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
                           return "duration";
                       }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
+                          return "id";
+                      }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
                           return "name";
                       }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
                           return "postponeDay";
@@ -11518,16 +11524,16 @@ var PS = {};
                           return "repeat";
                       }))(Data_Show.showRecordFieldsCons(new Data_Symbol.IsSymbol(function () {
                           return "userId";
-                      }))(Data_Show.showRecordFieldsNil)(Data_Show.showInt))(Data_Maybe.showMaybe(showRepeatInterval)))(showPriority))(Data_Maybe.showMaybe(showDate)))(Data_Show.showString))(Data_Show.showInt))(Data_Maybe.showMaybe(showDate)))(Data_Maybe.showMaybe(showDateTime)))(Data_Show.showBoolean))(Data_Show.showBoolean))(Data_Maybe.showMaybe(showDateTime)))(showDateTime)))))(tasks))))(function () {
+                      }))(Data_Show.showRecordFieldsNil)(Data_Show.showInt))(Data_Maybe.showMaybe(showRepeatInterval)))(showPriority))(Data_Maybe.showMaybe(showDate)))(Data_Show.showString))(Data_Show.showInt))(Data_Show.showInt))(Data_Maybe.showMaybe(showDate)))(Data_Maybe.showMaybe(showDateTime)))(Data_Show.showBoolean))(Data_Show.showBoolean))(Data_Maybe.showMaybe(showDateTime)))(showDateTime)))))(tasks))))(function () {
                           return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                              var $97 = {};
-                              for (var $98 in v1) {
-                                  if ({}.hasOwnProperty.call(v1, $98)) {
-                                      $97[$98] = v1[$98];
+                              var $96 = {};
+                              for (var $97 in v1) {
+                                  if ({}.hasOwnProperty.call(v1, $97)) {
+                                      $96[$97] = v1[$97];
                                   };
                               };
-                              $97.tasks = tasks;
-                              return $97;
+                              $96.tasks = tasks;
+                              return $96;
                           });
                       });
                   });

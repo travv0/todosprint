@@ -93,7 +93,8 @@ instance decodeJsonDate :: DecodeJson Date where
 derive newtype instance showDate :: Show Date
 
 type Task
-  = { name :: String
+  = { id :: Int
+    , name :: String
     , duration :: Int
     , priority :: Priority
     , dueDate :: Maybe Date
@@ -183,11 +184,11 @@ render state =
         Nothing -> [ HH.text "No tasks" ]
         Just tasks ->
           map
-            ( \_ ->
+            ( \task ->
                 HH.tr [ HP.class_ $ ClassName "task" ]
                   [ HH.td [ HP.class_ $ ClassName "taskCheckbox" ]
                       [ HH.form
-                          [ HP.action "/mark-done/#"
+                          [ HP.action $ "/mark-done/" <> show task.id
                           , HP.method $ HP.POST
                           ]
                           [ HH.a
@@ -201,11 +202,11 @@ render state =
                       ]
                   , HH.td
                       [ HP.class_ $ ClassName "taskInfo"
-                      , HP.id_ "task-#"
+                      , HP.id_ $ "task-" <> show task.id
                       ]
                       [ HH.span [ HP.class_ $ ClassName "taskNameAndDuration" ]
                           [ HH.span [ HP.class_ $ ClassName "taskName" ]
-                              [ HH.text "Task Name" ]
+                              [ HH.text $ task.name ]
                           ]
                       ]
                   , HH.td [ HP.class_ $ ClassName "taskManagement" ]
