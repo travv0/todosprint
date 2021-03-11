@@ -7,45 +7,32 @@ dependencies:
 # See: https://ghc.haskell.org/trac/ghc/ticket/12130
 - base >=4.8.2.0 && <4.9 || >=4.9.1.0 && <5
 
-- yesod 
-- yesod-core 
-- yesod-auth 
-- yesod-auth-oauth2
-- yesod-static 
-- yesod-form 
+- aeson 
+- case-insensitive
 - classy-prelude 
-- classy-prelude-conduit 
 - classy-prelude-yesod 
-- bytestring 
-- text 
+- fast-logger 
+- file-embed
+- foreign-store
+- hjsmin 
+- monad-logger 
 - persistent 
 - persistent-postgresql 
 - persistent-template 
-- template-haskell
 - shakespeare 
-- hjsmin 
-- monad-control 
-- wai-extra 
-- yaml 
-- http-client-tls 
-- http-conduit 
-- directory 
-- warp 
-- data-default
-- aeson 
-- conduit 
-- monad-logger 
-- fast-logger 
-- wai-logger 
-- file-embed
-- safe
-- unordered-containers
-- containers
-- vector
+- template-haskell
+- text 
 - time
-- case-insensitive
 - wai
-- foreign-store
+- wai-extra 
+- warp 
+- yaml 
+- yesod 
+- yesod-auth 
+- yesod-auth-oauth2
+- yesod-core 
+- yesod-form 
+- yesod-static 
 
 # The library contains all of our application code. The executable
 # defined below is just a thin wrapper.
@@ -96,7 +83,6 @@ tests:
     - scheduler
     - hspec >=2.0.0
     - yesod-test
-    - microlens
 
 # Define flags used by "yesod devel" to make compilation faster
 flags:
