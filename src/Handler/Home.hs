@@ -325,7 +325,7 @@ reduceLoad date mins tasks
         weight date t1 `compare` weight date t2
     allHighPriorityOrPinned =
         foldr
-            (\(Entity _ t) b -> b && (taskPriority t == High || taskPinned t))
+            (\(Entity _ t) b -> b && (taskPinned t || weight date t > mediumWeight * 2))
             True
 
 fillInGaps :: Int -> [Entity Task] -> [Entity Task] -> [Entity Task]
