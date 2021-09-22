@@ -92,7 +92,7 @@ sortTasks today =
         )
 
 highWeight :: Integer
-highWeight = 99999
+highWeight = mediumWeight * 2
 mediumWeight :: Integer
 mediumWeight = lowWeight * 2
 lowWeight :: Integer
@@ -325,7 +325,7 @@ reduceLoad date mins tasks
         weight date t1 `compare` weight date t2
     allHighPriorityOrPinned =
         foldr
-            (\(Entity _ t) b -> b && (taskPinned t || weight date t > mediumWeight * 2))
+            (\(Entity _ t) b -> b && (taskPinned t || weight date t >= highWeight))
             True
 
 fillInGaps :: Int -> [Entity Task] -> [Entity Task] -> [Entity Task]
