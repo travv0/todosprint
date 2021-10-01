@@ -105,7 +105,7 @@ lowOverdueMod :: Integer
 lowOverdueMod = 1
 weight :: Day -> Task -> Integer
 weight date task
-    | taskPinned task = highWeight * 2
+    | taskPinned task = highWeight * 99999
     | otherwise = case taskPriority task of
         High ->
             highWeight + case taskDueDate task of
