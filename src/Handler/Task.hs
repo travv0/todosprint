@@ -180,10 +180,7 @@ getEditTaskR taskId = do
                         replace taskId $
                             newTask
                                 { taskPostponeDay = taskPostponeDay oldTask
-                                , taskPinned =
-                                    if taskDueDate newTask > Just today
-                                        then False
-                                        else taskPinned oldTask
+                                , taskPinned = taskPinned oldTask
                                 }
                 Nothing -> runDB $ replace taskId newTask
             setMessage "Task updated"
