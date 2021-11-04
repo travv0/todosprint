@@ -14,10 +14,10 @@
 
 /new-task NewTaskR GET POST
 /edit-task/#TaskId EditTaskR GET POST
+/quick-postpone/#TaskId QuickPostponeR GET
 /delete-task/#TaskId DeleteTaskR GET
 /pin-task/#TaskId PinTaskR GET
 
-/quick-postpone/#TaskId QuickPostponeR POST
 /postpone-task/#TaskId PostponeTaskR GET
 /postpone-date/#TaskId PostponeDateR POST
 /unpostpone/#TaskId UnpostponeR GET

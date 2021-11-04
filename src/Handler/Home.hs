@@ -429,8 +429,8 @@ getTasks ::
 getTasks userId =
     selectList [TaskUserId ==. userId, TaskDone ==. False, TaskDeleted ==. False]
 
-postQuickPostponeR :: TaskId -> Handler Html
-postQuickPostponeR taskId = do
+getQuickPostponeR :: TaskId -> Handler Html
+getQuickPostponeR taskId = do
     setUltDestReferer
     task <- runDB $ get taskId
     case task of
