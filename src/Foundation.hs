@@ -169,6 +169,7 @@ instance Yesod App where
         pc <-
             widgetToPageContent $ do
                 addStylesheet $ StaticR css_bootstrap_css
+                addStylesheet $ StaticR css_fontawesome_min_css
                 $(widgetFile "update-tz")
                 $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
@@ -193,6 +194,7 @@ instance Yesod App where
     isAuthorized (EditTaskR taskId) _ = userOwnsTask taskId
     isAuthorized (DeleteTaskR taskId) _ = userOwnsTask taskId
     isAuthorized (PinTaskR taskId) _ = userOwnsTask taskId
+    isAuthorized (QuickPostponeR taskId) _ = userOwnsTask taskId
     isAuthorized (PostponeTaskR taskId) _ = userOwnsTask taskId
     isAuthorized (PostponeDateR taskId) _ = userOwnsTask taskId
     isAuthorized (UnpostponeR taskId) _ = userOwnsTask taskId

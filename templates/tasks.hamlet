@@ -48,6 +48,9 @@ $else
                         <a .manageIcon href=@{PostponeTaskR $ entityKey task} title="Postpone task">
                             <span class="glyphicon glyphicon-calendar" aria-hidden="true">
 
+                        <a .manageIcon href=@{QuickPostponeR $ entityKey task} title="Quick postpone">
+                            <i class="fas fa-bolt" aria-hidden="true">
+
                         <a .manageIcon href="javascript: confirmThenDelete('#{T.replace "'" "\\'" $ taskName $ entityVal task }', '@{DeleteTaskR $ entityKey task}')" title="Delete task">
                             <span class="glyphicon glyphicon-remove" aria-hidden="true">
         <div .row.tocRow>

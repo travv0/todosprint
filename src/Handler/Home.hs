@@ -428,3 +428,21 @@ getTasks ::
     ReaderT backend m [Entity Task]
 getTasks userId =
     selectList [TaskUserId ==. userId, TaskDone ==. False, TaskDeleted ==. False]
+
+postQuickPostponeR :: TaskId -> Handler Html
+postQuickPostponeR taskId = do
+    setUltDestReferer
+    task <- runDB $ get taskId
+    case task of
+        Just t -> do
+            let postponeDays =
+                    case taskPriority t of
+                        High -> 1
+                        Medium -> highWeight - lowWeight - mediumWeight
+                        Low -> highWeight - lowWeight
+                        None -> highWeight
+            (Entity _ user) <- requireAuth
+            today <- liftIO $ getToday $ Just user
+            runDB $ update taskId [TaskPostponeDay =. Just (addDays postponeDays today)]
+            redirectUltDest HomeR
+        Nothing -> redirectUltDest HomeR
