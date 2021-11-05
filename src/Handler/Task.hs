@@ -241,3 +241,11 @@ getUnpostponeR :: TaskId -> Handler ()
 getUnpostponeR taskId = do
     runDB $ update taskId [TaskPostponeDay =. Nothing]
     redirectUltDest HomeR
+
+getQuickPostponeR :: TaskId -> Handler Html
+getQuickPostponeR taskId = do
+    setUltDestReferer
+    (Entity _ user) <- requireAuth
+    today <- liftIO $ getToday $ Just user
+    runDB $ update taskId [TaskPostponeDay =. Just (addDays 1 today)]
+    redirectUltDest HomeR
