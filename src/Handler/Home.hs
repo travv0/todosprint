@@ -108,7 +108,7 @@ weight date task
     | taskPinned task = highWeight * 99999
     | otherwise = case taskPriority task of
         High ->
-            highWeight + case taskDueDate task of
+            highWeight * 2 + case taskDueDate task of
                 Just dd -> weightMod dd highOverdueMod
                 Nothing -> -1
         Medium ->

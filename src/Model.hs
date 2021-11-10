@@ -26,7 +26,6 @@ share
     [mkPersist sqlSettings, mkMigrate "migrateAll"]
     $(persistFileWith lowerCaseSettings "config/models")
 
--- reversed so it works right with topsort
 instance Ord Task where
     task1 `compare` task2 =
         taskPriority task2 `compare` taskPriority task1
