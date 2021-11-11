@@ -60,11 +60,12 @@ taskList tasks page estimatedToc mins = do
     allTasks <- handlerToWidget $ runDB $ getTasks userId []
     let tasksWithOverTime =
             zip tasks $
-                L.map (> mins) $
-                    L.scanl
-                        (\acc (Entity _ t) -> taskDuration t + acc)
-                        0
-                        tasks
+                L.tail $
+                    L.map (> mins) $
+                        L.scanl
+                            (\acc (Entity _ t) -> taskDuration t + acc)
+                            0
+                            tasks
 
     $(widgetFile "tasks")
 
