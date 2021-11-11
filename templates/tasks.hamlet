@@ -10,7 +10,7 @@ $else
         $if page == Today
             <h4 .taskListHeader>Today's To-Dos
         <table .taskList>
-            $forall task <- tasks
+            $forall (task, overTime) <- tasksWithOverTime
                 <tr .task>
                     <td .taskCheckbox>
                         <form action=@{MarkDoneR $ entityKey task} method=post>
@@ -21,7 +21,7 @@ $else
                             <span class="glyphicon glyphicon-pushpin" aria-hidden="true">
                     <td .taskInfo #task-#{show $ fromSqlKey $ entityKey task}>
                         <span .taskNameAndDuration>
-                            <span .taskName>
+                            <span .taskName :overTime:style="color: gray;">
                                 #{taskName $ entityVal task}
                             $if page == Manage
                                 <br>
