@@ -167,10 +167,9 @@ postNewTaskR = getNewTaskR
 
 getEditTaskR :: TaskId -> Handler Html
 getEditTaskR taskId = do
-    Entity userId user <- requireAuth
+    Entity userId _ <- requireAuth
     mtask <- runDB $ get taskId
     currTime <- liftIO getCurrentTime
-    today <- liftIO $ getToday $ Just user
     ((res, widget), enctype) <- runFormPost $ taskForm userId currTime mtask
     case res of
         FormSuccess newTask -> do
