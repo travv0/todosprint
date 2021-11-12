@@ -180,10 +180,7 @@ getEditTaskR taskId = do
                         replace taskId $
                             newTask
                                 { taskPostponeDay = taskPostponeDay oldTask
-                                , taskPinned =
-                                    if taskDueDate newTask > Just today
-                                        then False
-                                        else taskPinned oldTask
+                                , taskPinned = taskPinned oldTask
                                 }
                 Nothing -> runDB $ replace taskId newTask
             setMessage "Task updated"
@@ -228,12 +225,7 @@ postPostponeDateR taskId = do
     ((res, _widget), _enctype) <- runFormPost postponeDateForm
     case res of
         FormSuccess day -> do
-            runDB $
-                update
-                    taskId
-                    [ TaskPostponeDay =. Just (ppdDay day)
-                    , TaskPinned =. False
-                    ]
+            runDB $ update taskId [TaskPostponeDay =. Just (ppdDay day)]
             redirectUltDest HomeR
         _ -> redirectUltDest HomeR
 
