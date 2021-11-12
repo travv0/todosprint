@@ -48,8 +48,8 @@ import RepeatInterval
 data Page = Today | Manage
     deriving (Eq, Show)
 
-taskList :: [Entity Task] -> Page -> Maybe TimeOfDay -> Widget
-taskList tasks page estimatedToc = do
+taskList :: [Entity Task] -> Page -> Maybe TimeOfDay -> Int -> Widget
+taskList tasks page estimatedToc mins = do
     (Entity userId _) <- requireAuth
     let formattedEstimatedToc =
             maybe
@@ -58,6 +58,14 @@ taskList tasks page estimatedToc = do
                 estimatedToc
 
     allTasks <- handlerToWidget $ runDB $ getTasks userId []
+    let tasksWithOverTime =
+            zip tasks $
+                L.tail $
+                    L.map (> mins) $
+                        L.scanl
+                            (\acc (Entity _ t) -> taskDuration t + acc)
+                            0
+                            tasks
 
     $(widgetFile "tasks")
 
@@ -240,13 +248,14 @@ todaysTasksHandler title user mDueTime tasks mtaskId = do
                         (sortTasks today reducedTasks)
                         Today
                         estimatedToc
+                        mins
         Nothing -> do
             (widget, enctype) <- generateFormPost $ dueTimeForm Nothing
             defaultLayout $
                 if null tasks
                     then do
                         setTitle "Today's Tasks"
-                        taskList [] Today Nothing
+                        taskList [] Today Nothing 0
                     else do
                         setTitle "Set Time"
                         setTimeWidget widget enctype
