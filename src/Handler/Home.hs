@@ -42,7 +42,6 @@ import Yesod.Form.Bootstrap3 (
 
 import Common
 import Import
-import Import.NoFoundation (Task (taskPriority))
 import Priority
 import RepeatInterval
 
