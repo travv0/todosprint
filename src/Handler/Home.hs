@@ -42,6 +42,7 @@ import Yesod.Form.Bootstrap3 (
 
 import Common
 import Import
+import Import.NoFoundation (Task (taskPriority))
 import Priority
 import RepeatInterval
 
@@ -59,13 +60,17 @@ taskList tasks page estimatedToc mins = do
 
     allTasks <- handlerToWidget $ runDB $ getTasks userId []
     let tasksWithOverTime =
-            zip tasks $
-                L.tail $
-                    L.map (> mins) $
-                        L.scanl
-                            (\acc (Entity _ t) -> taskDuration t + acc)
-                            0
-                            tasks
+            map
+                ( \(task@(Entity _ t), ot) ->
+                    (task, ot && taskPriority t /= High)
+                )
+                $ zip tasks $
+                    L.tail $
+                        L.map (> mins) $
+                            L.scanl
+                                (\acc (Entity _ t) -> taskDuration t + acc)
+                                0
+                                tasks
 
     $(widgetFile "tasks")
 
